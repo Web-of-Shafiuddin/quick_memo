@@ -5,7 +5,7 @@ import memoRoutes from './routes/memoRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
-import prisma from './config/database.js';
+import pool from './config/database.js';
 
 // Load environment variables
 dotenv.config();
@@ -42,7 +42,7 @@ app.use(errorHandler);
 // Graceful shutdown
 const gracefulShutdown = async () => {
     console.log('\nShutting down gracefully...');
-    await prisma.$disconnect();
+    await pool.end();
     process.exit(0);
 };
 
