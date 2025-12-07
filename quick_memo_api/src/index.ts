@@ -50,10 +50,17 @@ process.on('SIGTERM', gracefulShutdown);
 process.on('SIGINT', gracefulShutdown);
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     console.log(`🚀 Server is running on port ${PORT}`);
     console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+
+    try {
+        await pool.query('SELECT NOW()');
+        console.log('✅ Database connected successfully');
+    } catch (error) {
+        console.error('❌ Database connection failed:', error);
+    }
 });
 
 export default app;
