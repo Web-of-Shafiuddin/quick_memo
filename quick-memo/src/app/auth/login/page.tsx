@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { userService } from '@/services/userService';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -22,32 +23,40 @@ export default function LoginPage() {
         e.preventDefault();
         setIsLoading(true);
 
-        // Frontend-only demo authentication
-        setTimeout(() => {
-            if (email && password) {
-                const demoUser = {
-                    id: 'demo-user-1',
-                    email: email,
-                    name: email.split('@')[0],
-                    mobile: '01712345678',
+        try {
+            // Check against backend if user exists (checking by fetching all and filtering - NOT SECURE for production)
+            const response = await userService.getAll();
+            const user = response.data.find(u => u.email === email);
+
+            if (user) {
+                // Mocking an auth token and structure since backend doesn't provide auth yet
+                const userData = {
+                    id: user.id,
+                    email: user.email,
+                    name: user.name || user.email.split('@')[0],
+                    mobile: '', // Backend doesn't support mobile yet
                     profile: {
-                        id: 'demo-profile-1',
-                        shopName: 'Demo Shop',
+                        id: 'profile-' + user.id,
+                        shopName: 'My Shop',
                         isPro: false,
                         theme: 'default'
                     }
                 };
 
-                localStorage.setItem('authToken', 'demo-token-' + Date.now());
-                localStorage.setItem('user', JSON.stringify(demoUser));
+                localStorage.setItem('authToken', 'mock-token-' + user.id);
+                localStorage.setItem('user', JSON.stringify(userData));
 
-                toast.success('Login successful! (Demo mode)');
+                toast.success('Login successful!');
                 router.push('/dashboard');
             } else {
-                toast.error('Please enter email and password');
+                toast.error('Invalid email or user not found');
             }
+        } catch (error) {
+            console.error('Login error:', error);
+            toast.error('Failed to login. Please try again.');
+        } finally {
             setIsLoading(false);
-        }, 1000);
+        }
     };
 
     const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -57,20 +66,29 @@ export default function LoginPage() {
         const formData = new FormData(e.currentTarget);
         const name = formData.get('name') as string;
         const regEmail = formData.get('email') as string;
-        const regPassword = formData.get('password') as string;
-        const mobile = formData.get('mobile') as string;
+        // const regPassword = formData.get('password') as string; // Backend doesn't support password yet
 
-        // Frontend-only demo registration
-        setTimeout(() => {
-            if (name && regEmail && regPassword) {
-                toast.success('Registration successful! Please login. (Demo mode)');
+        try {
+            const response = await userService.create({
+                email: regEmail,
+                name: name
+            });
+
+            if (response.success) {
+                toast.success('Registration successful! Please login.');
                 setActiveTab('login');
                 setEmail(regEmail);
-            } else {
-                toast.error('Please fill in all required fields');
             }
+        } catch (error: any) {
+            console.error('Registration error:', error);
+            if (error.response && error.response.status === 409) {
+                toast.error('Email already exists');
+            } else {
+                toast.error('Failed to register. Please try again.');
+            }
+        } finally {
             setIsLoading(false);
-        }, 1000);
+        }
     };
 
     return (
