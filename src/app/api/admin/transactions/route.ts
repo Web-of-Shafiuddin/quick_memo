@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {
-    const transactions = await db.paymentTransaction.findMany({
+    const transactions = await prisma.paymentTransaction.findMany({
       include: {
         profile: {
           select: {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const transactions = await db.paymentTransaction.findMany({
+    const transactions = await prisma.paymentTransaction.findMany({
       where: { profileId },
       orderBy: { createdAt: 'desc' },
       take: 10

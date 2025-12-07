@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user's memos
-    const memos = await db.memo.findMany({
+    const memos = await prisma.memo.findMany({
       where: { profileId: userId },
       orderBy: { createdAt: 'desc' },
       take: 100

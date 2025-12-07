@@ -41,7 +41,8 @@ export default function Dashboard() {
     totalMemos: 0,
     thisMonth: 0,
     lastMonth: 0,
-    totalRevenue: 0
+    totalRevenue: 0,
+    grossProfit: 0,
   });
   const router = useRouter();
 
@@ -57,6 +58,7 @@ export default function Dashboard() {
 
     setUser(JSON.parse(userData));
     fetchUserStats();
+    fetchGrossProfit();
   }, []);
 
   const fetchUserStats = async () => {
@@ -65,10 +67,23 @@ export default function Dashboard() {
       const result = await response.json();
       
       if (result.success) {
-        setStats(result.stats);
+        setStats(prev => ({ ...prev, ...result.stats }));
       }
     } catch (error) {
       console.error('Error fetching stats:', error);
+    }
+  };
+
+  const fetchGrossProfit = async () => {
+    try {
+      const response = await fetch('/api/reports/gross-profit');
+      const result = await response.json();
+
+      if (result.success) {
+        setStats(prev => ({ ...prev, grossProfit: result.grossProfit }));
+      }
+    } catch (error) {
+      console.error('Error fetching gross profit:', error);
     }
   };
 
@@ -149,6 +164,10 @@ export default function Dashboard() {
                   <span className="text-sm text-gray-600">Revenue</span>
                   <span className="text-xl font-bold text-blue-600">৳{stats.totalRevenue}</span>
                 </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Gross Profit</span>
+                  <span className="text-xl font-bold text-purple-600">৳{stats.grossProfit}</span>
+                </div>
               </CardContent>
             </Card>
 
@@ -174,6 +193,12 @@ export default function Dashboard() {
                   <Button variant="outline" className="w-full justify-start">
                     <Save className="w-4 h-4 mr-2" />
                     Memo Presets
+                  </Button>
+                </Link>
+                <Link href="/dashboard/products">
+                  <Button variant="outline" className="w-full justify-start">
+                    <Save className="w-4 h-4 mr-2" />
+                    Products
                   </Button>
                 </Link>
                 <Link href="/history">

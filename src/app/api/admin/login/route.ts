@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,12 +12,12 @@ export async function POST(request: NextRequest) {
 
     if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
       // Check if admin exists in database, create if not
-      let admin = await db.admin.findUnique({
+      let admin = await prisma.admin.findUnique({
         where: { email }
       });
 
       if (!admin) {
-        admin = await db.admin.create({
+        admin = await prisma.admin.create({
           data: {
             email: ADMIN_EMAIL,
             password: ADMIN_PASSWORD, // In production, hash this

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { z } from 'zod';
 
 const LoginSchema = z.object({
@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     const { email, password } = LoginSchema.parse(body);
 
     // Find user by email
-    const user = await db.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { email },
       include: { profile: true }
     });
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Update last login
-    await db.user.update({
+    await prisma.user.update({
       where: { id: user.id },
       data: { lastLoginAt: new Date() }
     });

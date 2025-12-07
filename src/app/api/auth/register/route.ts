@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { z } from 'zod';
 
 const RegisterSchema = z.object({
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     const { name, email, password, mobile } = RegisterSchema.parse(body);
 
     // Check if user already exists
-    const existingUser = await db.user.findFirst({
+    const existingUser = await prisma.user.findFirst({
       where: {
         OR: [
           { email },
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create new user
-    const user = await db.user.create({
+    const user = await prisma.user.create({
       data: {
         name,
         email,

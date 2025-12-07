@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if transaction ID already exists
-    const existingTransaction = await db.paymentTransaction.findUnique({
+    const existingTransaction = await prisma.paymentTransaction.findUnique({
       where: { transactionId }
     });
 
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create payment transaction record (pending status)
-    const transaction = await db.paymentTransaction.create({
+    const transaction = await prisma.paymentTransaction.create({
       data: {
         profileId,
         transactionId,
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const profile = await db.shopProfile.findUnique({
+    const profile = await prisma.shopProfile.findUnique({
       where: { id: profileId },
       select: {
         id: true,
@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
 
     // Update if expired
     if (profile.isPro && !isCurrentlyPro) {
-      await db.shopProfile.update({
+      await prisma.shopProfile.update({
         where: { id: profileId },
         data: { isPro: false }
       });

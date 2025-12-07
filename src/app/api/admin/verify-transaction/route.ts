@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the transaction to verify
-    const transaction = await db.paymentTransaction.findUnique({
+    const transaction = await prisma.paymentTransaction.findUnique({
       where: { transactionId },
       include: { profile: true }
     });
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Update transaction status
-    const updatedTransaction = await db.paymentTransaction.update({
+    const updatedTransaction = await prisma.paymentTransaction.update({
       where: { transactionId },
       data: {
         status,
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
       const proExpiry = new Date();
       proExpiry.setMonth(proExpiry.getMonth() + 1); // Add 1 month
 
-      await db.shopProfile.update({
+      await prisma.shopProfile.update({
         where: { id: transaction.profileId },
         data: {
           isPro: true,

@@ -1,6 +1,6 @@
 'use server';
 
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { z } from 'zod';
 
 const ShopProfileSchema = z.object({
@@ -28,20 +28,20 @@ export async function saveShopProfile(formData: FormData) {
     const validated = ShopProfileSchema.parse(data);
 
     // Check if profile already exists by mobile number
-    const existingProfile = await db.shopProfile.findFirst({
+    const existingProfile = await prisma.shopProfile.findFirst({
       where: { mobile: validated.mobile }
     });
 
     let profile;
     if (existingProfile) {
       // Update existing profile
-      profile = await db.shopProfile.update({
+      profile = await prisma.shopProfile.update({
         where: { id: existingProfile.id },
         data: validated
       });
     } else {
       // Create new profile
-      profile = await db.shopProfile.create({
+      profile = await prisma.shopProfile.create({
         data: validated
       });
     }
@@ -74,7 +74,7 @@ export async function saveShopProfile(formData: FormData) {
 
 export async function getShopProfile(mobile: string) {
   try {
-    const profile = await db.shopProfile.findFirst({
+    const profile = await prisma.shopProfile.findFirst({
       where: { mobile },
       include: {
         savedProducts: true
@@ -125,7 +125,7 @@ export async function saveMemo(formData: FormData) {
       status: 'completed'
     };
 
-    const memo = await db.memo.create({
+    const memo = await prisma.memo.create({
       data
     });
 
@@ -145,7 +145,7 @@ export async function saveMemo(formData: FormData) {
 
 export async function getShopMemos(profileId: string) {
   try {
-    const memos = await db.memo.findMany({
+    const memos = await prisma.memo.findMany({
       where: { profileId },
       orderBy: { createdAt: 'desc' },
       take: 50 // Limit to last 50 memos

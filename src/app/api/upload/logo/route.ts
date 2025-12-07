@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, unlink } from 'fs/promises';
 import { join } from 'path';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user is Pro
-    const profile = await db.shopProfile.findUnique({
+    const profile = await prisma.shopProfile.findUnique({
       where: { id: profileId },
       select: { isPro: true, proExpiry: true }
     });
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
 
     // Update profile with logo URL
     const logoUrl = `/uploads/${filename}`;
-    await db.shopProfile.update({
+    await prisma.shopProfile.update({
       where: { id: profileId },
       data: { logoUrl }
     });
@@ -107,7 +107,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Get current logo URL
-    const profile = await db.shopProfile.findUnique({
+    const profile = await prisma.shopProfile.findUnique({
       where: { id: profileId },
       select: { logoUrl: true }
     });
@@ -120,7 +120,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Remove logo URL from database
-    await db.shopProfile.update({
+    await prisma.shopProfile.update({
       where: { id: profileId },
       data: { logoUrl: null }
     });
