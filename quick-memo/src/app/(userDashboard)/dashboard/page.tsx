@@ -41,32 +41,47 @@ export default function Dashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    // Check authentication
-    const token = localStorage.getItem("authToken");
-    const userData = localStorage.getItem("user");
+    const initDashboard = () => {
+      // Check authentication
+      const token = localStorage.getItem("authToken");
+      const userData = localStorage.getItem("user");
 
-    if (!token || !userData) {
-      router.push("/auth/login");
-      return;
-    }
+      if (!token || !userData) {
+        router.push("/auth/login");
+        return;
+      }
 
-    setUser(JSON.parse(userData));
+      try {
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+        router.push("/auth/login");
+        return;
+      }
 
-    // Load demo stats from localStorage
-    const savedStats = localStorage.getItem("userStats");
-    if (savedStats) {
-      setStats(JSON.parse(savedStats));
-    } else {
-      // Set demo stats
-      const demoStats = {
-        totalMemos: 42,
-        thisMonth: 15,
-        lastMonth: 27,
-        totalRevenue: 125000,
-      };
-      setStats(demoStats);
-      localStorage.setItem("userStats", JSON.stringify(demoStats));
-    }
+      // Load demo stats from localStorage
+      const savedStats = localStorage.getItem("userStats");
+      if (savedStats) {
+        try {
+          setStats(JSON.parse(savedStats));
+        } catch (error) {
+          console.error("Error parsing stats:", error);
+        }
+      } else {
+        // Set demo stats
+        const demoStats = {
+          totalMemos: 42,
+          thisMonth: 15,
+          lastMonth: 27,
+          totalRevenue: 125000,
+        };
+        setStats(demoStats);
+        localStorage.setItem("userStats", JSON.stringify(demoStats));
+      }
+    };
+
+    initDashboard();
   }, [router]);
 
   if (!user) {
@@ -86,7 +101,7 @@ export default function Dashboard() {
   return (
     <>
       {/* Main Content Area */}
-      <div className="lg:col-span-2">
+      
         <Tabs defaultValue="overview" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -298,7 +313,7 @@ export default function Dashboard() {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
+   
     </>
   );
 }

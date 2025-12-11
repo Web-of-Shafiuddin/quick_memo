@@ -2,7 +2,16 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Crown, FileText, Home, LogOut, Palette, Save, Settings } from "lucide-react";
+import {
+  Calendar,
+  Crown,
+  FileText,
+  Home,
+  LogOut,
+  Palette,
+  Save,
+  Settings,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -79,22 +88,30 @@ export default function UserDashboardlayout({
                 <CardTitle className="text-lg">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button variant="outline" className="w-full justify-start">
-                  <FileText className="w-4 h-4 mr-2" />
-                  Create New Memo
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <FileText className="w-4 h-4 mr-2" />
-                  Products
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <FileText className="w-4 h-4 mr-2" />
-                  Orders
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <FileText className="w-4 h-4 mr-2" />
-                  Profile Settings
-                </Button>
+                <Link href="/dashboard/memos">
+                  <Button variant="outline" className="w-full justify-start">
+                    <FileText className="w-4 h-4 mr-2" />
+                    Create New Memo
+                  </Button>
+                </Link>
+                <Link href="/products">
+                  <Button variant="outline" className="w-full justify-start">
+                    <FileText className="w-4 h-4 mr-2" />
+                    Products
+                  </Button>
+                </Link>
+                <Link href="/orders">
+                  <Button variant="outline" className="w-full justify-start">
+                    <FileText className="w-4 h-4 mr-2" />
+                    Orders
+                  </Button>
+                </Link>
+                <Link href="/dashboard/profile">
+                  <Button variant="outline" className="w-full justify-start">
+                    <FileText className="w-4 h-4 mr-2" />
+                    Profile Settings
+                  </Button>
+                </Link>
                 <Button
                   variant="outline"
                   className="w-full justify-start"
@@ -122,7 +139,7 @@ export default function UserDashboardlayout({
               </CardContent>
             </Card>
           </div>
-          {children}
+          <div className="lg:col-span-2">{children}</div>
         </div>
       </main>
     </div>
