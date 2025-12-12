@@ -14,7 +14,7 @@ export type Product = {
 
 // This is a mock database. In a real app, you'd fetch from a real DB.
 // Let's pre-populate it with some data to make testing easier.
-let mockProducts: Product[] = [
+const mockProducts: Product[] = [
   {
     sku: "SKU001",
     name: "Wireless Mouse",
@@ -38,7 +38,7 @@ let mockProducts: Product[] = [
 ];
 
 // --- Server Action for CREATING a product ---
-export async function createProduct(prevState: any, formData: FormData) {
+export async function createProduct<T>(prevState: T, formData: FormData) {
   await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate delay
 
   const product = {
@@ -63,7 +63,7 @@ export async function createProduct(prevState: any, formData: FormData) {
 }
 
 // --- Server Action for UPDATING a product ---
-export async function updateProduct(prevState: any, formData: FormData) {
+export async function updateProduct<T>(prevState: T, formData: FormData) {
   await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate delay
 
   const sku = formData.get("sku") as string;
