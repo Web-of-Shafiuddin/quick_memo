@@ -10,11 +10,19 @@ import {
   LogOut,
   Palette,
   Save,
-  Settings,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useEffect, useState } from "react";
+
+interface User {
+  name: string;
+  profile?: {
+    isPro: boolean;
+    proExpiry?: string;
+  };
+}
 
 export default function UserDashboardlayout({
   children,
@@ -22,9 +30,19 @@ export default function UserDashboardlayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const isPro = user.profile?.isPro;
-  const proExpiry = user.profile?.proExpiry
+  const [user, setUser] = useState<User | null>(null);
+
+  // useEffect(() => {
+  //   if (typeof window !== "undefined") {
+  //     const userData = localStorage.getItem("user");
+  //     if (userData) {
+  //       setUser(JSON.parse(userData));
+  //     }
+  //   }
+  // }, []);
+
+  const isPro = user?.profile?.isPro;
+  const proExpiry = user?.profile?.proExpiry
     ? new Date(user.profile.proExpiry)
     : null;
   const isExpired = proExpiry && proExpiry < new Date();
@@ -35,6 +53,10 @@ export default function UserDashboardlayout({
     router.push("/");
     toast.success("Logged out successfully");
   };
+
+  if (!user) {
+    return null; // or a loading spinner
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
