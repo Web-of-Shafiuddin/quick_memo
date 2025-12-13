@@ -64,25 +64,28 @@ export default function LoginPage() {
         setIsLoading(true);
 
         const formData = new FormData(e.currentTarget);
-        const name = formData.get('name') as string;
+        const regName = formData.get('name') as string;
         const regEmail = formData.get('email') as string;
-        // const regPassword = formData.get('password') as string; // Backend doesn't support password yet
+        const regPassword = formData.get('password') as string;
+        const regMobile = formData.get('mobile') as string;
 
         try {
             const response = await userService.create({
-                email: regEmail,
-                name: name
+                name: regName,
+                email: regEmail.toLowerCase(),
+                password: regPassword,
+                mobile: regMobile
             });
 
             if (response.success) {
                 toast.success('Registration successful! Please login.');
                 setActiveTab('login');
-                setEmail(regEmail);
+                setEmail(regEmail.toLowerCase());
             }
         } catch (error: any) {
             console.error('Registration error:', error);
-            if (error.response && error.response.status === 409) {
-                toast.error('Email already exists');
+            if (error.response ) {
+                toast.error(error.response.data.error);
             } else {
                 toast.error('Failed to register. Please try again.');
             }
@@ -92,7 +95,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
             <div className="w-full max-w-md">
                 {/* Logo Section */}
                 <div className="text-center mb-8">
