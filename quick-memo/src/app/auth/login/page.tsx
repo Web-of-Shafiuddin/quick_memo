@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { userService } from '@/services/userService';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -26,25 +25,25 @@ export default function LoginPage() {
 
         try {
             // Check against backend if user exists (checking by fetching all and filtering - NOT SECURE for production)
-            const response = await userService.getAll();
-            const user = response.data.find(u => u.email === email);
+            const response = await authService.userLogin({ email, password });
+            const user = response.data;
 
             if (user) {
                 // Mocking an auth token and structure since backend doesn't provide auth yet
                 const userData = {
-                    id: user.id,
+                    user_id: user.user_id,
                     email: user.email,
-                    name: user.name || user.email.split('@')[0],
-                    mobile: '', // Backend doesn't support mobile yet
+                    name: user.name,
+                    mobile: user.mobile || '',
                     profile: {
-                        id: 'profile-' + user.id,
+                        profile_id: 'profile-' + user.user_id,
                         shopName: 'My Shop',
                         isPro: false,
                         theme: 'default'
                     }
                 };
 
-                localStorage.setItem('authToken', 'mock-token-' + user.id);
+                localStorage.setItem('authToken', 'mock-token-' + user.user_id);
                 localStorage.setItem('user', JSON.stringify(userData));
 
                 toast.success('Login successful!');

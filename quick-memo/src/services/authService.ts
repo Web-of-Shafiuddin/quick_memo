@@ -8,4 +8,8 @@ export const authService = {
         const response = await api.post<{ success: boolean; data: User }>('/auth/register', registerPayload);
         return response.data;
     },
+    userLogin: async (data: {email: string, password: string}) => {
+        const response = await api.post<{ success: boolean; data: User }>('/auth/login', data);
+        return response.data;
+    }
 }

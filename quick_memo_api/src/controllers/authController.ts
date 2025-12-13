@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import { Request, Response } from "express";
 import pool from "../config/database.js";
+import jwt from "jsonwebtoken";
 
 export const userRegister = async (req: Request, res: Response) => {
   try {
@@ -32,5 +33,55 @@ export const userRegister = async (req: Request, res: Response) => {
         .json({ success: false, error: "Email already exists" });
     }
     res.status(500).json({ success: false, error: "Failed to create user" });
+  }
+};
+
+export const userLogin = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+
+    // is user exists
+    const user = await pool.query(
+      'SELECT user_id, name, email, mobile, password FROM "users" WHERE email = $1',
+      [email]
+    );
+    if (user.rows.length === 0) {
+      return res
+        .status(401)
+        .json({ success: false, error: "Invalid email or password" });
+    }
+
+    // is password valid
+    const validPassword = await bcrypt.compare(password, user.rows[0].password);
+    if (!validPassword) {
+      return res
+        .status(401)
+        .json({ success: false, error: "Invalid email or password" });
+    }
+
+    // remove password from user object
+    delete user.rows[0].password;
+
+    // generate token
+    const token = process.env.JWT_SECRET
+      ? jwt.sign({ user_id: user.rows[0].user_id }, process.env.JWT_SECRET, {
+          expiresIn: "1h",
+        })
+      : null;
+
+    //send cookie to the browser
+    if (token) {
+      res.cookie("quick_memo_user_token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 60 * 60 * 1000, // 1 hour
+      });
+    }
+
+    res.status(200).json({ success: true, data: user.rows[0], token });
+  } catch (error: any) {
+    console.error("Error logging in:", error);
+    res.status(500).json({ success: false, error: "Failed to log in" });
   }
 };
