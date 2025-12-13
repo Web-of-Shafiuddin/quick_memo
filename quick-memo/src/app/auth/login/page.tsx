@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FileText } from 'lucide-react';
 import { toast } from 'sonner';
+import { authService } from '@/services/authService';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -70,7 +71,7 @@ export default function LoginPage() {
         const regMobile = formData.get('mobile') as string;
 
         try {
-            const response = await userService.create({
+            const response = await authService.userRegister({
                 name: regName,
                 email: regEmail.toLowerCase(),
                 password: regPassword,

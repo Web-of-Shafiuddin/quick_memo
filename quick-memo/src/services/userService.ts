@@ -1,12 +1,5 @@
 import api from '@/lib/api';
-
-export interface User {
-    id: string;
-    email: string;
-    name: string | null;
-    createdAt: string;
-    updatedAt: string;
-}
+import { User } from '@/types/User';
 
 export const userService = {
     getAll: async () => {
@@ -16,13 +9,6 @@ export const userService = {
 
     getById: async (id: string) => {
         const response = await api.get<{ success: boolean; data: User }>(`/users/${id}`);
-        return response.data;
-    },
-
-    create: async (data: {email: string, name: string, password: string, mobile?: string}) => {
-        const registerPayload = Object.fromEntries(Object.entries(data).filter(([_, value]) => !!value));
-
-        const response = await api.post<{ success: boolean; data: User }>('/users', registerPayload);
         return response.data;
     },
 
