@@ -11,12 +11,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { authService } from '@/services/authService';
+import useAuthStore from '@/store/authStore';
+import { useShallow } from 'zustand/react/shallow';
+
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('login');
+    const { setUser } = useAuthStore(useShallow((state) => ({ setUser: state.setUser })));
     const router = useRouter();
 
     const handleLogin = async (e: React.FormEvent) => {
@@ -35,16 +39,17 @@ export default function LoginPage() {
                     email: user.email,
                     name: user.name,
                     mobile: user.mobile || '',
-                    profile: {
-                        profile_id: 'profile-' + user.user_id,
-                        shopName: 'My Shop',
-                        isPro: false,
-                        theme: 'default'
-                    }
+                    createdAt: user.createdAt,
+                    updatedAt: user.updatedAt,
+                    // profile: {
+                    //     profile_id: 'profile-' + user.user_id,
+                    //     shopName: 'My Shop',
+                    //     isPro: false,
+                    //     theme: 'default'
+                    // }
                 };
 
-                localStorage.setItem('authToken', 'mock-token-' + user.user_id);
-                localStorage.setItem('user', JSON.stringify(userData));
+                setUser(userData);
 
                 toast.success('Login successful!');
                 router.push('/dashboard');

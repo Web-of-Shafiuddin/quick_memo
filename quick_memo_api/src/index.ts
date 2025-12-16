@@ -7,7 +7,7 @@ import categoryRoutes from "./routes/categoryRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import { errorHandler, notFound } from "./middleware/errorHandler.js";
 import pool from "./config/database.js";
-
+import cookieParser from "cookie-parser";
 // Load environment variables
 dotenv.config();
 
@@ -22,6 +22,7 @@ app.use(
   })
 );
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 // Health check endpoint

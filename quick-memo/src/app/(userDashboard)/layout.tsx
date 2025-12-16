@@ -14,23 +14,25 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
+import useAuthStore from "@/store/authStore";
+import { useShallow } from "zustand/react/shallow";
 
-interface User {
-  name: string;
-  profile?: {
-    isPro: boolean;
-    proExpiry?: string;
-  };
-}
-
-export default function UserDashboardlayout({
+export default function ProtectedUserDashboardlayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
+  const { user, isLoading } = useAuthStore(
+    useShallow((state) => ({
+      user: state.user,
+      isLoading: state.isLoading,
+    }))
+  );
+
+  if(isLoading === false && !user) {
+    router.push("/auth/login");
+  }
 
   // useEffect(() => {
   //   if (typeof window !== "undefined") {
@@ -41,16 +43,16 @@ export default function UserDashboardlayout({
   //   }
   // }, []);
 
-  const isPro = user?.profile?.isPro;
-  const proExpiry = user?.profile?.proExpiry
-    ? new Date(user.profile.proExpiry)
-    : null;
-  const isExpired = proExpiry && proExpiry < new Date();
+  // const isPro = user?.profile?.isPro;
+  // const proExpiry = user?.profile?.proExpiry
+  //   ? new Date(user.profile.proExpiry)
+  //   : null;
+  // const isExpired = proExpiry && proExpiry < new Date();
 
   const handleLogout = () => {
     localStorage.removeItem("authToken");
     localStorage.removeItem("user");
-    router.push("/");
+    router.push("/auth/login");
     toast.success("Logged out successfully");
   };
 
@@ -76,15 +78,15 @@ export default function UserDashboardlayout({
               </div>
             </div>
             <div className="flex items-center gap-4">
-              {isPro && !isExpired && (
+              {/* {isPro && !isExpired && ( */}
                 <Badge className="bg-green-100 text-green-800">
                   <Crown className="w-3 h-3 mr-1" />
                   Pro Active
                 </Badge>
-              )}
-              {isPro && isExpired && (
+              {/* )} */}
+              {/* {isPro && isExpired && ( */}
                 <Badge className="bg-red-100 text-red-800">Expired</Badge>
-              )}
+              {/* )} */}
               <Link href="/">
                 <Button variant="outline" size="sm">
                   <Home className="w-4 h-4 mr-2" />

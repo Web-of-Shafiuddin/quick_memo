@@ -85,3 +85,22 @@ export const userLogin = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, error: "Failed to log in" });
   }
 };
+
+export const validateToken = async (req: Request, res: Response) => {
+  try {
+    const user = await pool.query(
+      'SELECT user_id, name, email, mobile FROM "users" WHERE user_id = $1',
+      [req.userId]
+    );
+    if (user.rows.length === 0) {
+      return res
+        .status(401)
+        .json({ success: false, error: "Unauthorized" });
+    }
+    res.status(200).json({ success: true, data: user.rows[0] });
+  } catch (err) {
+    console.error("Error validating token:", err);
+    res.status(401).json({ success: false, error: "Unauthorized" });
+  }
+};
+

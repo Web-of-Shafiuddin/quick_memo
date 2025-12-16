@@ -1,7 +1,7 @@
 export interface User {
     user_id: string;
     email: string;
-    name: string | null;
+    name: string;
     mobile: string | null;
     createdAt: string;
     updatedAt: string;
