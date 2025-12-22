@@ -91,7 +91,7 @@ const OrdersPage = () => {
   const fetchUserProfile = async () => {
     if (!user?.user_id) return;
     try {
-      const response = await userService.getById(user.user_id);
+      const response = await userService.getById(user.user_id.toString());
       setUserProfile(response.data);
     } catch (error) {
       console.error('Error fetching user profile:', error);
