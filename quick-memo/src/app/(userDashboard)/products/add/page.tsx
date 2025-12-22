@@ -1,17 +1,30 @@
+'use client'
+import { useRouter } from "next/navigation";
 import ProductForm from "../_components/ProductForm";
-import { createProduct } from "../action";
+import { productService } from "@/services/productService";
 
-const ProductAddPage = () => {
+export default function AddProductPage() {
+  const router = useRouter();
+
+  const handleCreate = async (data: any) => {
+    try {
+      await productService.create(data);
+      alert('Product created successfully');
+      router.push('/products');
+    } catch (error: any) {
+      console.error('Error creating product:', error);
+      throw new Error(error.response?.data?.error || 'Failed to create product');
+    }
+  };
+
   return (
     <div className="container mx-auto py-10">
-      <ProductForm 
-        formAction={createProduct}
+      <ProductForm
+        onSubmit={handleCreate}
         title="Add New Product"
-        description="Fill in the details below to create a new product for your inventory."
+        description="Create a new product for your inventory."
         submitButtonText="Create Product"
       />
     </div>
   );
-};
-
-export default ProductAddPage;
+}

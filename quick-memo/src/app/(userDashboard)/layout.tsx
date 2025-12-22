@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import useAuthStore from "@/store/authStore";
 import { useShallow } from "zustand/react/shallow";
+import { useEffect } from "react";
 
 export default function ProtectedUserDashboardlayout({
   children,
@@ -30,24 +31,11 @@ export default function ProtectedUserDashboardlayout({
     }))
   );
 
-  if(isLoading === false && !user) {
-    router.push("/auth/login");
-  }
-
-  // useEffect(() => {
-  //   if (typeof window !== "undefined") {
-  //     const userData = localStorage.getItem("user");
-  //     if (userData) {
-  //       setUser(JSON.parse(userData));
-  //     }
-  //   }
-  // }, []);
-
-  // const isPro = user?.profile?.isPro;
-  // const proExpiry = user?.profile?.proExpiry
-  //   ? new Date(user.profile.proExpiry)
-  //   : null;
-  // const isExpired = proExpiry && proExpiry < new Date();
+  useEffect(() => {
+    if(isLoading === false && !user) {
+      router.push("/auth/login");
+    }
+  }, [isLoading, user, router]);
 
   const handleLogout = () => {
     localStorage.removeItem("authToken");
@@ -56,8 +44,16 @@ export default function ProtectedUserDashboardlayout({
     toast.success("Logged out successfully");
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div>Loading...</div>
+      </div>
+    );
+  }
+
   if (!user) {
-    return null; // or a loading spinner
+    return null;
   }
 
   return (
@@ -118,10 +114,22 @@ export default function ProtectedUserDashboardlayout({
                     Create New Memo
                   </Button>
                 </Link>
+                <Link href="/categories">
+                  <Button variant="outline" className="w-full justify-start">
+                    <FileText className="w-4 h-4 mr-2" />
+                    Categories
+                  </Button>
+                </Link>
                 <Link href="/products">
                   <Button variant="outline" className="w-full justify-start">
                     <FileText className="w-4 h-4 mr-2" />
                     Products
+                  </Button>
+                </Link>
+                <Link href="/customers">
+                  <Button variant="outline" className="w-full justify-start">
+                    <FileText className="w-4 h-4 mr-2" />
+                    Customers
                   </Button>
                 </Link>
                 <Link href="/orders">

@@ -4,14 +4,14 @@ import { User } from "@/types/User";
 interface AuthState {
   user: User | null;
   isLoading: boolean;
-  setUser: (userData: User) => void;  //remove created at and updated at from here
+  setUser: (userData: User) => void;
   clearUser: () => void;
   setLoading: (loading: boolean) => void;
 }
 
 const useAuthStore = create<AuthState>((set) => ({
   user: null, // Null if unauthenticated, object if authenticated
-  isLoading: false, 
+  isLoading: true, // Start as true to prevent premature redirects
 
   // --- Actions ---
 

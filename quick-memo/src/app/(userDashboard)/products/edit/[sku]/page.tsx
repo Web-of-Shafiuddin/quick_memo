@@ -1,25 +1,58 @@
-import { notFound } from "next/navigation";
+'use client'
+import { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
+import ProductForm from "../../_components/ProductForm";
+import { productService, Product } from "@/services/productService";
 
-import ProductForm from "../../_components/ProductForm"; // We will create this shared component next
-import { getProductBySku, updateProduct } from "../../action";
+export default function EditProductPage() {
+  const router = useRouter();
+  const params = useParams();
+  const id = params.sku as string; // This is actually product_id now
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
 
-// This is a Server Component that fetches the data
-// and passes it as a prop to the client form.
-export default async function EditProductPage({ params }: { params: { sku: string } }) {
-  const product = await getProductBySku(params.sku);
+  useEffect(() => {
+    fetchProduct();
+  }, [id]);
 
-  console.log("Product:", product, "sku: ", params.sku);
+  const fetchProduct = async () => {
+    try {
+      setLoading(true);
+      const response = await productService.getById(parseInt(id));
+      setProduct(response.data);
+    } catch (error: any) {
+      console.error('Error fetching product:', error);
+      alert(error.response?.data?.error || 'Failed to fetch product');
+      router.push('/products');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // If no product is found, show the 404 page
+  const handleUpdate = async (data: any) => {
+    try {
+      await productService.update(parseInt(id), data);
+      alert('Product updated successfully');
+      router.push('/products');
+    } catch (error: any) {
+      console.error('Error updating product:', error);
+      throw new Error(error.response?.data?.error || 'Failed to update product');
+    }
+  };
+
+  if (loading) {
+    return <div className="container mx-auto py-10">Loading...</div>;
+  }
+
   if (!product) {
-    notFound();
+    return <div className="container mx-auto py-10">Product not found</div>;
   }
 
   return (
     <div className="container mx-auto py-10">
-      <ProductForm 
-        product={product} 
-        formAction={updateProduct}
+      <ProductForm
+        product={product}
+        onSubmit={handleUpdate}
         title="Edit Product"
         description="Update the details for your product."
         submitButtonText="Update Product"

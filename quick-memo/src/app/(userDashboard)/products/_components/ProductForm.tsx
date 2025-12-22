@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useFormState } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,26 +19,79 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Product } from "../action";
+import { Product } from "@/services/productService";
+import { categoryService, Category } from "@/services/categoryService";
 
-// Define the props for our reusable form
 interface ProductFormProps {
-  product?: Product | null; // `product` is optional for the "Add" form
-  formAction: (prevState: any, formData: FormData) => Promise<any>;
+  product?: Product | null;
+  onSubmit: (data: any) => Promise<void>;
   title: string;
   description: string;
   submitButtonText: string;
 }
 
-const ProductForm = ({ product, formAction, title, description, submitButtonText }: ProductFormProps) => {
+const ProductForm = ({ product, onSubmit, title, description, submitButtonText }: ProductFormProps) => {
   const router = useRouter();
-  const [state, formActionWithState] = useFormState(formAction, null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    sku: product?.sku || "",
+    name: product?.name || "",
+    category_id: product?.category_id?.toString() || "",
+    price: product?.price?.toString() || "",
+    discount: product?.discount?.toString() || "0",
+    stock: product?.stock?.toString() || "0",
+    status: product?.status || "ACTIVE",
+    image: product?.image || "",
+  });
 
   useEffect(() => {
-    if (state?.redirect) {
-      router.push(state.redirect);
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await categoryService.getAll();
+      setCategories(response.data);
+    } catch (error: any) {
+      console.error('Error fetching categories:', error);
+      setError('Failed to load categories');
     }
-  }, [state, router]);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    try {
+      const submitData: any = {
+        name: formData.name,
+        category_id: parseInt(formData.category_id),
+        price: parseFloat(formData.price),
+        discount: parseFloat(formData.discount) || 0,
+        stock: parseInt(formData.stock) || 0,
+        status: formData.status as 'ACTIVE' | 'INACTIVE' | 'DISCONTINUED',
+        image: formData.image || null,
+      };
+
+      // Only include SKU if it's provided
+      if (formData.sku && formData.sku.trim()) {
+        submitData.sku = formData.sku.trim();
+      }
+
+      await onSubmit(submitData);
+    } catch (err: any) {
+      setError(err.message || 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChange = (name: string, value: string) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
   return (
     <Card className="max-w-2xl mx-auto">
@@ -48,20 +100,17 @@ const ProductForm = ({ product, formAction, title, description, submitButtonText
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={formActionWithState} className="space-y-6">
-          {/* The SKU is passed as a hidden input for the update action */}
-          {product && <input type="hidden" name="sku" value={product.sku} />}
-          
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="sku">SKU</Label>
+              <Label htmlFor="sku">SKU (Optional - Auto-generated if empty)</Label>
               <Input
                 id="sku"
                 name="sku"
-                value={product?.sku || ""} // Pre-fill if editing
-                readOnly // SKU should not be editable
-                placeholder="e.g., SKU001"
-                required
+                value={formData.sku}
+                onChange={(e) => handleChange('sku', e.target.value)}
+                readOnly={!!product}
+                placeholder="Leave empty for auto-generation"
               />
             </div>
             <div className="space-y-2">
@@ -69,7 +118,8 @@ const ProductForm = ({ product, formAction, title, description, submitButtonText
               <Input
                 id="name"
                 name="name"
-                defaultValue={product?.name || ""} // Use defaultValue for uncontrolled inputs
+                value={formData.name}
+                onChange={(e) => handleChange('name', e.target.value)}
                 placeholder="e.g., Wireless Mouse"
                 required
               />
@@ -82,22 +132,32 @@ const ProductForm = ({ product, formAction, title, description, submitButtonText
               id="image"
               name="image"
               type="url"
-              defaultValue={product?.image || ""}
+              value={formData.image}
+              onChange={(e) => handleChange('image', e.target.value)}
               placeholder="https://example.com/image.jpg"
-              required
             />
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
-              <Input
-                id="category"
-                name="category"
-                defaultValue={product?.category || ""}
-                placeholder="e.g., Electronics"
+              <Label htmlFor="category_id">Category</Label>
+              <Select
+                name="category_id"
+                value={formData.category_id}
+                onValueChange={(value) => handleChange('category_id', value)}
                 required
-              />
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.category_id} value={cat.category_id.toString()}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="price">Price ($)</Label>
@@ -107,7 +167,8 @@ const ProductForm = ({ product, formAction, title, description, submitButtonText
                 type="number"
                 step="0.01"
                 min="0"
-                defaultValue={product?.price || ""}
+                value={formData.price}
+                onChange={(e) => handleChange('price', e.target.value)}
                 required
               />
             </div>
@@ -122,7 +183,8 @@ const ProductForm = ({ product, formAction, title, description, submitButtonText
                 type="number"
                 min="0"
                 max="100"
-                defaultValue={product?.discount || ""}
+                value={formData.discount}
+                onChange={(e) => handleChange('discount', e.target.value)}
                 placeholder="e.g., 10"
               />
             </div>
@@ -133,33 +195,40 @@ const ProductForm = ({ product, formAction, title, description, submitButtonText
                 name="stock"
                 type="number"
                 min="0"
-                defaultValue={product?.stock || ""}
+                value={formData.stock}
+                onChange={(e) => handleChange('stock', e.target.value)}
                 required
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
-              <Select name="status" defaultValue={product?.status || ""} required>
+              <Select
+                name="status"
+                value={formData.status}
+                onValueChange={(value) => handleChange('status', value)}
+                required
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="In Stock">In Stock</SelectItem>
-                  <SelectItem value="Low Stock">Low Stock</SelectItem>
-                  <SelectItem value="Out of Stock">Out of Stock</SelectItem>
+                  <SelectItem value="ACTIVE">Active</SelectItem>
+                  <SelectItem value="INACTIVE">Inactive</SelectItem>
+                  <SelectItem value="DISCONTINUED">Discontinued</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
-          {state?.message && <p className="text-green-600">{state.message}</p>}
-          {state?.error && <p className="text-red-600">{state.error}</p>}
+          {error && <p className="text-red-600">{error}</p>}
 
           <div className="flex justify-end gap-4 pt-4">
             <Button type="button" variant="outline" onClick={() => router.back()}>
               Cancel
             </Button>
-            <Button type="submit">{submitButtonText}</Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? "Saving..." : submitButtonText}
+            </Button>
           </div>
         </form>
       </CardContent>

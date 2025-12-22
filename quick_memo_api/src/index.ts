@@ -5,6 +5,9 @@ import memoRoutes from "./routes/memoRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import productRoutes from "./routes/productRoutes.js";
+import customerRoutes from "./routes/customerRoutes.js";
+import orderRoutes from "./routes/orderRoutes.js";
 import { errorHandler, notFound } from "./middleware/errorHandler.js";
 import pool from "./config/database.js";
 import cookieParser from "cookie-parser";
@@ -39,6 +42,9 @@ app.use("/api/memos", memoRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/customers", customerRoutes);
+app.use("/api/orders", orderRoutes);
 
 // Error handling
 app.use(notFound);
