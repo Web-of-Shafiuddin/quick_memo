@@ -40,6 +40,7 @@ export default function ProtectedUserDashboardlayout({
   const handleLogout = () => {
     localStorage.removeItem("authToken");
     localStorage.removeItem("user");
+    useAuthStore.getState().clearUser();
     router.push("/auth/login");
     toast.success("Logged out successfully");
   };
@@ -108,12 +109,6 @@ export default function ProtectedUserDashboardlayout({
                 <CardTitle className="text-lg">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Link href="/dashboard/memos">
-                  <Button variant="outline" className="w-full justify-start">
-                    <FileText className="w-4 h-4 mr-2" />
-                    Create New Memo
-                  </Button>
-                </Link>
                 <Link href="/categories">
                   <Button variant="outline" className="w-full justify-start">
                     <FileText className="w-4 h-4 mr-2" />

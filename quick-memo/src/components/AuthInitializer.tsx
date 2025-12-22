@@ -17,11 +17,31 @@ const AuthInitializer = ({ children }: { children: React.ReactNode }) => {
     const checkSession = async () => {
       try {
         setLoading(true);
-        const user = await authService.validateSession();
-        if (user.success) {
-          setUser(user.data);
+
+        // First, check if user data exists in localStorage
+        const storedUser = localStorage.getItem('user');
+        const storedToken = localStorage.getItem('authToken');
+
+        if (storedUser && storedToken) {
+          // Validate the token with backend
+          try {
+            const response = await authService.validateSession();
+            if (response.success) {
+              setUser(response.data);
+              // Update localStorage with fresh data
+              localStorage.setItem('user', JSON.stringify(response.data));
+              return;
+            }
+          } catch (error) {
+            // Token invalid, clear storage
+            localStorage.removeItem('user');
+            localStorage.removeItem('authToken');
+          }
         }
-      } catch {
+
+        // No valid session
+        clearUser();
+      } catch (error) {
         clearUser();
       } finally {
         setLoading(false);

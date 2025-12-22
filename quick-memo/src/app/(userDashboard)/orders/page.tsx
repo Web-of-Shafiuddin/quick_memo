@@ -20,7 +20,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { orderService, Order } from "@/services/orderService";
-import { Plus, Eye, Edit } from "lucide-react";
+import { userService } from "@/services/userService";
+import { Plus, Eye, Edit, Printer } from "lucide-react";
+import OrderMemo from "@/components/order-memo";
+import useAuthStore from "@/store/authStore";
+import { useShallow } from "zustand/react/shallow";
+import { User } from "@/types/User";
 import {
   Dialog,
   DialogContent,
@@ -51,13 +56,21 @@ const getStatusBadgeVariant = (status: Order['order_status']) => {
 };
 
 const OrdersPage = () => {
+  const { user } = useAuthStore(
+    useShallow((state) => ({
+      user: state.user,
+    }))
+  );
+
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>("");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+  const [isMemoDialogOpen, setIsMemoDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
+  const [userProfile, setUserProfile] = useState<User | null>(null);
   const [editFormData, setEditFormData] = useState<{
     order_status: Order['order_status'];
     shipping_amount: number;
@@ -70,7 +83,20 @@ const OrdersPage = () => {
 
   useEffect(() => {
     fetchOrders();
-  }, []);
+    if (user?.user_id) {
+      fetchUserProfile();
+    }
+  }, [user]);
+
+  const fetchUserProfile = async () => {
+    if (!user?.user_id) return;
+    try {
+      const response = await userService.getById(user.user_id);
+      setUserProfile(response.data);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
 
   const fetchOrders = async (status?: string) => {
     try {
@@ -114,6 +140,17 @@ const OrdersPage = () => {
       tax_amount: parseFloat(order.tax_amount.toString()),
     });
     setIsEditDialogOpen(true);
+  };
+
+  const handlePrintMemo = async (orderId: number) => {
+    try {
+      const response = await orderService.getById(orderId);
+      setSelectedOrder(response.data);
+      setIsMemoDialogOpen(true);
+    } catch (error: any) {
+      console.error('Error fetching order for memo:', error);
+      alert(error.response?.data?.error || 'Failed to load memo');
+    }
   };
 
   const handleUpdateOrder = async () => {
@@ -217,6 +254,14 @@ const OrdersPage = () => {
                       title="View Details"
                     >
                       <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePrintMemo(order.transaction_id)}
+                      title="Print/Download Memo"
+                    >
+                      <Printer className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="outline"
@@ -415,6 +460,30 @@ const OrdersPage = () => {
               Update Order
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Print/Download Memo Dialog */}
+      <Dialog open={isMemoDialogOpen} onOpenChange={setIsMemoDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Order Memo/Invoice - #{selectedOrder?.transaction_id}</DialogTitle>
+            <DialogDescription>
+              Print or download the order memo as PDF
+            </DialogDescription>
+          </DialogHeader>
+          {selectedOrder && (
+            <OrderMemo
+              order={selectedOrder}
+              shopInfo={{
+                shopName: userProfile?.shop_name || user?.name || "Your Shop Name",
+                ownerName: userProfile?.shop_owner_name || user?.name || "Owner Name",
+                mobile: userProfile?.shop_mobile || user?.mobile || "01XXXXXXXXX",
+                email: userProfile?.shop_email || user?.email,
+                address: userProfile?.shop_address || undefined
+              }}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>

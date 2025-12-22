@@ -12,7 +12,16 @@ export const userService = {
         return response.data;
     },
 
-    update: async (id: string, data: { email?: string; name?: string }) => {
+    update: async (id: string, data: {
+        email?: string;
+        name?: string;
+        shop_name?: string;
+        shop_owner_name?: string;
+        shop_mobile?: string;
+        shop_email?: string;
+        shop_address?: string;
+        shop_logo_url?: string;
+    }) => {
         const response = await api.put<{ success: boolean; data: User }>(`/users/${id}`, data);
         return response.data;
     },

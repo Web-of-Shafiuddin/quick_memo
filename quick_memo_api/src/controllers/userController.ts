@@ -4,25 +4,11 @@ import pool from "../config/database.js";
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
     const result = await pool.query(`
-            SELECT u.id, u.email, u.name, u."createdAt", u."updatedAt",
-            COUNT(m.id)::int as memo_count
-            FROM "User" u
-            LEFT JOIN "Memo" m ON u.id = m."userId"
-            GROUP BY u.id
+            SELECT user_id, email, name, mobile, shop_name, shop_owner_name, shop_mobile, shop_email, shop_address, shop_logo_url, created_at, updated_at
+            FROM users
         `);
 
-    const users = result.rows.map((user) => ({
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-      _count: {
-        memos: user.memo_count,
-      },
-    }));
-
-    res.json({ success: true, data: users });
+    res.json({ success: true, data: result.rows });
   } catch (error) {
     console.error("Error fetching users:", error);
     res.status(500).json({ success: false, error: "Failed to fetch users" });
@@ -33,9 +19,10 @@ export const getUserById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    const userResult = await pool.query('SELECT * FROM "User" WHERE id = $1', [
-      id,
-    ]);
+    const userResult = await pool.query(
+      'SELECT user_id, name, email, mobile, shop_name, shop_owner_name, shop_mobile, shop_email, shop_address, shop_logo_url, created_at, updated_at FROM users WHERE user_id = $1',
+      [id]
+    );
 
     if (userResult.rows.length === 0) {
       return res.status(404).json({ success: false, error: "User not found" });
@@ -43,42 +30,7 @@ export const getUserById = async (req: Request, res: Response) => {
 
     const user = userResult.rows[0];
 
-    const memosResult = await pool.query(
-      `
-            SELECT m.*, 
-            c.id as category_id, c.name as category_name, c.color as category_color, c."createdAt" as category_created_at, c."updatedAt" as category_updated_at
-            FROM "Memo" m
-            LEFT JOIN "Category" c ON m."categoryId" = c.id
-            WHERE m."userId" = $1
-            ORDER BY m."updatedAt" DESC
-        `,
-      [id]
-    );
-
-    const memos = memosResult.rows.map((row) => {
-      const {
-        category_id,
-        category_name,
-        category_color,
-        category_created_at,
-        category_updated_at,
-        ...memoData
-      } = row;
-      return {
-        ...memoData,
-        category: category_id
-          ? {
-              id: category_id,
-              name: category_name,
-              color: category_color,
-              createdAt: category_created_at,
-              updatedAt: category_updated_at,
-            }
-          : null,
-      };
-    });
-
-    res.json({ success: true, data: { ...user, memos } });
+    res.json({ success: true, data: user });
   } catch (error) {
     console.error("Error fetching user:", error);
     res.status(500).json({ success: false, error: "Failed to fetch user" });
@@ -88,7 +40,7 @@ export const getUserById = async (req: Request, res: Response) => {
 export const updateUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { email, name } = req.body;
+    const { email, name, shop_name, shop_owner_name, shop_mobile, shop_email, shop_address, shop_logo_url } = req.body;
 
     const updates: string[] = [];
     const values: any[] = [];
@@ -102,15 +54,39 @@ export const updateUser = async (req: Request, res: Response) => {
       updates.push(`name = $${paramIndex++}`);
       values.push(name);
     }
+    if (shop_name !== undefined) {
+      updates.push(`shop_name = $${paramIndex++}`);
+      values.push(shop_name);
+    }
+    if (shop_owner_name !== undefined) {
+      updates.push(`shop_owner_name = $${paramIndex++}`);
+      values.push(shop_owner_name);
+    }
+    if (shop_mobile !== undefined) {
+      updates.push(`shop_mobile = $${paramIndex++}`);
+      values.push(shop_mobile);
+    }
+    if (shop_email !== undefined) {
+      updates.push(`shop_email = $${paramIndex++}`);
+      values.push(shop_email);
+    }
+    if (shop_address !== undefined) {
+      updates.push(`shop_address = $${paramIndex++}`);
+      values.push(shop_address);
+    }
+    if (shop_logo_url !== undefined) {
+      updates.push(`shop_logo_url = $${paramIndex++}`);
+      values.push(shop_logo_url);
+    }
 
     if (updates.length > 0) {
-      updates.push(`"updatedAt" = $${paramIndex++}`);
+      updates.push(`updated_at = $${paramIndex++}`);
       values.push(new Date());
 
       const result = await pool.query(
-        `UPDATE "User" SET ${updates.join(
+        `UPDATE users SET ${updates.join(
           ", "
-        )} WHERE id = $${paramIndex} RETURNING *`,
+        )} WHERE user_id = $${paramIndex} RETURNING *`,
         [...values, id]
       );
 
@@ -142,7 +118,7 @@ export const updateUser = async (req: Request, res: Response) => {
       // I'll stick to updating `updatedAt` always to be safe.
 
       const result = await pool.query(
-        `UPDATE "User" SET "updatedAt" = $1 WHERE id = $2 RETURNING *`,
+        `UPDATE users SET updated_at = $1 WHERE user_id = $2 RETURNING *`,
         [new Date(), id]
       );
       res.json({ success: true, data: result.rows[0] });
@@ -162,7 +138,7 @@ export const deleteUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    await pool.query('DELETE FROM "User" WHERE id = $1', [id]);
+    await pool.query('DELETE FROM users WHERE user_id = $1', [id]);
 
     res.json({ success: true, message: "User deleted successfully" });
   } catch (error) {

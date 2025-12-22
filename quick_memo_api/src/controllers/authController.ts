@@ -42,7 +42,7 @@ export const userLogin = async (req: Request, res: Response) => {
 
     // is user exists
     const user = await pool.query(
-      'SELECT user_id, name, email, mobile, password FROM "users" WHERE email = $1',
+      'SELECT user_id, name, email, mobile, password, shop_name, shop_owner_name, shop_mobile, shop_email, shop_address, shop_logo_url, created_at, updated_at FROM "users" WHERE email = $1',
       [email]
     );
     if (user.rows.length === 0) {
@@ -89,7 +89,7 @@ export const userLogin = async (req: Request, res: Response) => {
 export const validateToken = async (req: Request, res: Response) => {
   try {
     const user = await pool.query(
-      'SELECT user_id, name, email, mobile FROM "users" WHERE user_id = $1',
+      'SELECT user_id, name, email, mobile, shop_name, shop_owner_name, shop_mobile, shop_email, shop_address, shop_logo_url, created_at, updated_at FROM "users" WHERE user_id = $1',
       [req.userId]
     );
     if (user.rows.length === 0) {

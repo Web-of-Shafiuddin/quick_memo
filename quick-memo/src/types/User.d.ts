@@ -1,8 +1,16 @@
 export interface User {
-    user_id: string;
+    user_id: number | string;
     email: string;
     name: string;
     mobile: string | null;
-    createdAt: string;
-    updatedAt: string;
+    shop_name?: string | null;
+    shop_owner_name?: string | null;
+    shop_mobile?: string | null;
+    shop_email?: string | null;
+    shop_address?: string | null;
+    shop_logo_url?: string | null;
+    created_at?: string;
+    updated_at?: string;
+    createdAt?: string;
+    updatedAt?: string;
 }

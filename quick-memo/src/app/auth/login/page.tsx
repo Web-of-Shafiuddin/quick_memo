@@ -28,37 +28,32 @@ export default function LoginPage() {
         setIsLoading(true);
 
         try {
-            // Check against backend if user exists (checking by fetching all and filtering - NOT SECURE for production)
             const response = await authService.userLogin({ email, password });
-            const user = response.data;
 
-            if (user) {
-                // Mocking an auth token and structure since backend doesn't provide auth yet
-                const userData = {
-                    user_id: user.user_id,
-                    email: user.email,
-                    name: user.name,
-                    mobile: user.mobile || '',
-                    createdAt: user.createdAt,
-                    updatedAt: user.updatedAt,
-                    // profile: {
-                    //     profile_id: 'profile-' + user.user_id,
-                    //     shopName: 'My Shop',
-                    //     isPro: false,
-                    //     theme: 'default'
-                    // }
-                };
+            if (response.success && response.data) {
+                const user = response.data;
+                const token = (response as any).token; // Backend returns token in response
 
-                setUser(userData);
+                // Store token in localStorage if provided
+                if (token) {
+                    localStorage.setItem('authToken', token);
+                }
+
+                // Store user data in localStorage
+                localStorage.setItem('user', JSON.stringify(user));
+
+                // Update auth store
+                setUser(user);
 
                 toast.success('Login successful!');
                 router.push('/dashboard');
             } else {
-                toast.error('Invalid email or user not found');
+                toast.error('Invalid email or password');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Login error:', error);
-            toast.error('Failed to login. Please try again.');
+            const errorMessage = error.response?.data?.error || 'Failed to login. Please try again.';
+            toast.error(errorMessage);
         } finally {
             setIsLoading(false);
         }

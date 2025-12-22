@@ -125,7 +125,7 @@ const AddOrderPage = () => {
   };
 
   const calculateSubtotal = (item: OrderItem) => {
-    return (item.quantity * item.unit_price) - item.item_discount;
+    return (item.quantity * item.unit_price) - (item.item_discount || 0);
   };
 
   const calculateTotal = () => {
@@ -338,7 +338,7 @@ const AddOrderPage = () => {
                         <TableCell>{item.product?.sku}</TableCell>
                         <TableCell className="text-right">${item.unit_price.toFixed(2)}</TableCell>
                         <TableCell className="text-right">{item.quantity}</TableCell>
-                        <TableCell className="text-right">${item.item_discount.toFixed(2)}</TableCell>
+                        <TableCell className="text-right">${(item.item_discount || 0).toFixed(2)}</TableCell>
                         <TableCell className="text-right">${calculateSubtotal(item).toFixed(2)}</TableCell>
                         <TableCell className="text-right">
                           <Button
