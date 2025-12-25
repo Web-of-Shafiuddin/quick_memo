@@ -32,6 +32,7 @@ import { productService, Product } from "@/services/productService";
 import { orderService, Order, OrderItem } from "@/services/orderService";
 import { Plus, Trash2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface ExtendedOrderItem extends OrderItem {
   product?: Product;
@@ -41,6 +42,7 @@ const EditOrderPage = () => {
   const router = useRouter();
   const params = useParams();
   const orderId = parseInt(params.id as string);
+  const { format: formatPrice, symbol } = useCurrency();
 
   const [order, setOrder] = useState<Order | null>(null);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -365,9 +367,9 @@ const EditOrderPage = () => {
                         <TableCell>{item.name_snapshot}</TableCell>
                         <TableCell>{item.product_sku || item.product?.sku || '-'}</TableCell>
                         <TableCell className="text-right">{item.quantity}</TableCell>
-                        <TableCell className="text-right">${parseFloat(item.unit_price.toString()).toFixed(2)}</TableCell>
-                        <TableCell className="text-right">${parseFloat(item.item_discount.toString()).toFixed(2)}</TableCell>
-                        <TableCell className="text-right">${calculateSubtotal(item).toFixed(2)}</TableCell>
+                        <TableCell className="text-right">{formatPrice(parseFloat(item.unit_price.toString()))}</TableCell>
+                        <TableCell className="text-right">{formatPrice(parseFloat(item.item_discount.toString()))}</TableCell>
+                        <TableCell className="text-right">{formatPrice(calculateSubtotal(item))}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -384,7 +386,7 @@ const EditOrderPage = () => {
               <h3 className="text-lg font-semibold">Additional Charges (Editable)</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="shippingAmount">Shipping Amount ($) *</Label>
+                  <Label htmlFor="shippingAmount">{`Shipping Amount (${symbol}) *`}</Label>
                   <Input
                     type="number"
                     min="0"
@@ -395,7 +397,7 @@ const EditOrderPage = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="taxAmount">Tax Amount ($) *</Label>
+                  <Label htmlFor="taxAmount">{`Tax Amount (${symbol}) *`}</Label>
                   <Input
                     type="number"
                     min="0"
@@ -413,19 +415,19 @@ const EditOrderPage = () => {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Items Total:</span>
-                  <span>${orderItems.reduce((sum, item) => sum + calculateSubtotal(item), 0).toFixed(2)}</span>
+                  <span>{formatPrice(orderItems.reduce((sum, item) => sum + calculateSubtotal(item), 0))}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Shipping:</span>
-                  <span>${shippingAmount.toFixed(2)}</span>
+                  <span>{formatPrice(shippingAmount)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Tax:</span>
-                  <span>${taxAmount.toFixed(2)}</span>
+                  <span>{formatPrice(taxAmount)}</span>
                 </div>
                 <div className="flex justify-between font-bold text-lg border-t pt-2">
                   <span>Total Amount:</span>
-                  <span>${calculateTotal().toFixed(2)}</span>
+                  <span>{formatPrice(calculateTotal())}</span>
                 </div>
               </div>
             </div>

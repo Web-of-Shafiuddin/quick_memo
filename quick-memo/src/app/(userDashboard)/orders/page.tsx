@@ -62,7 +62,7 @@ const OrdersPage = () => {
       user: state.user,
     }))
   );
-  const { format: formatPrice } = useCurrency();
+  const { format: formatPrice, symbol } = useCurrency();
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -425,7 +425,7 @@ const OrdersPage = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="shipping_amount">Shipping Amount ($)</Label>
+                <Label htmlFor="shipping_amount">{`Shipping Amount (${symbol})`}</Label>
                 <Input
                   id="shipping_amount"
                   type="number"
@@ -437,7 +437,7 @@ const OrdersPage = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="tax_amount">Tax Amount ($)</Label>
+                <Label htmlFor="tax_amount">{`Tax Amount (${symbol})`}</Label>
                 <Input
                   id="tax_amount"
                   type="number"

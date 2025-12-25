@@ -23,6 +23,7 @@ import { ImageUpload } from "@/components/ImageUpload";
 import { Product } from "@/services/productService";
 import { categoryService, Category } from "@/services/categoryService";
 import { Plus, X } from "lucide-react";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface Attribute {
   attribute_name: string;
@@ -39,6 +40,7 @@ interface ProductFormProps {
 
 const ProductForm = ({ product, onSubmit, title, description, submitButtonText }: ProductFormProps) => {
   const router = useRouter();
+  const { symbol } = useCurrency();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -184,7 +186,7 @@ const ProductForm = ({ product, onSubmit, title, description, submitButtonText }
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="price">Price ($)</Label>
+              <Label htmlFor="price">{`Price (${symbol})`}</Label>
               <Input
                 id="price"
                 name="price"

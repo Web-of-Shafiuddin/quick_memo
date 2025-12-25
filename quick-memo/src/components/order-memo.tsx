@@ -4,6 +4,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Printer } from 'lucide-react';
 import { Order } from '@/services/orderService';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface OrderMemoProps {
   order: Order;
@@ -18,7 +19,8 @@ interface OrderMemoProps {
 }
 
 const OrderMemo: React.FC<OrderMemoProps> = ({ order, shopInfo, formatPrice }) => {
-  const format = formatPrice || ((amount: number) => `$${amount.toFixed(2)}`);
+  const { format: currencyFormat } = useCurrency();
+  const format = formatPrice || currencyFormat;
 
   const handlePrint = () => {
     window.print();

@@ -353,7 +353,7 @@ export default function SubscriptionPage() {
                       <span>{plan.name}</span>
                       <div className="text-right">
                         <span className="text-2xl font-bold">
-                          {isFree ? 'Free' : `৳${price.toLocaleString()}`}
+                          {isFree ? 'Free' : `$${price.toLocaleString()}`}
                         </span>
                         {!isFree && (
                           <span className="text-sm text-muted-foreground block">
@@ -572,7 +572,7 @@ export default function SubscriptionPage() {
                       <span className="mx-2">•</span>
                       <span>TxID: {request.transaction_id}</span>
                       <span className="mx-2">•</span>
-                      <span>৳{request.amount}</span>
+                      <span>${request.amount}</span>
                       <span className="mx-2">•</span>
                       <span>{getDurationLabel(request.duration_months || 1)}</span>
                     </div>

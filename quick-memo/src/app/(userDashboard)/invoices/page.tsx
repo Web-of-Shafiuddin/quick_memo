@@ -37,6 +37,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface Invoice {
     invoice_id: number;
@@ -86,6 +87,7 @@ interface InvoiceDetail extends Invoice {
 }
 
 export default function InvoicesPage() {
+    const { format: formatCurrency } = useCurrency();
     const [invoices, setInvoices] = useState<Invoice[]>([]);
     const [stats, setStats] = useState<InvoiceStats | null>(null);
     const [loading, setLoading] = useState(true);
@@ -189,10 +191,6 @@ export default function InvoicesPage() {
             month: 'short',
             day: 'numeric',
         });
-    };
-
-    const formatCurrency = (amount: number) => {
-        return `৳${amount.toLocaleString()}`;
     };
 
     const filteredInvoices = invoices.filter(invoice =>
