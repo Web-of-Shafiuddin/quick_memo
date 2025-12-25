@@ -104,3 +104,74 @@ export const validateToken = async (req: Request, res: Response) => {
   }
 };
 
+// Admin Authentication
+export const adminLogin = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+
+    // Check if admin exists
+    const admin = await pool.query(
+      'SELECT admin_id, name, email, password, created_at, updated_at FROM admins WHERE email = $1',
+      [email]
+    );
+    if (admin.rows.length === 0) {
+      return res
+        .status(401)
+        .json({ success: false, error: "Invalid email or password" });
+    }
+
+    // Validate password
+    const validPassword = await bcrypt.compare(password, admin.rows[0].password);
+    if (!validPassword) {
+      return res
+        .status(401)
+        .json({ success: false, error: "Invalid email or password" });
+    }
+
+    // Remove password from admin object
+    delete admin.rows[0].password;
+
+    // Generate token with admin flag
+    const token = process.env.JWT_SECRET
+      ? jwt.sign(
+          { admin_id: admin.rows[0].admin_id, role: "admin" },
+          process.env.JWT_SECRET,
+          { expiresIn: "8h" }
+        )
+      : null;
+
+    // Send cookie to the browser
+    if (token) {
+      res.cookie("quick_memo_admin_token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 8 * 60 * 60 * 1000, // 8 hours
+      });
+    }
+
+    res.status(200).json({ success: true, data: admin.rows[0], token });
+  } catch (error: any) {
+    console.error("Error admin login:", error);
+    res.status(500).json({ success: false, error: "Failed to log in" });
+  }
+};
+
+export const validateAdminToken = async (req: Request, res: Response) => {
+  try {
+    const admin = await pool.query(
+      'SELECT admin_id, name, email, created_at, updated_at FROM admins WHERE admin_id = $1',
+      [req.adminId]
+    );
+    if (admin.rows.length === 0) {
+      return res
+        .status(401)
+        .json({ success: false, error: "Unauthorized" });
+    }
+    res.status(200).json({ success: true, data: admin.rows[0] });
+  } catch (err) {
+    console.error("Error validating admin token:", err);
+    res.status(401).json({ success: false, error: "Unauthorized" });
+  }
+};
+
