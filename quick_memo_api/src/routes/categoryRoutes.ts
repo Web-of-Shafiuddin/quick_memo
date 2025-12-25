@@ -7,6 +7,7 @@ import {
     deleteCategory,
 } from '../controllers/categoryController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
+import { checkCategoryLimit } from '../middleware/subscriptionLimits.js';
 import { validate } from '../middleware/validator.js';
 import { createCategorySchema, updateCategorySchema } from '../schemas/categorySchema.js';
 
@@ -17,7 +18,7 @@ router.use(authMiddleware);
 
 router.get('/', getAllCategories);
 router.get('/:id', getCategoryById);
-router.post('/', validate(createCategorySchema), createCategory);
+router.post('/', checkCategoryLimit, validate(createCategorySchema), createCategory);
 router.put('/:id', validate(updateCategorySchema), updateCategory);
 router.delete('/:id', deleteCategory);
 

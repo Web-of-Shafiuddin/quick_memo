@@ -15,6 +15,7 @@ import {
   getVariantAttributes,
 } from '../controllers/productController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
+import { checkProductLimit } from '../middleware/subscriptionLimits.js';
 import { validate } from '../middleware/validator.js';
 import { createProductSchema, updateProductSchema, createVariantAttributeSchema } from '../schemas/productSchema.js';
 
@@ -27,7 +28,7 @@ router.use(authMiddleware);
 router.get('/', getAllProducts);
 router.get('/:id', getProductById);
 router.get('/sku/:sku', getProductBySku);
-router.post('/', validate(createProductSchema), createProduct);
+router.post('/', checkProductLimit, validate(createProductSchema), createProduct);
 router.put('/:id', validate(updateProductSchema), updateProduct);
 router.delete('/:id', deleteProduct);
 

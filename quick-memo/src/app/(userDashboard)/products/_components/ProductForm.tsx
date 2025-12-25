@@ -19,6 +19,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ImageUpload } from "@/components/ImageUpload";
 import { Product } from "@/services/productService";
 import { categoryService, Category } from "@/services/categoryService";
 import { Plus, X } from "lucide-react";
@@ -153,17 +154,13 @@ const ProductForm = ({ product, onSubmit, title, description, submitButtonText }
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="image">Image URL</Label>
-            <Input
-              id="image"
-              name="image"
-              type="url"
-              value={formData.image}
-              onChange={(e) => handleChange('image', e.target.value)}
-              placeholder="https://example.com/image.jpg"
-            />
-          </div>
+          <ImageUpload
+            value={formData.image}
+            onChange={(url) => handleChange('image', url)}
+            type="product"
+            label="Product Image"
+            disabled={loading}
+          />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">

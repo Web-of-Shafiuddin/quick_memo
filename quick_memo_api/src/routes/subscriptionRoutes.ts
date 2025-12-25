@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { authMiddleware, adminAuthMiddleware } from "../middleware/authMiddleware.js";
+import { getSubscriptionStatus } from "../middleware/subscriptionLimits.js";
 import {
   getPlans,
   getUserSubscription,
@@ -25,6 +26,7 @@ router.get('/plans', getPlans);
 // User routes (requires user auth)
 router.get('/my-subscription', authMiddleware, getUserSubscription);
 router.get('/my-requests', authMiddleware, getUserRequests);
+router.get('/status', authMiddleware, getSubscriptionStatus);
 router.post('/request', authMiddleware, submitRequest);
 router.post('/activate-free', authMiddleware, activateFreePlan);
 

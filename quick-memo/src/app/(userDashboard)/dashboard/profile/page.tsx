@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { CurrencySelector } from '@/components/CurrencySelector';
+import { ImageUpload } from '@/components/ImageUpload';
 import { userService } from '@/services/userService';
 import useAuthStore from '@/store/authStore';
 import { useShallow } from 'zustand/react/shallow';
@@ -31,6 +32,7 @@ const ProfilePage = () => {
     shop_mobile: '',
     shop_email: '',
     shop_address: '',
+    shop_logo_url: '',
   });
 
   useEffect(() => {
@@ -46,6 +48,7 @@ const ProfilePage = () => {
         shop_mobile: user.shop_mobile || '',
         shop_email: user.shop_email || '',
         shop_address: user.shop_address || '',
+        shop_logo_url: user.shop_logo_url || '',
       });
 
       // Then fetch fresh data from API
@@ -70,6 +73,7 @@ const ProfilePage = () => {
         shop_mobile: userData.shop_mobile || '',
         shop_email: userData.shop_email || '',
         shop_address: userData.shop_address || '',
+        shop_logo_url: userData.shop_logo_url || '',
       });
     } catch (error: any) {
       console.error('Error fetching profile:', error);
@@ -249,6 +253,15 @@ const ProfilePage = () => {
                   onChange={handleChange}
                   placeholder="Enter your shop address"
                   rows={3}
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <ImageUpload
+                  value={formData.shop_logo_url}
+                  onChange={(url) => setFormData({ ...formData, shop_logo_url: url })}
+                  type="logo"
+                  label="Shop Logo"
+                  disabled={loading}
                 />
               </div>
             </div>
