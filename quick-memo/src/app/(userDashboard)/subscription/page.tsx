@@ -25,7 +25,7 @@ interface Plan {
   max_products: number;
   max_orders_per_month: number;
   max_customers: number;
-  max_images_per_product: number;
+  can_upload_images: boolean;
   features: string[];
   badge_text: string | null;
   badge_color: string | null;
@@ -155,6 +155,20 @@ export default function SubscriptionPage() {
       transaction_id: '',
       phone_number: '',
     });
+  };
+
+  const handleActivateFreePlan = async () => {
+    try {
+      setSubmitting(true);
+      await api.post('/subscriptions/activate-free');
+      toast.success('Free plan activated successfully!');
+      fetchData();
+    } catch (error: any) {
+      console.error('Error activating free plan:', error);
+      toast.error(error.response?.data?.error || 'Failed to activate free plan');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleSubmitRequest = async (e: React.FormEvent) => {
@@ -371,8 +385,8 @@ export default function SubscriptionPage() {
                         <span className="font-medium">{formatLimit(plan.max_categories)}</span>
                       </li>
                       <li className="flex justify-between">
-                        <span className="text-muted-foreground">Images/Product</span>
-                        <span className="font-medium">{formatLimit(plan.max_images_per_product)}</span>
+                        <span className="text-muted-foreground">Image Upload</span>
+                        <span className="font-medium">{plan.can_upload_images ? 'Yes' : 'No'}</span>
                       </li>
                     </ul>
 
@@ -385,6 +399,18 @@ export default function SubscriptionPage() {
                           </div>
                         ))}
                       </div>
+                    )}
+
+                    {isFree && !isCurrent && !subscription && (
+                      <Button
+                        className="w-full"
+                        variant="outline"
+                        onClick={() => handleActivateFreePlan()}
+                        disabled={requests.some(r => r.status === 'PENDING')}
+                      >
+                        <Check className="w-4 h-4 mr-2" />
+                        Activate Free Plan
+                      </Button>
                     )}
 
                     {!isFree && !isCurrent && (

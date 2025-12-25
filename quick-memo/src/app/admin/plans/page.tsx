@@ -25,7 +25,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Plus, Edit, Trash2, Crown, Star } from 'lucide-react';
+import { Plus, Edit, Trash2, Star } from 'lucide-react';
 import { toast } from 'sonner';
 import adminApi from '@/lib/adminApi';
 
@@ -40,7 +40,7 @@ interface Plan {
     max_products: number;
     max_orders_per_month: number;
     max_customers: number;
-    max_images_per_product: number;
+    can_upload_images: boolean;
     features: string[];
     badge_text: string | null;
     badge_color: string | null;
@@ -59,7 +59,7 @@ const initialFormState = {
     max_products: -1,
     max_orders_per_month: -1,
     max_customers: -1,
-    max_images_per_product: 1,
+    can_upload_images: false,
     features: [] as string[],
     badge_text: '',
     badge_color: '',
@@ -119,7 +119,7 @@ export default function AdminPlansPage() {
             max_products: plan.max_products,
             max_orders_per_month: plan.max_orders_per_month,
             max_customers: plan.max_customers,
-            max_images_per_product: plan.max_images_per_product,
+            can_upload_images: plan.can_upload_images,
             features: plan.features,
             badge_text: plan.badge_text || '',
             badge_color: plan.badge_color || '',
@@ -421,13 +421,16 @@ export default function AdminPlansPage() {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-slate-300">Max Images/Product</Label>
-                                <Input
-                                    type="number"
-                                    value={formData.max_images_per_product}
-                                    onChange={(e) => setFormData({ ...formData, max_images_per_product: parseInt(e.target.value) })}
-                                    className="bg-slate-700 border-slate-600"
-                                />
+                                <Label className="text-slate-300">Image Upload</Label>
+                                <div className="flex items-center gap-2 h-10">
+                                    <Switch
+                                        checked={formData.can_upload_images}
+                                        onCheckedChange={(checked) => setFormData({ ...formData, can_upload_images: checked })}
+                                    />
+                                    <span className="text-slate-400 text-sm">
+                                        {formData.can_upload_images ? 'Enabled' : 'Disabled'}
+                                    </span>
+                                </div>
                             </div>
                             <div className="space-y-2">
                                 <Label className="text-slate-300">Badge Text</Label>

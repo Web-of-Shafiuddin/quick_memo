@@ -5,6 +5,7 @@ import {
   getUserSubscription,
   getUserRequests,
   submitRequest,
+  activateFreePlan,
   getAllRequests,
   approveRequest,
   rejectRequest,
@@ -25,6 +26,7 @@ router.get('/plans', getPlans);
 router.get('/my-subscription', authMiddleware, getUserSubscription);
 router.get('/my-requests', authMiddleware, getUserRequests);
 router.post('/request', authMiddleware, submitRequest);
+router.post('/activate-free', authMiddleware, activateFreePlan);
 
 // Admin routes (requires admin auth)
 router.get('/admin/requests', adminAuthMiddleware, getAllRequests);

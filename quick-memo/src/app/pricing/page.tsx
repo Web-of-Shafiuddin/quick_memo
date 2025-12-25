@@ -30,7 +30,7 @@ interface Plan {
     max_products: number;
     max_orders_per_month: number;
     max_customers: number;
-    max_images_per_product: number;
+    can_upload_images: boolean;
     features: string[];
     badge_text: string | null;
     badge_color: string | null;
@@ -309,8 +309,8 @@ export default function PricingPage() {
                                                 <span className="font-medium">{formatLimit(plan.max_categories)}</span>
                                             </div>
                                             <div className="flex justify-between py-2">
-                                                <span className="text-gray-600">Images/Product</span>
-                                                <span className="font-medium">{formatLimit(plan.max_images_per_product)}</span>
+                                                <span className="text-gray-600">Image Upload</span>
+                                                <span className="font-medium">{plan.can_upload_images ? 'Yes' : 'No'}</span>
                                             </div>
                                         </div>
 

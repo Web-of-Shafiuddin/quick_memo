@@ -8,7 +8,7 @@ export const getPlans = async (req: Request, res: Response) => {
   try {
     const result = await pool.query(
       `SELECT plan_id, name, description, monthly_price, half_yearly_price, yearly_price,
-              max_categories, max_products, max_orders_per_month, max_customers, max_images_per_product,
+              max_categories, max_products, max_orders_per_month, max_customers, can_upload_images,
               features, badge_text, badge_color, is_popular, is_active
        FROM subscription_plans
        WHERE is_active = true
@@ -78,6 +78,16 @@ export const submitRequest = async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: "Invalid or inactive plan" });
     }
 
+    const plan = planResult.rows[0];
+
+    // If it's a free plan, redirect to activateFreePlan
+    if (plan.monthly_price === 0 || plan.monthly_price === '0' || parseFloat(plan.monthly_price) === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "Free plans don't require payment. Use the activate free plan option instead."
+      });
+    }
+
     // Check if user has a pending request
     const pendingResult = await pool.query(
       "SELECT * FROM subscription_requests WHERE user_id = $1 AND status = 'PENDING'",
@@ -103,6 +113,64 @@ export const submitRequest = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error submitting request:", error);
     res.status(500).json({ success: false, error: "Failed to submit request" });
+  }
+};
+
+// Activate free plan (no payment required)
+export const activateFreePlan = async (req: Request, res: Response) => {
+  try {
+    const userId = req.userId;
+
+    // Find the free plan
+    const planResult = await pool.query(
+      'SELECT * FROM subscription_plans WHERE monthly_price = 0 AND is_active = true LIMIT 1'
+    );
+
+    if (planResult.rows.length === 0) {
+      return res.status(400).json({ success: false, error: "No free plan available" });
+    }
+
+    const freePlan = planResult.rows[0];
+
+    // Check if user already has an active subscription
+    const existingSubResult = await pool.query(
+      "SELECT * FROM subscriptions WHERE user_id = $1 AND status = 'ACTIVE'",
+      [userId]
+    );
+
+    if (existingSubResult.rows.length > 0) {
+      return res.status(400).json({
+        success: false,
+        error: "You already have an active subscription"
+      });
+    }
+
+    // Calculate subscription dates (free plan is perpetual, but we set a far future date)
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setFullYear(endDate.getFullYear() + 100); // Effectively forever
+
+    // Create the subscription directly (no payment verification needed)
+    await pool.query(
+      `INSERT INTO subscriptions (user_id, plan_id, start_date, end_date, status)
+       VALUES ($1, $2, $3, $4, 'ACTIVE')
+       ON CONFLICT (user_id)
+       DO UPDATE SET plan_id = $2, start_date = $3, end_date = $4, status = 'ACTIVE', updated_at = CURRENT_TIMESTAMP`,
+      [userId, freePlan.plan_id, startDate, endDate]
+    );
+
+    res.status(201).json({
+      success: true,
+      message: "Free plan activated successfully",
+      data: {
+        plan_name: freePlan.name,
+        start_date: startDate,
+        end_date: endDate
+      }
+    });
+  } catch (error) {
+    console.error("Error activating free plan:", error);
+    res.status(500).json({ success: false, error: "Failed to activate free plan" });
   }
 };
 
@@ -315,7 +383,7 @@ export const createPlan = async (req: Request, res: Response) => {
   try {
     const {
       name, description, monthly_price, half_yearly_price, yearly_price,
-      max_categories, max_products, max_orders_per_month, max_customers, max_images_per_product,
+      max_categories, max_products, max_orders_per_month, max_customers, can_upload_images,
       features, badge_text, badge_color, display_order, is_popular, is_active
     } = req.body;
 
@@ -323,16 +391,19 @@ export const createPlan = async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: "Name and monthly price are required" });
     }
 
+    // Free plans cannot upload images by default
+    const canUpload = monthly_price > 0 ? (can_upload_images !== false) : false;
+
     const result = await pool.query(
       `INSERT INTO subscription_plans
        (name, description, monthly_price, half_yearly_price, yearly_price,
-        max_categories, max_products, max_orders_per_month, max_customers, max_images_per_product,
+        max_categories, max_products, max_orders_per_month, max_customers, can_upload_images,
         features, badge_text, badge_color, display_order, is_popular, is_active)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
        RETURNING *`,
       [
         name, description || null, monthly_price, half_yearly_price || null, yearly_price || null,
-        max_categories || -1, max_products || -1, max_orders_per_month || -1, max_customers || -1, max_images_per_product || 1,
+        max_categories || -1, max_products || -1, max_orders_per_month || -1, max_customers || -1, canUpload,
         features ? JSON.stringify(features) : '[]', badge_text || null, badge_color || null, display_order || 0, is_popular || false, is_active !== false
       ]
     );
@@ -353,7 +424,7 @@ export const updatePlan = async (req: Request, res: Response) => {
     const { id } = req.params;
     const {
       name, description, monthly_price, half_yearly_price, yearly_price,
-      max_categories, max_products, max_orders_per_month, max_customers, max_images_per_product,
+      max_categories, max_products, max_orders_per_month, max_customers, can_upload_images,
       features, badge_text, badge_color, display_order, is_popular, is_active
     } = req.body;
 
@@ -370,7 +441,7 @@ export const updatePlan = async (req: Request, res: Response) => {
     if (max_products !== undefined) { updates.push(`max_products = $${paramIndex++}`); values.push(max_products); }
     if (max_orders_per_month !== undefined) { updates.push(`max_orders_per_month = $${paramIndex++}`); values.push(max_orders_per_month); }
     if (max_customers !== undefined) { updates.push(`max_customers = $${paramIndex++}`); values.push(max_customers); }
-    if (max_images_per_product !== undefined) { updates.push(`max_images_per_product = $${paramIndex++}`); values.push(max_images_per_product); }
+    if (can_upload_images !== undefined) { updates.push(`can_upload_images = $${paramIndex++}`); values.push(can_upload_images); }
     if (features !== undefined) { updates.push(`features = $${paramIndex++}`); values.push(JSON.stringify(features)); }
     if (badge_text !== undefined) { updates.push(`badge_text = $${paramIndex++}`); values.push(badge_text); }
     if (badge_color !== undefined) { updates.push(`badge_color = $${paramIndex++}`); values.push(badge_color); }
