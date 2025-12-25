@@ -139,6 +139,12 @@ export default function ProtectedUserDashboardlayout({
                     Profile Settings
                   </Button>
                 </Link>
+                <Link href="/subscription">
+                  <Button variant="outline" className="w-full justify-start">
+                    <Crown className="w-4 h-4 mr-2" />
+                    Subscription
+                  </Button>
+                </Link>
                 <Button
                   variant="outline"
                   className="w-full justify-start"

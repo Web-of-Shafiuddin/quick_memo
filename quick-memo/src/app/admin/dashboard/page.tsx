@@ -1,96 +1,50 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import AdminLayout from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Shield, LogOut, Users, Package, ShoppingCart } from 'lucide-react';
-import { toast } from 'sonner';
+import { Users, Package, ShoppingCart, CreditCard, Clock, TrendingUp } from 'lucide-react';
+import adminApi from '@/lib/adminApi';
 
-interface Admin {
-    admin_id: number;
-    name: string;
-    email: string;
-    created_at: string;
-    updated_at: string;
+interface DashboardStats {
+    total_users: number;
+    new_users_30d: number;
+    active_subscriptions: number;
+    pending_requests: number;
+    total_orders: number;
+    total_products: number;
+    total_revenue: number;
 }
 
 export default function AdminDashboardPage() {
-    const [admin, setAdmin] = useState<Admin | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const router = useRouter();
+    const [stats, setStats] = useState<DashboardStats | null>(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Check if admin is logged in
-        const storedAdmin = localStorage.getItem('admin');
-        const storedToken = localStorage.getItem('adminToken');
+        fetchStats();
+    }, []);
 
-        if (!storedAdmin || !storedToken) {
-            router.push('/admin/login');
-            return;
-        }
-
+    const fetchStats = async () => {
         try {
-            setAdmin(JSON.parse(storedAdmin));
+            const response = await adminApi.get('/admin/dashboard/stats');
+            setStats(response.data.data);
         } catch (error) {
-            router.push('/admin/login');
+            console.error('Error fetching stats:', error);
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
-    }, [router]);
-
-    const handleLogout = () => {
-        localStorage.removeItem('admin');
-        localStorage.removeItem('adminToken');
-        toast.success('Logged out successfully');
-        router.push('/admin/login');
     };
 
-    if (isLoading) {
-        return (
-            <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-                <div className="text-white">Loading...</div>
-            </div>
-        );
-    }
-
-    if (!admin) {
-        return null;
-    }
-
     return (
-        <div className="min-h-screen bg-slate-900">
-            {/* Header */}
-            <header className="bg-slate-800 border-b border-slate-700">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center">
-                                <Shield className="w-5 h-5 text-white" />
-                            </div>
-                            <div>
-                                <h1 className="text-xl font-bold text-white">Admin Dashboard</h1>
-                                <p className="text-sm text-slate-400">
-                                    Welcome, {admin.name}
-                                </p>
-                            </div>
-                        </div>
-                        <Button
-                            variant="outline"
-                            onClick={handleLogout}
-                            className="border-slate-600 text-slate-200 hover:bg-slate-700"
-                        >
-                            <LogOut className="w-4 h-4 mr-2" />
-                            Logout
-                        </Button>
-                    </div>
+        <AdminLayout>
+            <div className="space-y-6">
+                <div>
+                    <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+                    <p className="text-slate-400">Overview of your platform</p>
                 </div>
-            </header>
 
-            {/* Main Content */}
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <Card className="bg-slate-800 border-slate-700">
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                             <CardTitle className="text-sm font-medium text-slate-400">
@@ -99,20 +53,74 @@ export default function AdminDashboardPage() {
                             <Users className="h-4 w-4 text-blue-500" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold text-white">--</div>
-                            <p className="text-xs text-slate-500">Registered users</p>
+                            <div className="text-2xl font-bold text-white">
+                                {loading ? '--' : stats?.total_users || 0}
+                            </div>
+                            <p className="text-xs text-slate-500">
+                                +{loading ? '--' : stats?.new_users_30d || 0} in last 30 days
+                            </p>
                         </CardContent>
                     </Card>
 
                     <Card className="bg-slate-800 border-slate-700">
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                             <CardTitle className="text-sm font-medium text-slate-400">
-                                Total Products
+                                Active Subscriptions
                             </CardTitle>
-                            <Package className="h-4 w-4 text-green-500" />
+                            <CreditCard className="h-4 w-4 text-green-500" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold text-white">--</div>
+                            <div className="text-2xl font-bold text-white">
+                                {loading ? '--' : stats?.active_subscriptions || 0}
+                            </div>
+                            <p className="text-xs text-slate-500">Paying customers</p>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="bg-slate-800 border-slate-700">
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <CardTitle className="text-sm font-medium text-slate-400">
+                                Pending Requests
+                            </CardTitle>
+                            <Clock className="h-4 w-4 text-yellow-500" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold text-white">
+                                {loading ? '--' : stats?.pending_requests || 0}
+                            </div>
+                            <p className="text-xs text-slate-500">Awaiting verification</p>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="bg-slate-800 border-slate-700">
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <CardTitle className="text-sm font-medium text-slate-400">
+                                Total Revenue
+                            </CardTitle>
+                            <TrendingUp className="h-4 w-4 text-purple-500" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold text-white">
+                                ৳{loading ? '--' : stats?.total_revenue || 0}
+                            </div>
+                            <p className="text-xs text-slate-500">From subscriptions</p>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Secondary Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Card className="bg-slate-800 border-slate-700">
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <CardTitle className="text-sm font-medium text-slate-400">
+                                Total Products
+                            </CardTitle>
+                            <Package className="h-4 w-4 text-indigo-500" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold text-white">
+                                {loading ? '--' : stats?.total_products || 0}
+                            </div>
                             <p className="text-xs text-slate-500">Across all users</p>
                         </CardContent>
                     </Card>
@@ -122,44 +130,76 @@ export default function AdminDashboardPage() {
                             <CardTitle className="text-sm font-medium text-slate-400">
                                 Total Orders
                             </CardTitle>
-                            <ShoppingCart className="h-4 w-4 text-purple-500" />
+                            <ShoppingCart className="h-4 w-4 text-pink-500" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold text-white">--</div>
+                            <div className="text-2xl font-bold text-white">
+                                {loading ? '--' : stats?.total_orders || 0}
+                            </div>
                             <p className="text-xs text-slate-500">All time orders</p>
                         </CardContent>
                     </Card>
                 </div>
 
-                {/* Admin Info */}
+                {/* Quick Links */}
                 <Card className="bg-slate-800 border-slate-700">
                     <CardHeader>
-                        <CardTitle className="text-white">Admin Information</CardTitle>
+                        <CardTitle className="text-white">Quick Actions</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <p className="text-sm text-slate-400">Name</p>
-                                <p className="text-white font-medium">{admin.name}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-slate-400">Email</p>
-                                <p className="text-white font-medium">{admin.email}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-slate-400">Admin ID</p>
-                                <p className="text-white font-medium">{admin.admin_id}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-slate-400">Member Since</p>
-                                <p className="text-white font-medium">
-                                    {new Date(admin.created_at).toLocaleDateString()}
-                                </p>
-                            </div>
+                    <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <a
+                                href="/admin/subscriptions"
+                                className="p-4 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-yellow-600 rounded-lg">
+                                        <Clock className="h-5 w-5 text-white" />
+                                    </div>
+                                    <div>
+                                        <div className="font-medium text-white">Review Requests</div>
+                                        <div className="text-sm text-slate-400">
+                                            {stats?.pending_requests || 0} pending
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                            <a
+                                href="/admin/users"
+                                className="p-4 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-blue-600 rounded-lg">
+                                        <Users className="h-5 w-5 text-white" />
+                                    </div>
+                                    <div>
+                                        <div className="font-medium text-white">Manage Users</div>
+                                        <div className="text-sm text-slate-400">
+                                            {stats?.total_users || 0} total
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                            <a
+                                href="/admin/subscriptions"
+                                className="p-4 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-green-600 rounded-lg">
+                                        <CreditCard className="h-5 w-5 text-white" />
+                                    </div>
+                                    <div>
+                                        <div className="font-medium text-white">Subscriptions</div>
+                                        <div className="text-sm text-slate-400">
+                                            {stats?.active_subscriptions || 0} active
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
                         </div>
                     </CardContent>
                 </Card>
-            </main>
-        </div>
+            </div>
+        </AdminLayout>
     );
 }
