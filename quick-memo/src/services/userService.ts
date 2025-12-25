@@ -15,6 +15,8 @@ export const userService = {
     update: async (id: string, data: {
         email?: string;
         name?: string;
+        mobile?: string;
+        preferred_currency?: string;
         shop_name?: string;
         shop_owner_name?: string;
         shop_mobile?: string;

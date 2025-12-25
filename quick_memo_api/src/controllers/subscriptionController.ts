@@ -191,7 +191,8 @@ export const getAllRequests = async (req: Request, res: Response) => {
     `;
 
     const params: any[] = [];
-    if (status) {
+    // Only filter by status if it's not 'ALL' and is provided
+    if (status && status !== 'ALL') {
       query += ' WHERE sr.status = $1';
       params.push(status);
     }
@@ -330,9 +331,9 @@ export const getStats = async (req: Request, res: Response) => {
   try {
     const stats = await pool.query(`
       SELECT
-        (SELECT COUNT(*) FROM subscription_requests WHERE status = 'PENDING') as pending_requests,
-        (SELECT COUNT(*) FROM subscriptions WHERE status = 'ACTIVE') as active_subscriptions,
-        (SELECT COUNT(*) FROM users) as total_users,
+        (SELECT COUNT(*) FROM subscription_requests WHERE status = 'PENDING') as pending,
+        (SELECT COUNT(*) FROM subscription_requests WHERE status = 'APPROVED') as approved,
+        (SELECT COUNT(*) FROM subscription_requests WHERE status = 'REJECTED') as rejected,
         (SELECT COALESCE(SUM(amount), 0) FROM subscription_requests WHERE status = 'APPROVED') as total_revenue
     `);
 

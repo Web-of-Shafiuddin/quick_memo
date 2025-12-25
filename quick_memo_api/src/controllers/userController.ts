@@ -20,7 +20,7 @@ export const getUserById = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     const userResult = await pool.query(
-      'SELECT user_id, name, email, mobile, shop_name, shop_owner_name, shop_mobile, shop_email, shop_address, shop_logo_url, created_at, updated_at FROM users WHERE user_id = $1',
+      'SELECT user_id, name, email, mobile, preferred_currency, shop_name, shop_owner_name, shop_mobile, shop_email, shop_address, shop_logo_url, created_at, updated_at FROM users WHERE user_id = $1',
       [id]
     );
 
@@ -40,7 +40,7 @@ export const getUserById = async (req: Request, res: Response) => {
 export const updateUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { email, name, shop_name, shop_owner_name, shop_mobile, shop_email, shop_address, shop_logo_url } = req.body;
+    const { email, name, mobile, preferred_currency, shop_name, shop_owner_name, shop_mobile, shop_email, shop_address, shop_logo_url } = req.body;
 
     const updates: string[] = [];
     const values: any[] = [];
@@ -53,6 +53,14 @@ export const updateUser = async (req: Request, res: Response) => {
     if (name !== undefined) {
       updates.push(`name = $${paramIndex++}`);
       values.push(name);
+    }
+    if (mobile !== undefined) {
+      updates.push(`mobile = $${paramIndex++}`);
+      values.push(mobile);
+    }
+    if (preferred_currency !== undefined) {
+      updates.push(`preferred_currency = $${paramIndex++}`);
+      values.push(preferred_currency);
     }
     if (shop_name !== undefined) {
       updates.push(`shop_name = $${paramIndex++}`);
