@@ -163,4 +163,65 @@ export const productService = {
     }>(`/products/${id}/attributes`, data);
     return response.data;
   },
+
+  // Variant management
+  getVariants: async (parentId: number) => {
+    const response = await api.get<{ success: boolean; data: ProductFromAPI[] }>(
+      `/products/${parentId}/variants`
+    );
+    return {
+      ...response.data,
+      data: response.data.data.map(transformProduct),
+    };
+  },
+
+  createVariant: async (
+    parentId: number,
+    data: {
+      sku?: string;
+      name?: string;
+      price: number;
+      discount?: number;
+      stock?: number;
+      status?: 'ACTIVE' | 'INACTIVE' | 'DISCONTINUED';
+      image?: string | null;
+      attributes?: { attribute_name: string; attribute_value: string }[];
+    }
+  ) => {
+    const response = await api.post<{ success: boolean; data: ProductFromAPI }>(
+      `/products/${parentId}/variants`,
+      data
+    );
+    return {
+      ...response.data,
+      data: transformProduct(response.data.data),
+    };
+  },
+
+  // Attribute management
+  getAttributes: async (productId: number) => {
+    const response = await api.get<{ success: boolean; data: VariantAttribute[] }>(
+      `/products/${productId}/attributes`
+    );
+    return response.data;
+  },
+
+  updateAttribute: async (
+    productId: number,
+    attributeId: number,
+    data: { attribute_name?: string; attribute_value?: string }
+  ) => {
+    const response = await api.put<{ success: boolean; data: VariantAttribute }>(
+      `/products/${productId}/attributes/${attributeId}`,
+      data
+    );
+    return response.data;
+  },
+
+  deleteAttribute: async (productId: number, attributeId: number) => {
+    const response = await api.delete<{ success: boolean; message: string }>(
+      `/products/${productId}/attributes/${attributeId}`
+    );
+    return response.data;
+  },
 };

@@ -296,3 +296,246 @@ export const updateStock = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, error: 'Failed to update stock' });
   }
 };
+
+// Get all variants for a product
+export const getProductVariants = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.userId;
+
+    // Verify parent product belongs to user
+    const productCheck = await pool.query(
+      'SELECT product_id FROM products WHERE product_id = $1 AND user_id = $2',
+      [id, userId]
+    );
+
+    if (productCheck.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Product not found' });
+    }
+
+    // Get all variant products
+    const variantsResult = await pool.query(
+      `SELECT p.*, c.name as category_name
+       FROM products p
+       LEFT JOIN categories c ON p.category_id = c.category_id
+       WHERE p.parent_product_id = $1`,
+      [id]
+    );
+
+    // Get attributes for each variant
+    const variantsWithAttributes = await Promise.all(
+      variantsResult.rows.map(async (variant) => {
+        const attributesResult = await pool.query(
+          'SELECT * FROM product_variant_attributes WHERE product_id = $1',
+          [variant.product_id]
+        );
+        return {
+          ...variant,
+          attributes: attributesResult.rows,
+        };
+      })
+    );
+
+    res.json({ success: true, data: variantsWithAttributes });
+  } catch (error) {
+    console.error('Error fetching product variants:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch variants' });
+  }
+};
+
+// Create a variant for a product
+export const createVariant = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.userId;
+    let {
+      sku,
+      name,
+      price,
+      discount = 0,
+      stock = 0,
+      status = 'ACTIVE',
+      image,
+      attributes = [],
+    } = req.body;
+
+    // Verify parent product belongs to user and get its category
+    const parentProduct = await pool.query(
+      'SELECT product_id, category_id, name FROM products WHERE product_id = $1 AND user_id = $2 AND parent_product_id IS NULL',
+      [id, userId]
+    );
+
+    if (parentProduct.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Parent product not found or is already a variant' });
+    }
+
+    const parent = parentProduct.rows[0];
+
+    // Auto-generate SKU for variant if not provided
+    if (!sku) {
+      const timestamp = Date.now();
+      const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+      sku = `VAR-${id}-${timestamp}-${random}`;
+    }
+
+    // Use parent name if no name provided
+    const variantName = name || `${parent.name} Variant`;
+
+    // Create the variant product
+    const variantResult = await pool.query(
+      `INSERT INTO products
+       (user_id, sku, name, category_id, price, discount, stock, status, image, parent_product_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+       RETURNING *`,
+      [userId, sku, variantName, parent.category_id, price, discount, stock, status, image || null, id]
+    );
+
+    const variant = variantResult.rows[0];
+
+    // Add attributes if provided
+    const createdAttributes = [];
+    for (const attr of attributes) {
+      if (attr.attribute_name && attr.attribute_value) {
+        const attrResult = await pool.query(
+          `INSERT INTO product_variant_attributes (product_id, attribute_name, attribute_value)
+           VALUES ($1, $2, $3)
+           RETURNING *`,
+          [variant.product_id, attr.attribute_name, attr.attribute_value]
+        );
+        createdAttributes.push(attrResult.rows[0]);
+      }
+    }
+
+    res.status(201).json({
+      success: true,
+      data: {
+        ...variant,
+        attributes: createdAttributes,
+      },
+    });
+  } catch (error: any) {
+    console.error('Error creating variant:', error);
+    if (error.code === '23505') {
+      return res.status(409).json({ success: false, error: 'Variant SKU already exists' });
+    }
+    res.status(500).json({ success: false, error: 'Failed to create variant' });
+  }
+};
+
+// Update a variant attribute
+export const updateVariantAttribute = async (req: Request, res: Response) => {
+  try {
+    const { id, attributeId } = req.params;
+    const { attribute_name, attribute_value } = req.body;
+    const userId = req.userId;
+
+    // Verify product belongs to user
+    const productCheck = await pool.query(
+      'SELECT product_id FROM products WHERE product_id = $1 AND user_id = $2',
+      [id, userId]
+    );
+
+    if (productCheck.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Product not found' });
+    }
+
+    const updates: string[] = [];
+    const values: any[] = [];
+    let paramIndex = 1;
+
+    if (attribute_name !== undefined) {
+      updates.push(`attribute_name = $${paramIndex}`);
+      values.push(attribute_name);
+      paramIndex++;
+    }
+
+    if (attribute_value !== undefined) {
+      updates.push(`attribute_value = $${paramIndex}`);
+      values.push(attribute_value);
+      paramIndex++;
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({ success: false, error: 'No fields to update' });
+    }
+
+    values.push(attributeId, id);
+    const query = `
+      UPDATE product_variant_attributes
+      SET ${updates.join(', ')}
+      WHERE attribute_id = $${paramIndex} AND product_id = $${paramIndex + 1}
+      RETURNING *
+    `;
+
+    const result = await pool.query(query, values);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Attribute not found' });
+    }
+
+    res.json({ success: true, data: result.rows[0] });
+  } catch (error) {
+    console.error('Error updating variant attribute:', error);
+    res.status(500).json({ success: false, error: 'Failed to update attribute' });
+  }
+};
+
+// Delete a variant attribute
+export const deleteVariantAttribute = async (req: Request, res: Response) => {
+  try {
+    const { id, attributeId } = req.params;
+    const userId = req.userId;
+
+    // Verify product belongs to user
+    const productCheck = await pool.query(
+      'SELECT product_id FROM products WHERE product_id = $1 AND user_id = $2',
+      [id, userId]
+    );
+
+    if (productCheck.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Product not found' });
+    }
+
+    const result = await pool.query(
+      'DELETE FROM product_variant_attributes WHERE attribute_id = $1 AND product_id = $2 RETURNING *',
+      [attributeId, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Attribute not found' });
+    }
+
+    res.json({ success: true, message: 'Attribute deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting variant attribute:', error);
+    res.status(500).json({ success: false, error: 'Failed to delete attribute' });
+  }
+};
+
+// Get all attributes for a variant product
+export const getVariantAttributes = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.userId;
+
+    // Verify product belongs to user
+    const productCheck = await pool.query(
+      'SELECT product_id FROM products WHERE product_id = $1 AND user_id = $2',
+      [id, userId]
+    );
+
+    if (productCheck.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Product not found' });
+    }
+
+    const result = await pool.query(
+      'SELECT * FROM product_variant_attributes WHERE product_id = $1 ORDER BY attribute_name',
+      [id]
+    );
+
+    res.json({ success: true, data: result.rows });
+  } catch (error) {
+    console.error('Error fetching variant attributes:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch attributes' });
+  }
+};

@@ -10,6 +10,7 @@ import customerRoutes from "./routes/customerRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import subscriptionRoutes from "./routes/subscriptionRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import invoiceRoutes from "./routes/invoiceRoutes.js";
 import { errorHandler, notFound } from "./middleware/errorHandler.js";
 import pool from "./config/database.js";
 import cookieParser from "cookie-parser";
@@ -49,6 +50,7 @@ app.use("/api/customers", customerRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/subscriptions", subscriptionRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/invoices", invoiceRoutes);
 
 // Error handling
 app.use(notFound);

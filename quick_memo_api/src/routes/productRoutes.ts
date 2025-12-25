@@ -8,6 +8,11 @@ import {
   deleteProduct,
   addVariantAttribute,
   updateStock,
+  getProductVariants,
+  createVariant,
+  updateVariantAttribute,
+  deleteVariantAttribute,
+  getVariantAttributes,
 } from '../controllers/productController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import { validate } from '../middleware/validator.js';
@@ -26,8 +31,15 @@ router.post('/', validate(createProductSchema), createProduct);
 router.put('/:id', validate(updateProductSchema), updateProduct);
 router.delete('/:id', deleteProduct);
 
-// Variant management
+// Variant management - Full CRUD for variants
+router.get('/:id/variants', getProductVariants);
+router.post('/:id/variants', createVariant);
+
+// Variant attributes management
+router.get('/:id/attributes', getVariantAttributes);
 router.post('/:id/attributes', validate(createVariantAttributeSchema), addVariantAttribute);
+router.put('/:id/attributes/:attributeId', updateVariantAttribute);
+router.delete('/:id/attributes/:attributeId', deleteVariantAttribute);
 
 // Stock management
 router.patch('/:id/stock', updateStock);

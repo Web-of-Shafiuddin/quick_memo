@@ -133,6 +133,12 @@ export default function ProtectedUserDashboardlayout({
                     Orders
                   </Button>
                 </Link>
+                <Link href="/invoices">
+                  <Button variant="outline" className="w-full justify-start">
+                    <FileText className="w-4 h-4 mr-2" />
+                    Invoices
+                  </Button>
+                </Link>
                 <Link href="/dashboard/profile">
                   <Button variant="outline" className="w-full justify-start">
                     <FileText className="w-4 h-4 mr-2" />
