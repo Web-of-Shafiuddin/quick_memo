@@ -270,7 +270,7 @@ export default function PricingPage() {
                                         <div>
                                             <div className="flex items-baseline gap-1">
                                                 <span className="text-4xl font-bold">
-                                                    {isFree ? 'Free' : `৳${price.toLocaleString()}`}
+                                                    {isFree ? 'Free' : `$${price.toLocaleString()}`}
                                                 </span>
                                                 {!isFree && (
                                                     <span className="text-gray-500">
@@ -280,7 +280,7 @@ export default function PricingPage() {
                                             </div>
                                             {!isFree && billingCycle !== 'monthly' && (
                                                 <div className="mt-1 text-sm text-gray-500">
-                                                    ৳{monthlyEquiv.toFixed(0)}/month
+                                                    ${monthlyEquiv.toFixed(0)}/month
                                                     {savings > 0 && (
                                                         <Badge className="ml-2 bg-green-100 text-green-700">
                                                             Save {savings}%
@@ -346,36 +346,36 @@ export default function PricingPage() {
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                     <h3 className="text-2xl font-bold mb-4">Payment Methods</h3>
                     <p className="text-gray-600 mb-8">
-                        We accept all major mobile banking services in Bangladesh
+                        We accept multiple payment methods worldwide
                     </p>
                     <div className="flex flex-wrap justify-center gap-6">
-                        <div className="flex items-center gap-2 bg-pink-50 px-4 py-2 rounded-lg">
-                            <div className="w-8 h-8 bg-pink-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                                bK
+                        <div className="flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-lg">
+                            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                                P
                             </div>
-                            <span className="font-medium">bKash</span>
-                        </div>
-                        <div className="flex items-center gap-2 bg-orange-50 px-4 py-2 rounded-lg">
-                            <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                                N
-                            </div>
-                            <span className="font-medium">Nagad</span>
+                            <span className="font-medium">PayPal</span>
                         </div>
                         <div className="flex items-center gap-2 bg-purple-50 px-4 py-2 rounded-lg">
-                            <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                                R
+                            <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                                S
                             </div>
-                            <span className="font-medium">Rocket</span>
+                            <span className="font-medium">Stripe</span>
                         </div>
-                        <div className="flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-lg">
-                            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                        <div className="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-lg">
+                            <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                                C
+                            </div>
+                            <span className="font-medium">Credit Card</span>
+                        </div>
+                        <div className="flex items-center gap-2 bg-green-50 px-4 py-2 rounded-lg">
+                            <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
                                 B
                             </div>
                             <span className="font-medium">Bank Transfer</span>
                         </div>
                     </div>
                     <p className="text-sm text-gray-500 mt-6">
-                        After payment, submit your transaction ID and we'll verify within 24 hours
+                        Secure payments processed instantly. All prices in USD.
                     </p>
                 </div>
             </section>
@@ -385,7 +385,7 @@ export default function PricingPage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center">
                         <p className="text-gray-400">
-                            © 2024 QuickMemo BD. Made with love for Bangladeshi entrepreneurs
+                            © {new Date().getFullYear()} QuickMemo. Made with love for entrepreneurs worldwide.
                         </p>
                     </div>
                 </div>

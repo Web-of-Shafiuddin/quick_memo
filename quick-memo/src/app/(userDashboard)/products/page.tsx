@@ -14,10 +14,12 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { productService, Product } from "@/services/productService";
+import { useCurrency } from "@/hooks/useCurrency";
 
 const ProductsPage = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const { format: formatPrice } = useCurrency();
 
   useEffect(() => {
     fetchProducts();
@@ -119,7 +121,7 @@ const ProductsPage = () => {
                 </Badge>
               </TableCell>
               <TableCell>{product.stock}</TableCell>
-              <TableCell className="text-right">${product.price.toFixed(2)}</TableCell>
+              <TableCell className="text-right">{formatPrice(product.price)}</TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
                   <Link href={`/products/edit/${product.product_id}`}>
@@ -143,7 +145,7 @@ const ProductsPage = () => {
           <TableRow>
             <TableCell colSpan={6}>Total Stock Value</TableCell>
             <TableCell className="text-right font-semibold">
-              ${totalStockValue.toFixed(2)}
+              {formatPrice(totalStockValue)}
             </TableCell>
             <TableCell></TableCell>
           </TableRow>

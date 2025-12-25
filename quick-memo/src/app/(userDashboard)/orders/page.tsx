@@ -26,6 +26,7 @@ import OrderMemo from "@/components/order-memo";
 import useAuthStore from "@/store/authStore";
 import { useShallow } from "zustand/react/shallow";
 import { User } from "@/types/User";
+import { useCurrency } from "@/hooks/useCurrency";
 import {
   Dialog,
   DialogContent,
@@ -61,6 +62,7 @@ const OrdersPage = () => {
       user: state.user,
     }))
   );
+  const { format: formatPrice } = useCurrency();
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -243,7 +245,7 @@ const OrdersPage = () => {
                     {order.order_status}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-right">${parseFloat(order.total_amount.toString()).toFixed(2)}</TableCell>
+                <TableCell className="text-right">{formatPrice(parseFloat(order.total_amount.toString()))}</TableCell>
                 <TableCell>{new Date(order.order_date).toLocaleDateString()}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex gap-2 justify-end">
@@ -360,9 +362,9 @@ const OrdersPage = () => {
                         <TableCell>{item.name_snapshot}</TableCell>
                         <TableCell>{item.product_sku || '-'}</TableCell>
                         <TableCell className="text-right">{item.quantity}</TableCell>
-                        <TableCell className="text-right">${parseFloat(item.unit_price.toString()).toFixed(2)}</TableCell>
-                        <TableCell className="text-right">${parseFloat(item.item_discount.toString()).toFixed(2)}</TableCell>
-                        <TableCell className="text-right">${parseFloat(item.subtotal.toString()).toFixed(2)}</TableCell>
+                        <TableCell className="text-right">{formatPrice(parseFloat(item.unit_price.toString()))}</TableCell>
+                        <TableCell className="text-right">{formatPrice(parseFloat(item.item_discount.toString()))}</TableCell>
+                        <TableCell className="text-right">{formatPrice(parseFloat(item.subtotal.toString()))}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -374,15 +376,15 @@ const OrdersPage = () => {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span>Shipping Amount:</span>
-                    <span>${parseFloat(selectedOrder.shipping_amount.toString()).toFixed(2)}</span>
+                    <span>{formatPrice(parseFloat(selectedOrder.shipping_amount.toString()))}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Tax Amount:</span>
-                    <span>${parseFloat(selectedOrder.tax_amount.toString()).toFixed(2)}</span>
+                    <span>{formatPrice(parseFloat(selectedOrder.tax_amount.toString()))}</span>
                   </div>
                   <div className="flex justify-between font-bold text-lg border-t pt-2">
                     <span>Total Amount:</span>
-                    <span>${parseFloat(selectedOrder.total_amount.toString()).toFixed(2)}</span>
+                    <span>{formatPrice(parseFloat(selectedOrder.total_amount.toString()))}</span>
                   </div>
                 </div>
               </div>
@@ -482,6 +484,7 @@ const OrdersPage = () => {
                 email: userProfile?.shop_email || user?.email,
                 address: userProfile?.shop_address || undefined
               }}
+              formatPrice={formatPrice}
             />
           )}
         </DialogContent>

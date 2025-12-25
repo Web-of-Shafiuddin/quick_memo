@@ -24,8 +24,10 @@ import {
 } from "@/components/ui/dialog";
 import { customerService, Customer } from "@/services/customerService";
 import { Plus, Pencil, Trash2, Search } from "lucide-react";
+import { useCurrency } from "@/hooks/useCurrency";
 
 const CustomersPage = () => {
+  const { format: formatPrice } = useCurrency();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -267,7 +269,7 @@ const CustomersPage = () => {
                 <TableCell>{customer.mobile || '-'}</TableCell>
                 <TableCell className="max-w-xs truncate">{customer.address || '-'}</TableCell>
                 <TableCell>{customer.order_count || 0}</TableCell>
-                <TableCell>${parseFloat(customer.total_spent?.toString() || '0').toFixed(2)}</TableCell>
+                <TableCell>{formatPrice(parseFloat(customer.total_spent?.toString() || '0'))}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
                     <Button

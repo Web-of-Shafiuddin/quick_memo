@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Printer, Download } from 'lucide-react';
 import { Order } from '@/services/orderService';
@@ -13,10 +13,13 @@ interface OrderInvoiceProps {
     mobile: string;
     address?: string;
   };
+  formatPrice?: (amount: number) => string;
 }
 
 const OrderInvoice = React.forwardRef<HTMLDivElement, OrderInvoiceProps>(
-  ({ order, shopInfo }, ref) => {
+  ({ order, shopInfo, formatPrice }, ref) => {
+    const format = formatPrice || ((amount: number) => `$${amount.toFixed(2)}`);
+
     const handlePrint = () => {
       window.print();
     };
@@ -163,13 +166,13 @@ const OrderInvoice = React.forwardRef<HTMLDivElement, OrderInvoiceProps>(
                     <td className="py-3 px-4 text-gray-600 text-sm">{item.product_sku || '-'}</td>
                     <td className="py-3 px-4 text-center text-gray-700">{item.quantity}</td>
                     <td className="py-3 px-4 text-right text-gray-700">
-                      ${parseFloat(item.unit_price.toString()).toFixed(2)}
+                      {format(parseFloat(item.unit_price.toString()))}
                     </td>
                     <td className="py-3 px-4 text-right text-gray-700">
-                      ${parseFloat(item.item_discount.toString()).toFixed(2)}
+                      {format(parseFloat(item.item_discount.toString()))}
                     </td>
                     <td className="py-3 px-4 text-right font-medium text-gray-800">
-                      ${parseFloat(item.subtotal.toString()).toFixed(2)}
+                      {format(parseFloat(item.subtotal.toString()))}
                     </td>
                   </tr>
                 ))}
@@ -183,23 +186,23 @@ const OrderInvoice = React.forwardRef<HTMLDivElement, OrderInvoiceProps>(
               <div className="space-y-2">
                 <div className="flex justify-between text-gray-700">
                   <span>Subtotal:</span>
-                  <span>${(order.items?.reduce((sum, item) => sum + parseFloat(item.subtotal.toString()), 0) || 0).toFixed(2)}</span>
+                  <span>{format(order.items?.reduce((sum, item) => sum + parseFloat(item.subtotal.toString()), 0) || 0)}</span>
                 </div>
                 {parseFloat(order.shipping_amount.toString()) > 0 && (
                   <div className="flex justify-between text-gray-700">
                     <span>Shipping:</span>
-                    <span>${parseFloat(order.shipping_amount.toString()).toFixed(2)}</span>
+                    <span>{format(parseFloat(order.shipping_amount.toString()))}</span>
                   </div>
                 )}
                 {parseFloat(order.tax_amount.toString()) > 0 && (
                   <div className="flex justify-between text-gray-700">
                     <span>Tax:</span>
-                    <span>${parseFloat(order.tax_amount.toString()).toFixed(2)}</span>
+                    <span>{format(parseFloat(order.tax_amount.toString()))}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-lg font-bold text-gray-800 border-t-2 border-gray-300 pt-2">
                   <span>Total Amount:</span>
-                  <span>${parseFloat(order.total_amount.toString()).toFixed(2)}</span>
+                  <span>{format(parseFloat(order.total_amount.toString()))}</span>
                 </div>
               </div>
             </div>

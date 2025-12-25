@@ -14,9 +14,12 @@ interface OrderMemoProps {
     email?: string;
     address?: string;
   };
+  formatPrice?: (amount: number) => string;
 }
 
-const OrderMemo: React.FC<OrderMemoProps> = ({ order, shopInfo }) => {
+const OrderMemo: React.FC<OrderMemoProps> = ({ order, shopInfo, formatPrice }) => {
+  const format = formatPrice || ((amount: number) => `$${amount.toFixed(2)}`);
+
   const handlePrint = () => {
     window.print();
   };
@@ -91,8 +94,8 @@ const OrderMemo: React.FC<OrderMemoProps> = ({ order, shopInfo }) => {
                   <tr key={item.order_item_id} className="border-b border-gray-200">
                     <td className="py-3 text-gray-700">{item.name_snapshot}</td>
                     <td className="py-3 text-center text-gray-700">{item.quantity}</td>
-                    <td className="py-3 text-right text-gray-700">৳{parseFloat(item.unit_price.toString()).toFixed(2)}</td>
-                    <td className="py-3 text-right font-medium text-gray-800">৳{parseFloat(item.subtotal.toString()).toFixed(2)}</td>
+                    <td className="py-3 text-right text-gray-700">{format(parseFloat(item.unit_price.toString()))}</td>
+                    <td className="py-3 text-right font-medium text-gray-800">{format(parseFloat(item.subtotal.toString()))}</td>
                   </tr>
                 ))}
               </tbody>
@@ -104,23 +107,23 @@ const OrderMemo: React.FC<OrderMemoProps> = ({ order, shopInfo }) => {
             <div className="space-y-2 max-w-xs ml-auto">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Subtotal:</span>
-                <span className="font-medium">৳{subtotal.toFixed(2)}</span>
+                <span className="font-medium">{format(subtotal)}</span>
               </div>
               {parseFloat(order.shipping_amount.toString()) > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Shipping:</span>
-                  <span className="font-medium">৳{parseFloat(order.shipping_amount.toString()).toFixed(2)}</span>
+                  <span className="font-medium">{format(parseFloat(order.shipping_amount.toString()))}</span>
                 </div>
               )}
               {parseFloat(order.tax_amount.toString()) > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Tax:</span>
-                  <span className="font-medium">৳{parseFloat(order.tax_amount.toString()).toFixed(2)}</span>
+                  <span className="font-medium">{format(parseFloat(order.tax_amount.toString()))}</span>
                 </div>
               )}
               <div className="flex justify-between text-xl font-bold pt-2 border-t-2">
                 <span>Total Amount:</span>
-                <span className="text-slate-800">৳{parseFloat(order.total_amount.toString()).toFixed(2)}</span>
+                <span className="text-slate-800">{format(parseFloat(order.total_amount.toString()))}</span>
               </div>
             </div>
           </div>

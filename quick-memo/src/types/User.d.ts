@@ -3,6 +3,7 @@ export interface User {
     email: string;
     name: string;
     mobile: string | null;
+    preferred_currency?: string | null;
     shop_name?: string | null;
     shop_owner_name?: string | null;
     shop_mobile?: string | null;

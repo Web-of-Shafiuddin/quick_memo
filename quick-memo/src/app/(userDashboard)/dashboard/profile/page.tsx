@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { CurrencySelector } from '@/components/CurrencySelector';
 import { userService } from '@/services/userService';
 import useAuthStore from '@/store/authStore';
 import { useShallow } from 'zustand/react/shallow';
-import { Save, Store, User as UserIcon } from 'lucide-react';
+import { Save, Store, User as UserIcon, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
 
 const ProfilePage = () => {
@@ -24,6 +25,7 @@ const ProfilePage = () => {
     name: '',
     email: '',
     mobile: '',
+    preferred_currency: 'USD',
     shop_name: '',
     shop_owner_name: '',
     shop_mobile: '',
@@ -38,6 +40,7 @@ const ProfilePage = () => {
         name: user.name || '',
         email: user.email || '',
         mobile: user.mobile || '',
+        preferred_currency: user.preferred_currency || 'USD',
         shop_name: user.shop_name || '',
         shop_owner_name: user.shop_owner_name || '',
         shop_mobile: user.shop_mobile || '',
@@ -61,6 +64,7 @@ const ProfilePage = () => {
         name: userData.name || '',
         email: userData.email || '',
         mobile: userData.mobile || '',
+        preferred_currency: userData.preferred_currency || 'USD',
         shop_name: userData.shop_name || '',
         shop_owner_name: userData.shop_owner_name || '',
         shop_mobile: userData.shop_mobile || '',
@@ -150,6 +154,33 @@ const ProfilePage = () => {
                   onChange={handleChange}
                   placeholder="01XXXXXXXXX"
                 />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Business Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="w-5 h-5" />
+              Business Settings
+            </CardTitle>
+            <CardDescription>
+              Configure your business currency for products, orders, and invoices.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="preferred_currency">Business Currency</Label>
+                <CurrencySelector
+                  value={formData.preferred_currency}
+                  onChange={(value) => setFormData({ ...formData, preferred_currency: value })}
+                />
+                <p className="text-sm text-muted-foreground">
+                  This currency will be used for your products, orders, and invoices.
+                </p>
               </div>
             </div>
           </CardContent>
