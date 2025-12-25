@@ -6,7 +6,9 @@ export const authMiddleware = (
   res: Response,
   next: NextFunction
 ) => {
-  const token = req.cookies["quick_memo_user_token"];
+  // Support both cookie and Authorization header
+  const token = req.cookies["quick_memo_user_token"] ||
+                req.headers.authorization?.replace('Bearer ', '');
   if (!token) {
     return res.status(401).json({ success: false, error: "Unauthorized, Token not found" });
   }

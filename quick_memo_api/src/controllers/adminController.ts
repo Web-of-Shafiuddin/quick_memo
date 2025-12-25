@@ -94,7 +94,7 @@ export const getUserDetails = async (req: Request, res: Response) => {
       `SELECT
          (SELECT COUNT(*) FROM products WHERE user_id = $1) as total_products,
          (SELECT COUNT(*) FROM customers WHERE user_id = $1) as total_customers,
-         (SELECT COUNT(*) FROM order_transactions WHERE user_id = $1) as total_orders,
+         (SELECT COUNT(*) FROM order_headers WHERE user_id = $1) as total_orders,
          (SELECT COUNT(*) FROM categories WHERE user_id = $1) as total_categories`,
       [id]
     );

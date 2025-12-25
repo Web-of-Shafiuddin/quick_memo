@@ -34,7 +34,7 @@ router.delete('/:id', deleteProduct);
 
 // Variant management - Full CRUD for variants
 router.get('/:id/variants', getProductVariants);
-router.post('/:id/variants', createVariant);
+router.post('/:id/variants', checkProductLimit, createVariant);
 
 // Variant attributes management
 router.get('/:id/attributes', getVariantAttributes);

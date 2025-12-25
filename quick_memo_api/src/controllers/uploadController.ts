@@ -99,8 +99,9 @@ export const deleteImage = async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: 'No public_id provided' });
     }
 
-    // Verify the image belongs to this user (check folder path)
-    if (!public_id.includes(`users/${userId}/`)) {
+    // Verify the image belongs to this user (check folder path with exact match)
+    const userFolderPattern = new RegExp(`^quickmemo/users/${userId}/`);
+    if (!userFolderPattern.test(public_id)) {
       return res.status(403).json({ success: false, error: 'You can only delete your own images' });
     }
 
