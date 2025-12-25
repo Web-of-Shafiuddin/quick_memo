@@ -8,7 +8,12 @@ import {
   getAllRequests,
   approveRequest,
   rejectRequest,
-  getStats
+  getStats,
+  getAllPlans,
+  getPlanById,
+  createPlan,
+  updatePlan,
+  deletePlan
 } from "../controllers/subscriptionController.js";
 
 const router = Router();
@@ -26,5 +31,12 @@ router.get('/admin/requests', adminAuthMiddleware, getAllRequests);
 router.post('/admin/requests/:id/approve', adminAuthMiddleware, approveRequest);
 router.post('/admin/requests/:id/reject', adminAuthMiddleware, rejectRequest);
 router.get('/admin/stats', adminAuthMiddleware, getStats);
+
+// Admin plan management routes
+router.get('/admin/plans', adminAuthMiddleware, getAllPlans);
+router.get('/admin/plans/:id', adminAuthMiddleware, getPlanById);
+router.post('/admin/plans', adminAuthMiddleware, createPlan);
+router.put('/admin/plans/:id', adminAuthMiddleware, updatePlan);
+router.delete('/admin/plans/:id', adminAuthMiddleware, deletePlan);
 
 export default router;

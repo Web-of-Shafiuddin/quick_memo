@@ -1,23 +1,35 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Crown, CheckCircle, Clock, XCircle, Send, CreditCard, Phone, AlertCircle } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Crown, CheckCircle, Clock, XCircle, Send, CreditCard, AlertCircle, ExternalLink, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api';
 
 interface Plan {
   plan_id: number;
   name: string;
+  description: string;
   monthly_price: number;
+  half_yearly_price: number;
+  yearly_price: number;
   max_categories: number;
   max_products: number;
   max_orders_per_month: number;
+  max_customers: number;
+  max_images_per_product: number;
+  features: string[];
+  badge_text: string | null;
+  badge_color: string | null;
+  is_popular: boolean;
   is_active: boolean;
 }
 
@@ -37,11 +49,14 @@ interface SubscriptionRequest {
   payment_method: string;
   transaction_id: string;
   amount: number;
+  duration_months: number;
   phone_number: string;
   status: string;
   admin_notes: string | null;
   created_at: string;
 }
+
+type BillingCycle = 'monthly' | 'half_yearly' | 'yearly';
 
 const PAYMENT_METHODS = [
   { value: 'bKash', label: 'bKash' },
@@ -50,13 +65,30 @@ const PAYMENT_METHODS = [
   { value: 'Bank Transfer', label: 'Bank Transfer' },
 ];
 
+const BILLING_LABELS: Record<BillingCycle, string> = {
+  monthly: 'Monthly',
+  half_yearly: '6 Months',
+  yearly: 'Yearly',
+};
+
+const DURATION_MONTHS: Record<BillingCycle, number> = {
+  monthly: 1,
+  half_yearly: 6,
+  yearly: 12,
+};
+
 export default function SubscriptionPage() {
+  const searchParams = useSearchParams();
+  const preselectedPlanId = searchParams.get('plan');
+  const preselectedBilling = searchParams.get('billing') as BillingCycle | null;
+
   const [plans, setPlans] = useState<Plan[]>([]);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [requests, setRequests] = useState<SubscriptionRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>(preselectedBilling || 'monthly');
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     payment_method: '',
@@ -68,6 +100,17 @@ export default function SubscriptionPage() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    // Auto-select plan from URL params
+    if (preselectedPlanId && plans.length > 0) {
+      const plan = plans.find(p => p.plan_id === parseInt(preselectedPlanId));
+      if (plan && plan.monthly_price > 0) {
+        setSelectedPlan(plan);
+        setShowForm(true);
+      }
+    }
+  }, [preselectedPlanId, plans]);
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -77,13 +120,30 @@ export default function SubscriptionPage() {
         api.get('/subscriptions/my-requests'),
       ]);
 
-      setPlans(plansRes.data.data || []);
+      const plansData = plansRes.data.data || [];
+      const parsedPlans = plansData.map((plan: any) => ({
+        ...plan,
+        features: typeof plan.features === 'string' ? JSON.parse(plan.features) : plan.features || []
+      }));
+
+      setPlans(parsedPlans);
       setSubscription(subRes.data.data || null);
       setRequests(requestsRes.data.data || []);
     } catch (error) {
       console.error('Error fetching subscription data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const getPrice = (plan: Plan): number => {
+    switch (billingCycle) {
+      case 'half_yearly':
+        return plan.half_yearly_price || plan.monthly_price * 6;
+      case 'yearly':
+        return plan.yearly_price || plan.monthly_price * 12;
+      default:
+        return plan.monthly_price;
     }
   };
 
@@ -106,14 +166,18 @@ export default function SubscriptionPage() {
       return;
     }
 
+    const amount = getPrice(selectedPlan);
+    const durationMonths = DURATION_MONTHS[billingCycle];
+
     try {
       setSubmitting(true);
       await api.post('/subscriptions/request', {
         plan_id: selectedPlan.plan_id,
         payment_method: formData.payment_method,
         transaction_id: formData.transaction_id,
-        amount: selectedPlan.monthly_price,
+        amount: amount,
         phone_number: formData.phone_number,
+        duration_months: durationMonths,
       });
 
       toast.success('Subscription request submitted! We will verify your payment within 24 hours.');
@@ -156,7 +220,14 @@ export default function SubscriptionPage() {
   };
 
   const formatLimit = (value: number) => {
-    return value === -1 ? 'Unlimited' : value.toString();
+    return value === -1 ? 'Unlimited' : value.toLocaleString();
+  };
+
+  const getDurationLabel = (months: number) => {
+    if (months === 1) return '1 month';
+    if (months === 6) return '6 months';
+    if (months === 12) return '1 year';
+    return `${months} months`;
   };
 
   if (loading) {
@@ -169,9 +240,17 @@ export default function SubscriptionPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Subscription</h1>
-        <p className="text-muted-foreground">Manage your subscription plan</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Subscription</h1>
+          <p className="text-muted-foreground">Manage your subscription plan</p>
+        </div>
+        <Link href="/pricing" target="_blank">
+          <Button variant="outline" size="sm">
+            <ExternalLink className="w-4 h-4 mr-2" />
+            View All Plans
+          </Button>
+        </Link>
       </div>
 
       {/* Current Subscription */}
@@ -218,55 +297,110 @@ export default function SubscriptionPage() {
         </Card>
       )}
 
-      {/* Plans */}
+      {/* Plans with Billing Cycle */}
       {!showForm && (
         <>
-          <h2 className="text-xl font-semibold">Available Plans</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold">Available Plans</h2>
+            <Tabs value={billingCycle} onValueChange={(v) => setBillingCycle(v as BillingCycle)}>
+              <TabsList>
+                <TabsTrigger value="monthly">Monthly</TabsTrigger>
+                <TabsTrigger value="half_yearly">
+                  6 Months
+                  <Badge className="ml-1 bg-green-500 text-xs">-15%</Badge>
+                </TabsTrigger>
+                <TabsTrigger value="yearly">
+                  Yearly
+                  <Badge className="ml-1 bg-green-500 text-xs">-25%</Badge>
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {plans.filter(p => p.is_active).map((plan) => (
-              <Card
-                key={plan.plan_id}
-                className={`relative ${subscription?.plan_name === plan.name ? 'border-primary border-2' : ''}`}
-              >
-                {subscription?.plan_name === plan.name && (
-                  <Badge className="absolute top-2 right-2 bg-primary">Current</Badge>
-                )}
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span>{plan.name}</span>
-                    <span className="text-2xl font-bold">
-                      {plan.monthly_price === 0 ? 'Free' : `৳${plan.monthly_price}/mo`}
-                    </span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <ul className="space-y-2 text-sm">
-                    <li className="flex justify-between">
-                      <span className="text-muted-foreground">Categories</span>
-                      <span className="font-medium">{formatLimit(plan.max_categories)}</span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span className="text-muted-foreground">Products</span>
-                      <span className="font-medium">{formatLimit(plan.max_products)}</span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span className="text-muted-foreground">Orders/Month</span>
-                      <span className="font-medium">{formatLimit(plan.max_orders_per_month)}</span>
-                    </li>
-                  </ul>
-                  {plan.monthly_price > 0 && subscription?.plan_name !== plan.name && (
-                    <Button
-                      className="w-full"
-                      onClick={() => handleSelectPlan(plan)}
-                      disabled={requests.some(r => r.status === 'PENDING')}
-                    >
-                      <CreditCard className="w-4 h-4 mr-2" />
-                      Subscribe
-                    </Button>
+            {plans.filter(p => p.is_active).map((plan) => {
+              const price = getPrice(plan);
+              const isCurrent = subscription?.plan_name === plan.name;
+              const isFree = plan.monthly_price === 0;
+
+              return (
+                <Card
+                  key={plan.plan_id}
+                  className={`relative ${isCurrent ? 'border-primary border-2' : ''} ${plan.is_popular ? 'ring-2 ring-green-500' : ''}`}
+                >
+                  {isCurrent && (
+                    <Badge className="absolute top-2 right-2 bg-primary">Current</Badge>
                   )}
-                </CardContent>
-              </Card>
-            ))}
+                  {plan.is_popular && !isCurrent && (
+                    <Badge className="absolute top-2 right-2 bg-green-500">Popular</Badge>
+                  )}
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <span>{plan.name}</span>
+                      <div className="text-right">
+                        <span className="text-2xl font-bold">
+                          {isFree ? 'Free' : `৳${price.toLocaleString()}`}
+                        </span>
+                        {!isFree && (
+                          <span className="text-sm text-muted-foreground block">
+                            /{BILLING_LABELS[billingCycle].toLowerCase()}
+                          </span>
+                        )}
+                      </div>
+                    </CardTitle>
+                    {plan.description && (
+                      <CardDescription>{plan.description}</CardDescription>
+                    )}
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <ul className="space-y-2 text-sm">
+                      <li className="flex justify-between">
+                        <span className="text-muted-foreground">Products</span>
+                        <span className="font-medium">{formatLimit(plan.max_products)}</span>
+                      </li>
+                      <li className="flex justify-between">
+                        <span className="text-muted-foreground">Orders/Month</span>
+                        <span className="font-medium">{formatLimit(plan.max_orders_per_month)}</span>
+                      </li>
+                      <li className="flex justify-between">
+                        <span className="text-muted-foreground">Customers</span>
+                        <span className="font-medium">{formatLimit(plan.max_customers)}</span>
+                      </li>
+                      <li className="flex justify-between">
+                        <span className="text-muted-foreground">Categories</span>
+                        <span className="font-medium">{formatLimit(plan.max_categories)}</span>
+                      </li>
+                      <li className="flex justify-between">
+                        <span className="text-muted-foreground">Images/Product</span>
+                        <span className="font-medium">{formatLimit(plan.max_images_per_product)}</span>
+                      </li>
+                    </ul>
+
+                    {plan.features && plan.features.length > 0 && (
+                      <div className="pt-2 border-t space-y-1">
+                        {plan.features.slice(0, 3).map((feature, i) => (
+                          <div key={i} className="flex items-center gap-2 text-sm">
+                            <Check className="w-4 h-4 text-green-500" />
+                            <span className="text-muted-foreground">{feature}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {!isFree && !isCurrent && (
+                      <Button
+                        className="w-full"
+                        onClick={() => handleSelectPlan(plan)}
+                        disabled={requests.some(r => r.status === 'PENDING')}
+                      >
+                        <CreditCard className="w-4 h-4 mr-2" />
+                        Subscribe
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </>
       )}
@@ -277,14 +411,48 @@ export default function SubscriptionPage() {
           <CardHeader>
             <CardTitle>Subscribe to {selectedPlan.name}</CardTitle>
             <CardDescription>
-              Complete payment of ৳{selectedPlan.monthly_price} and submit the transaction details below
+              Complete payment and submit the transaction details below
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {/* Selected Plan Summary */}
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h3 className="font-semibold">{selectedPlan.name} Plan</h3>
+                  <p className="text-sm text-muted-foreground">{selectedPlan.description}</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold">৳{getPrice(selectedPlan).toLocaleString()}</div>
+                  <div className="text-sm text-muted-foreground">
+                    for {getDurationLabel(DURATION_MONTHS[billingCycle])}
+                  </div>
+                </div>
+              </div>
+
+              {/* Billing Cycle Selector */}
+              <div className="space-y-2">
+                <Label>Billing Cycle</Label>
+                <Tabs value={billingCycle} onValueChange={(v) => setBillingCycle(v as BillingCycle)}>
+                  <TabsList className="w-full">
+                    <TabsTrigger value="monthly" className="flex-1">
+                      Monthly - ৳{selectedPlan.monthly_price}
+                    </TabsTrigger>
+                    <TabsTrigger value="half_yearly" className="flex-1">
+                      6 Months - ৳{selectedPlan.half_yearly_price || selectedPlan.monthly_price * 6}
+                    </TabsTrigger>
+                    <TabsTrigger value="yearly" className="flex-1">
+                      Yearly - ৳{selectedPlan.yearly_price || selectedPlan.monthly_price * 12}
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+            </div>
+
             <div className="mb-6 p-4 bg-blue-50 rounded-lg">
               <h3 className="font-semibold text-blue-900 mb-2">Payment Instructions</h3>
               <ol className="list-decimal list-inside text-sm text-blue-800 space-y-1">
-                <li>Send ৳{selectedPlan.monthly_price} to our payment account</li>
+                <li>Send <strong>৳{getPrice(selectedPlan).toLocaleString()}</strong> to our payment account</li>
                 <li>bKash/Nagad/Rocket: <span className="font-mono font-bold">01XXXXXXXXX</span></li>
                 <li>Copy the Transaction ID from your payment confirmation</li>
                 <li>Fill in the form below and submit</li>
@@ -379,6 +547,8 @@ export default function SubscriptionPage() {
                       <span>TxID: {request.transaction_id}</span>
                       <span className="mx-2">•</span>
                       <span>৳{request.amount}</span>
+                      <span className="mx-2">•</span>
+                      <span>{getDurationLabel(request.duration_months || 1)}</span>
                     </div>
                     <div className="text-xs text-muted-foreground">
                       Submitted: {formatDate(request.created_at)}

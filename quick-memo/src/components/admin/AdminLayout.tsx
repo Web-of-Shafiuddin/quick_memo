@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Shield, LogOut, Users, CreditCard, LayoutDashboard } from 'lucide-react';
+import { Shield, LogOut, Users, CreditCard, LayoutDashboard, Crown } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Admin {
@@ -65,7 +65,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     const navItems = [
         { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { href: '/admin/users', label: 'Users', icon: Users },
-        { href: '/admin/subscriptions', label: 'Subscriptions', icon: CreditCard },
+        { href: '/admin/subscriptions', label: 'Requests', icon: CreditCard },
+        { href: '/admin/plans', label: 'Plans', icon: Crown },
     ];
 
     return (
