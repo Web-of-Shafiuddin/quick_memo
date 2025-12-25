@@ -11,6 +11,7 @@ import orderRoutes from "./routes/orderRoutes.js";
 import subscriptionRoutes from "./routes/subscriptionRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import invoiceRoutes from "./routes/invoiceRoutes.js";
+import analyticsRoutes from "./routes/analyticsRoutes.js";
 import { errorHandler, notFound } from "./middleware/errorHandler.js";
 import pool from "./config/database.js";
 import cookieParser from "cookie-parser";
@@ -51,6 +52,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/subscriptions", subscriptionRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/invoices", invoiceRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 // Error handling
 app.use(notFound);

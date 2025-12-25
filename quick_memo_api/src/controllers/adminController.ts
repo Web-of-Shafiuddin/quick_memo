@@ -300,7 +300,7 @@ export const getDashboardStats = async (req: Request, res: Response) => {
         (SELECT COUNT(*) FROM users WHERE created_at > NOW() - INTERVAL '30 days') as new_users_30d,
         (SELECT COUNT(*) FROM subscriptions WHERE status = 'ACTIVE') as active_subscriptions,
         (SELECT COUNT(*) FROM subscription_requests WHERE status = 'PENDING') as pending_requests,
-        (SELECT COUNT(*) FROM order_transactions) as total_orders,
+        (SELECT COUNT(*) FROM order_headers) as total_orders,
         (SELECT COUNT(*) FROM products) as total_products,
         (SELECT COALESCE(SUM(amount), 0) FROM subscription_requests WHERE status = 'APPROVED') as total_revenue
     `);
