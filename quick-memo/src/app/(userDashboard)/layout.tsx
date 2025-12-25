@@ -16,7 +16,17 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import useAuthStore from "@/store/authStore";
 import { useShallow } from "zustand/react/shallow";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import api from "@/lib/api";
+
+interface Subscription {
+  subscription_id: number;
+  plan_id: number;
+  plan_name: string;
+  status: string;
+  start_date: string;
+  end_date: string;
+}
 
 export default function ProtectedUserDashboardlayout({
   children,
@@ -30,12 +40,28 @@ export default function ProtectedUserDashboardlayout({
       isLoading: state.isLoading,
     }))
   );
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
 
   useEffect(() => {
     if(isLoading === false && !user) {
       router.push("/auth/login");
     }
   }, [isLoading, user, router]);
+
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      try {
+        const response = await api.get('/subscriptions/my-subscription');
+        setSubscription(response.data.data || null);
+      } catch (error) {
+        console.error('Error fetching subscription:', error);
+      }
+    };
+
+    if (user) {
+      fetchSubscription();
+    }
+  }, [user]);
 
   const handleLogout = () => {
     localStorage.removeItem("authToken");
@@ -75,15 +101,26 @@ export default function ProtectedUserDashboardlayout({
               </div>
             </div>
             <div className="flex items-center gap-4">
-              {/* {isPro && !isExpired && ( */}
+              {subscription && subscription.status === 'ACTIVE' && subscription.plan_name !== 'Free' && (
                 <Badge className="bg-green-100 text-green-800">
                   <Crown className="w-3 h-3 mr-1" />
-                  Pro Active
+                  {subscription.plan_name} Active
                 </Badge>
-              {/* )} */}
-              {/* {isPro && isExpired && ( */}
+              )}
+              {subscription && subscription.status === 'EXPIRED' && (
                 <Badge className="bg-red-100 text-red-800">Expired</Badge>
-              {/* )} */}
+              )}
+              {subscription && subscription.status === 'ACTIVE' && subscription.plan_name === 'Free' && (
+                <Badge className="bg-gray-100 text-gray-800">Free Plan</Badge>
+              )}
+              {!subscription && (
+                <Link href="/subscription">
+                  <Badge className="bg-blue-100 text-blue-800 cursor-pointer hover:bg-blue-200">
+                    <Crown className="w-3 h-3 mr-1" />
+                    Subscribe
+                  </Badge>
+                </Link>
+              )}
               <Link href="/">
                 <Button variant="outline" size="sm">
                   <Home className="w-4 h-4 mr-2" />

@@ -121,6 +121,7 @@ export const createProduct = async (req: Request, res: Response) => {
       status = 'ACTIVE',
       image,
       parent_product_id,
+      attributes = [],
     } = req.body;
     const userId = req.userId;
 
@@ -149,7 +150,26 @@ export const createProduct = async (req: Request, res: Response) => {
       [userId, sku, name, category_id, price, discount, stock, status, image || null, parent_product_id || null]
     );
 
-    res.status(201).json({ success: true, data: result.rows[0] });
+    const product = result.rows[0];
+
+    // Add attributes if provided
+    const createdAttributes = [];
+    for (const attr of attributes) {
+      if (attr.attribute_name && attr.attribute_value) {
+        const attrResult = await pool.query(
+          `INSERT INTO product_variant_attributes (product_id, attribute_name, attribute_value)
+           VALUES ($1, $2, $3)
+           RETURNING *`,
+          [product.product_id, attr.attribute_name, attr.attribute_value]
+        );
+        createdAttributes.push(attrResult.rows[0]);
+      }
+    }
+
+    res.status(201).json({
+      success: true,
+      data: { ...product, attributes: createdAttributes }
+    });
   } catch (error: any) {
     console.error('Error creating product:', error);
     if (error.code === '23505') {
@@ -163,7 +183,7 @@ export const updateProduct = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const userId = req.userId;
-    const updateData = req.body;
+    const { attributes, ...updateData } = req.body;
 
     // Build dynamic update query
     const updates: string[] = [];
@@ -180,10 +200,6 @@ export const updateProduct = async (req: Request, res: Response) => {
       }
     }
 
-    if (updates.length === 0) {
-      return res.status(400).json({ success: false, error: 'No fields to update' });
-    }
-
     // If category_id is being updated, verify it belongs to the user
     if (updateData.category_id) {
       const categoryCheck = await pool.query(
@@ -196,21 +212,68 @@ export const updateProduct = async (req: Request, res: Response) => {
       }
     }
 
-    values.push(id, userId);
-    const query = `
-      UPDATE products
-      SET ${updates.join(', ')}
-      WHERE product_id = $${paramIndex} AND user_id = $${paramIndex + 1}
-      RETURNING *
-    `;
+    let product;
 
-    const result = await pool.query(query, values);
+    // Only update product fields if there are any
+    if (updates.length > 0) {
+      values.push(id, userId);
+      const query = `
+        UPDATE products
+        SET ${updates.join(', ')}
+        WHERE product_id = $${paramIndex} AND user_id = $${paramIndex + 1}
+        RETURNING *
+      `;
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, error: 'Product not found' });
+      const result = await pool.query(query, values);
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ success: false, error: 'Product not found' });
+      }
+      product = result.rows[0];
+    } else {
+      // Verify product exists
+      const productCheck = await pool.query(
+        'SELECT * FROM products WHERE product_id = $1 AND user_id = $2',
+        [id, userId]
+      );
+      if (productCheck.rows.length === 0) {
+        return res.status(404).json({ success: false, error: 'Product not found' });
+      }
+      product = productCheck.rows[0];
     }
 
-    res.json({ success: true, data: result.rows[0] });
+    // Handle attributes if provided
+    if (Array.isArray(attributes)) {
+      // Delete existing attributes
+      await pool.query(
+        'DELETE FROM product_variant_attributes WHERE product_id = $1',
+        [id]
+      );
+
+      // Insert new attributes
+      const createdAttributes = [];
+      for (const attr of attributes) {
+        if (attr.attribute_name && attr.attribute_value) {
+          const attrResult = await pool.query(
+            `INSERT INTO product_variant_attributes (product_id, attribute_name, attribute_value)
+             VALUES ($1, $2, $3)
+             RETURNING *`,
+            [id, attr.attribute_name, attr.attribute_value]
+          );
+          createdAttributes.push(attrResult.rows[0]);
+        }
+      }
+      product.attributes = createdAttributes;
+    } else {
+      // Fetch existing attributes
+      const attrResult = await pool.query(
+        'SELECT * FROM product_variant_attributes WHERE product_id = $1',
+        [id]
+      );
+      product.attributes = attrResult.rows;
+    }
+
+    res.json({ success: true, data: product });
   } catch (error: any) {
     console.error('Error updating product:', error);
     if (error.code === '23505') {

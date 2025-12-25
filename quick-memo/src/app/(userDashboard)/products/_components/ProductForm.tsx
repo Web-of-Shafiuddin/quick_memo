@@ -21,6 +21,12 @@ import {
 } from "@/components/ui/card";
 import { Product } from "@/services/productService";
 import { categoryService, Category } from "@/services/categoryService";
+import { Plus, X } from "lucide-react";
+
+interface Attribute {
+  attribute_name: string;
+  attribute_value: string;
+}
 
 interface ProductFormProps {
   product?: Product | null;
@@ -35,6 +41,12 @@ const ProductForm = ({ product, onSubmit, title, description, submitButtonText }
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [attributes, setAttributes] = useState<Attribute[]>(
+    product?.attributes?.map(a => ({
+      attribute_name: a.attribute_name,
+      attribute_value: a.attribute_value
+    })) || []
+  );
   const [formData, setFormData] = useState({
     sku: product?.sku || "",
     name: product?.name || "",
@@ -74,6 +86,7 @@ const ProductForm = ({ product, onSubmit, title, description, submitButtonText }
         stock: parseInt(formData.stock) || 0,
         status: formData.status as 'ACTIVE' | 'INACTIVE' | 'DISCONTINUED',
         image: formData.image || null,
+        attributes: attributes.filter(a => a.attribute_name.trim() && a.attribute_value.trim()),
       };
 
       // Only include SKU if it's provided
@@ -91,6 +104,20 @@ const ProductForm = ({ product, onSubmit, title, description, submitButtonText }
 
   const handleChange = (name: string, value: string) => {
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const addAttribute = () => {
+    setAttributes([...attributes, { attribute_name: "", attribute_value: "" }]);
+  };
+
+  const removeAttribute = (index: number) => {
+    setAttributes(attributes.filter((_, i) => i !== index));
+  };
+
+  const updateAttribute = (index: number, field: keyof Attribute, value: string) => {
+    const updated = [...attributes];
+    updated[index][field] = value;
+    setAttributes(updated);
   };
 
   return (
@@ -218,6 +245,56 @@ const ProductForm = ({ product, onSubmit, title, description, submitButtonText }
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          {/* Product Attributes */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label className="text-base font-medium">Product Attributes</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addAttribute}
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                Add Attribute
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Add attributes like Size, Color, Material, etc.
+            </p>
+            {attributes.length > 0 && (
+              <div className="space-y-3">
+                {attributes.map((attr, index) => (
+                  <div key={index} className="flex gap-2 items-start">
+                    <div className="flex-1">
+                      <Input
+                        placeholder="Attribute name (e.g., Size)"
+                        value={attr.attribute_name}
+                        onChange={(e) => updateAttribute(index, 'attribute_name', e.target.value)}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <Input
+                        placeholder="Value (e.g., Large)"
+                        value={attr.attribute_value}
+                        onChange={(e) => updateAttribute(index, 'attribute_value', e.target.value)}
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeAttribute(index)}
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {error && <p className="text-red-600">{error}</p>}
