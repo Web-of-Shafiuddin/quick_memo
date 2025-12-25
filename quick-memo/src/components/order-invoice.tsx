@@ -1,10 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Printer, Download } from 'lucide-react';
+import { Download, Loader2 } from 'lucide-react';
 import { Order } from '@/services/orderService';
 import { useCurrency } from '@/hooks/useCurrency';
+import { downloadInvoicePdf } from './order-invoice-pdf';
 
 interface OrderInvoiceProps {
   order: Order;
@@ -21,42 +22,17 @@ const OrderInvoice = React.forwardRef<HTMLDivElement, OrderInvoiceProps>(
   ({ order, shopInfo, formatPrice }, ref) => {
     const { format: currencyFormat } = useCurrency();
     const format = formatPrice || currencyFormat;
-
-    const handlePrint = () => {
-      window.print();
-    };
+    const [downloading, setDownloading] = useState(false);
 
     const handleDownload = async () => {
-      // Simple approach: use browser's print to PDF functionality
-      const printStyles = `
-        @media print {
-          body * {
-            visibility: hidden;
-          }
-          #invoice-content, #invoice-content * {
-            visibility: visible;
-          }
-          #invoice-content {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-          }
-          .no-print {
-            display: none !important;
-          }
-        }
-      `;
-
-      const styleSheet = document.createElement("style");
-      styleSheet.innerText = printStyles;
-      document.head.appendChild(styleSheet);
-
-      window.print();
-
-      setTimeout(() => {
-        document.head.removeChild(styleSheet);
-      }, 100);
+      setDownloading(true);
+      try {
+        await downloadInvoicePdf(order, shopInfo, format);
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+      } finally {
+        setDownloading(false);
+      }
     };
 
     const invoiceDate = new Date(order.order_date).toLocaleDateString('en-US', {
@@ -67,15 +43,15 @@ const OrderInvoice = React.forwardRef<HTMLDivElement, OrderInvoiceProps>(
 
     return (
       <div className="space-y-4">
-        {/* Action Buttons - Hidden when printing */}
-        <div className="flex gap-2 justify-end no-print">
-          <Button onClick={handlePrint} variant="outline">
-            <Printer className="w-4 h-4 mr-2" />
-            Print Invoice
-          </Button>
-          <Button onClick={handleDownload} variant="default">
-            <Download className="w-4 h-4 mr-2" />
-            Download as PDF
+        {/* Action Button */}
+        <div className="flex justify-end no-print">
+          <Button onClick={handleDownload} disabled={downloading} variant="default">
+            {downloading ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Download className="w-4 h-4 mr-2" />
+            )}
+            Download PDF
           </Button>
         </div>
 
@@ -162,7 +138,7 @@ const OrderInvoice = React.forwardRef<HTMLDivElement, OrderInvoiceProps>(
                 </tr>
               </thead>
               <tbody>
-                {order.items?.map((item, index) => (
+                {order.items?.map((item) => (
                   <tr key={item.order_item_id} className="border-b border-gray-200">
                     <td className="py-3 px-4 text-gray-700">{item.name_snapshot}</td>
                     <td className="py-3 px-4 text-gray-600 text-sm">{item.product_sku || '-'}</td>
@@ -218,33 +194,6 @@ const OrderInvoice = React.forwardRef<HTMLDivElement, OrderInvoiceProps>(
             </p>
           </div>
         </div>
-
-        {/* Print Styles */}
-        <style jsx global>{`
-          @media print {
-            body * {
-              visibility: hidden;
-            }
-            #invoice-content,
-            #invoice-content * {
-              visibility: visible;
-            }
-            #invoice-content {
-              position: absolute;
-              left: 0;
-              top: 0;
-              width: 100%;
-              box-shadow: none !important;
-              border: none !important;
-            }
-            .no-print {
-              display: none !important;
-            }
-            @page {
-              margin: 1cm;
-            }
-          }
-        `}</style>
       </div>
     );
   }

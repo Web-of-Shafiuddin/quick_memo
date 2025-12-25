@@ -1,10 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Printer } from 'lucide-react';
+import { Download, Loader2 } from 'lucide-react';
 import { Order } from '@/services/orderService';
 import { useCurrency } from '@/hooks/useCurrency';
+import { downloadMemoPdf } from './order-memo-pdf';
 
 interface OrderMemoProps {
   order: Order;
@@ -21,9 +22,17 @@ interface OrderMemoProps {
 const OrderMemo: React.FC<OrderMemoProps> = ({ order, shopInfo, formatPrice }) => {
   const { format: currencyFormat } = useCurrency();
   const format = formatPrice || currencyFormat;
+  const [downloading, setDownloading] = useState(false);
 
-  const handlePrint = () => {
-    window.print();
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      await downloadMemoPdf(order, shopInfo, format);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    } finally {
+      setDownloading(false);
+    }
   };
 
   const currentDate = new Date().toLocaleDateString('en-US', {
@@ -40,9 +49,13 @@ const OrderMemo: React.FC<OrderMemoProps> = ({ order, shopInfo, formatPrice }) =
     <div className="space-y-4">
       {/* Action Button */}
       <div className="flex justify-center no-print mb-4">
-        <Button onClick={handlePrint} size="lg">
-          <Printer className="w-4 h-4 mr-2" />
-          Print / Download as PDF
+        <Button onClick={handleDownload} disabled={downloading} size="lg">
+          {downloading ? (
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          ) : (
+            <Download className="w-4 h-4 mr-2" />
+          )}
+          Download PDF
         </Button>
       </div>
 
@@ -144,39 +157,6 @@ const OrderMemo: React.FC<OrderMemoProps> = ({ order, shopInfo, formatPrice }) =
           </div>
         </div>
       </div>
-
-      {/* Print Styles */}
-      <style jsx global>{`
-        @media print {
-          @page {
-            margin: 0.5cm;
-            size: A4;
-          }
-
-          body * {
-            visibility: hidden;
-          }
-
-          #memo-preview,
-          #memo-preview * {
-            visibility: visible !important;
-          }
-
-          #memo-preview {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            max-width: 100% !important;
-            box-shadow: none !important;
-            border: none !important;
-          }
-
-          .no-print {
-            display: none !important;
-          }
-        }
-      `}</style>
     </div>
   );
 };
