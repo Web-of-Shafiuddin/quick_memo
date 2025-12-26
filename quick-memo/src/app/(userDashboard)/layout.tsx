@@ -18,6 +18,7 @@ import useAuthStore from "@/store/authStore";
 import { useShallow } from "zustand/react/shallow";
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
+import NotificationBell from "@/components/NotificationBell";
 
 interface Subscription {
   subscription_id: number;
@@ -107,8 +108,19 @@ export default function ProtectedUserDashboardlayout({
                   {subscription.plan_name} Active
                 </Badge>
               )}
+              {subscription && subscription.status === 'GRACE_PERIOD' && (
+                <Link href="/subscription">
+                  <Badge className="bg-orange-100 text-orange-800 cursor-pointer hover:bg-orange-200">
+                    Grace Period - Renew Now
+                  </Badge>
+                </Link>
+              )}
               {subscription && subscription.status === 'EXPIRED' && (
-                <Badge className="bg-red-100 text-red-800">Expired</Badge>
+                <Link href="/subscription">
+                  <Badge className="bg-red-100 text-red-800 cursor-pointer hover:bg-red-200">
+                    Expired - Renew Now
+                  </Badge>
+                </Link>
               )}
               {subscription && subscription.status === 'ACTIVE' && subscription.plan_name === 'Free' && (
                 <Badge className="bg-gray-100 text-gray-800">Free Plan</Badge>
@@ -121,6 +133,7 @@ export default function ProtectedUserDashboardlayout({
                   </Badge>
                 </Link>
               )}
+              <NotificationBell />
               <Link href="/">
                 <Button variant="outline" size="sm">
                   <Home className="w-4 h-4 mr-2" />

@@ -8,23 +8,70 @@ interface SubscriptionLimits {
   can_upload_images: boolean;
 }
 
+interface SubscriptionInfo {
+  limits: SubscriptionLimits;
+  status: string;
+  end_date: Date;
+  grace_period_end: Date | null;
+  is_in_grace_period: boolean;
+  days_remaining: number;
+}
+
 interface UserCounts {
   product_count: number;
   category_count: number;
   monthly_order_count: number;
 }
 
-// Helper function to get user's subscription limits
-const getUserSubscriptionLimits = async (userId: number): Promise<SubscriptionLimits | null> => {
+// Helper function to get user's subscription info including grace period
+const getUserSubscriptionInfo = async (userId: number): Promise<SubscriptionInfo | null> => {
   const result = await pool.query(
-    `SELECT sp.max_categories, sp.max_products, sp.max_orders_per_month, sp.can_upload_images
+    `SELECT
+       sp.max_categories, sp.max_products, sp.max_orders_per_month, sp.can_upload_images,
+       s.status, s.end_date, s.grace_period_end,
+       CASE
+         WHEN s.status = 'GRACE_PERIOD' AND s.grace_period_end > NOW() THEN true
+         ELSE false
+       END as is_in_grace_period,
+       CASE
+         WHEN s.status = 'ACTIVE' AND s.end_date > NOW() THEN
+           EXTRACT(DAY FROM (s.end_date - NOW()))::int
+         WHEN s.status = 'GRACE_PERIOD' AND s.grace_period_end > NOW() THEN
+           EXTRACT(DAY FROM (s.grace_period_end - NOW()))::int
+         ELSE 0
+       END as days_remaining
      FROM subscriptions s
      JOIN subscription_plans sp ON s.plan_id = sp.plan_id
-     WHERE s.user_id = $1 AND s.status = 'ACTIVE' AND s.end_date > NOW()`,
+     WHERE s.user_id = $1
+       AND (
+         (s.status = 'ACTIVE' AND s.end_date > NOW())
+         OR (s.status = 'GRACE_PERIOD' AND s.grace_period_end > NOW())
+       )`,
     [userId]
   );
 
-  return result.rows[0] || null;
+  if (!result.rows[0]) return null;
+
+  const row = result.rows[0];
+  return {
+    limits: {
+      max_categories: row.max_categories,
+      max_products: row.max_products,
+      max_orders_per_month: row.max_orders_per_month,
+      can_upload_images: row.can_upload_images
+    },
+    status: row.status,
+    end_date: row.end_date,
+    grace_period_end: row.grace_period_end,
+    is_in_grace_period: row.is_in_grace_period,
+    days_remaining: row.days_remaining
+  };
+};
+
+// Legacy helper for backward compatibility
+const getUserSubscriptionLimits = async (userId: number): Promise<SubscriptionLimits | null> => {
+  const info = await getUserSubscriptionInfo(userId);
+  return info?.limits || null;
 };
 
 // Helper function to get user's current counts
@@ -272,24 +319,32 @@ export const getSubscriptionStatus = async (req: Request, res: Response) => {
       return res.status(401).json({ success: false, error: "Unauthorized" });
     }
 
-    const limits = await getUserSubscriptionLimits(userId);
+    const subscriptionInfo = await getUserSubscriptionInfo(userId);
     const counts = await getUserCounts(userId);
 
-    if (!limits) {
+    if (!subscriptionInfo) {
       return res.json({
         success: true,
         data: {
           hasActiveSubscription: false,
+          isInGracePeriod: false,
           limits: null,
           usage: counts
         }
       });
     }
 
+    const { limits } = subscriptionInfo;
+
     res.json({
       success: true,
       data: {
         hasActiveSubscription: true,
+        isInGracePeriod: subscriptionInfo.is_in_grace_period,
+        status: subscriptionInfo.status,
+        endDate: subscriptionInfo.end_date,
+        gracePeriodEnd: subscriptionInfo.grace_period_end,
+        daysRemaining: subscriptionInfo.days_remaining,
         limits,
         usage: counts,
         remaining: {

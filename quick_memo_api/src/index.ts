@@ -13,9 +13,11 @@ import adminRoutes from "./routes/adminRoutes.js";
 import invoiceRoutes from "./routes/invoiceRoutes.js";
 import analyticsRoutes from "./routes/analyticsRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
 import { errorHandler, notFound } from "./middleware/errorHandler.js";
 import pool from "./config/database.js";
 import cookieParser from "cookie-parser";
+import { startSubscriptionScheduler } from "./services/subscriptionScheduler.js";
 // Load environment variables
 dotenv.config();
 
@@ -55,14 +57,21 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/invoices", invoiceRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // Error handling
 app.use(notFound);
 app.use(errorHandler);
 
+// Subscription scheduler interval
+let schedulerInterval: NodeJS.Timeout | null = null;
+
 // Graceful shutdown
 const gracefulShutdown = async () => {
   console.log("\nShutting down gracefully...");
+  if (schedulerInterval) {
+    clearInterval(schedulerInterval);
+  }
   await pool.end();
   process.exit(0);
 };
@@ -79,6 +88,10 @@ app.listen(PORT, async () => {
   try {
     await pool.query("SELECT NOW()");
     console.log("✅ Database connected successfully");
+
+    // Start subscription scheduler (runs every hour)
+    schedulerInterval = startSubscriptionScheduler(60 * 60 * 1000);
+    console.log("📅 Subscription scheduler started");
   } catch (error) {
     console.error("❌ Database connection failed:", error);
   }
