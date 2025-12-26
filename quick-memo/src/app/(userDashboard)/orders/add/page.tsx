@@ -26,8 +26,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { customerService, Customer } from "@/services/customerService";
 import { productService, Product } from "@/services/productService";
+import { getActivePaymentMethods } from "@/services/paymentMethodService";
 import { orderService, CreateOrderItemInput } from "@/services/orderService";
 import { Plus, Trash2 } from "lucide-react";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -72,13 +74,9 @@ const AddOrderPage = () => {
       setCustomers(customersRes.data);
       setProducts(productsRes.data);
 
-      // Mock payment methods (in real app, would fetch from API)
-      setPaymentMethods([
-        { payment_method_id: 1, name: 'CASH' },
-        { payment_method_id: 2, name: 'CARD' },
-        { payment_method_id: 3, name: 'UPI' },
-        { payment_method_id: 4, name: 'ONLINE TRANSFER' },
-      ]);
+      // Fetch payment methods from API
+      const paymentMethodsRes = await getActivePaymentMethods();
+      setPaymentMethods(paymentMethodsRes);
     } catch (error: any) {
       console.error('Error fetching data:', error);
       alert('Failed to load initial data');
@@ -200,21 +198,18 @@ const AddOrderPage = () => {
               <h3 className="text-lg font-semibold">Customer Information</h3>
               <div className="space-y-2">
                 <Label htmlFor="customer">Select Customer *</Label>
-                <Select
-                  value={selectedCustomerId?.toString() || ""}
+                <SearchableSelect
+                  options={customers.map((customer) => ({
+                    value: customer.customer_id.toString(),
+                    label: customer.name,
+                    description: customer.mobile || customer.email || undefined,
+                  }))}
+                  value={selectedCustomerId?.toString() || null}
                   onValueChange={(value) => setSelectedCustomerId(parseInt(value))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose a customer" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {customers.map((customer) => (
-                      <SelectItem key={customer.customer_id} value={customer.customer_id.toString()}>
-                        {customer.name} {customer.mobile && `(${customer.mobile})`}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  placeholder="Choose a customer"
+                  searchPlaceholder="Search customers..."
+                  emptyMessage="No customers found."
+                />
               </div>
 
               {selectedCustomer && (
@@ -273,21 +268,18 @@ const AddOrderPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="product">Product</Label>
-                  <Select
-                    value={selectedProductId?.toString() || ""}
+                  <SearchableSelect
+                    options={products.map((product) => ({
+                      value: product.product_id.toString(),
+                      label: product.name,
+                      description: `${formatPrice(product.price)} | Stock: ${product.stock}`,
+                    }))}
+                    value={selectedProductId?.toString() || null}
                     onValueChange={(value) => setSelectedProductId(parseInt(value))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose a product" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {products.map((product) => (
-                        <SelectItem key={product.product_id} value={product.product_id.toString()}>
-                          {product.name} - {formatPrice(product.price)} (Stock: {product.stock})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    placeholder="Choose a product"
+                    searchPlaceholder="Search products..."
+                    emptyMessage="No products found."
+                  />
                 </div>
 
                 <div className="space-y-2">

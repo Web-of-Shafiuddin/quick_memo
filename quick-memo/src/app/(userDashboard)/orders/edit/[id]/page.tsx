@@ -30,6 +30,7 @@ import { Badge } from "@/components/ui/badge";
 import { customerService, Customer } from "@/services/customerService";
 import { productService, Product } from "@/services/productService";
 import { orderService, Order, OrderItem } from "@/services/orderService";
+import { getActivePaymentMethods } from "@/services/paymentMethodService";
 import { Plus, Trash2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -101,13 +102,9 @@ const EditOrderPage = () => {
       });
       setOrderItems(extendedItems);
 
-      // Mock payment methods (in real app, would fetch from API)
-      setPaymentMethods([
-        { payment_method_id: 1, name: 'CASH' },
-        { payment_method_id: 2, name: 'CARD' },
-        { payment_method_id: 3, name: 'UPI' },
-        { payment_method_id: 4, name: 'ONLINE TRANSFER' },
-      ]);
+      // Fetch payment methods from API
+      const paymentMethodsRes = await getActivePaymentMethods();
+      setPaymentMethods(paymentMethodsRes);
     } catch (error: any) {
       console.error('Error fetching data:', error);
       alert('Failed to load order data');
