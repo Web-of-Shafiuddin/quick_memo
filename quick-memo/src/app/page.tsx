@@ -207,7 +207,7 @@ export default function HomePage() {
                   <Link href="/auth/login">
                     <Button variant="ghost">Log in</Button>
                   </Link>
-                  <Link href="/auth/register">
+                  <Link href="/auth/login">
                     <Button>
                       Start Free
                       <ArrowRight className="w-4 h-4 ml-2" />
@@ -249,7 +249,7 @@ export default function HomePage() {
                   <Link href="/auth/login">
                     <Button variant="outline" className="w-full">Log in</Button>
                   </Link>
-                  <Link href="/auth/register">
+                  <Link href="/auth/login">
                     <Button className="w-full">Start Free</Button>
                   </Link>
                 </>
@@ -285,7 +285,7 @@ export default function HomePage() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-              <Link href={isAuthenticated ? '/dashboard' : '/auth/register'}>
+              <Link href={isAuthenticated ? '/dashboard' : '/auth/login'}>
                 <Button size="lg" className="text-lg px-8 py-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
                   Start Free Today
                   <ArrowRight className="w-5 h-5 ml-2" />
@@ -595,7 +595,7 @@ export default function HomePage() {
             Join thousands of Bangladeshi entrepreneurs who trust QuickMemo to manage their online business.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href={isAuthenticated ? '/dashboard' : '/auth/register'}>
+            <Link href={isAuthenticated ? '/dashboard' : '/auth/login'}>
               <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 text-lg px-8 py-6">
                 Get Started Free
                 <ArrowRight className="w-5 h-5 ml-2" />

@@ -103,8 +103,7 @@ export default function LoginPage() {
                         <FileText className="w-8 h-8 text-primary-foreground" />
                     </div>
                     <h1 className="text-2xl font-bold text-gray-900">QuickMemo BD</h1>
-                    <p className="text-gray-600">Your Professional Memo Generator</p>
-                    <p className="text-sm text-blue-600 mt-2">(Demo Mode - No Backend)</p>
+                    <p className="text-gray-600">Your Professional Sales Tracker</p>
                 </div>
 
                 <Card>
