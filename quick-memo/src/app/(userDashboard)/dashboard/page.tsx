@@ -58,6 +58,7 @@ import {
   SalesPrediction,
 } from "@/services/analyticsService";
 import { formatCurrency } from "@/lib/currency";
+import { useCurrency } from "@/hooks/useCurrency";
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
@@ -80,8 +81,10 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState("30");
 
+  const { currency } = useCurrency();
+
   // Format price helper using BDT as default
-  const formatPrice = (amount: number) => formatCurrency(amount, "BDT");
+  const formatPrice = (amount: number) => formatCurrency(amount, currency);
 
   // Analytics data states
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);

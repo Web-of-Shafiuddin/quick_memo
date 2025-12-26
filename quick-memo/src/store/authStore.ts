@@ -1,4 +1,5 @@
-import { create } from "zustand";
+import { create, StateCreator } from "zustand";
+import { devtools, persist } from "zustand/middleware";
 import { User } from "@/types/User";
 
 interface AuthState {
@@ -7,22 +8,52 @@ interface AuthState {
   setUser: (userData: User) => void;
   clearUser: () => void;
   setLoading: (loading: boolean) => void;
+  updateUser: (userData: Partial<User>) => void;
 }
 
-const useAuthStore = create<AuthState>((set) => ({
-  user: null, // Null if unauthenticated, object if authenticated
-  isLoading: true, // Start as true to prevent premature redirects
+const createAuthSlice: StateCreator<
+  AuthState,
+  [["zustand/devtools", never], ["zustand/persist", unknown]]
+> = (set) => ({
+  // --- State ---
+  user: null,
+  isLoading: true,
 
   // --- Actions ---
+  setUser: (userData: User) => {
+    set({ user: userData, isLoading: false }, false, "setUser");
+  },
 
-  // Called on app load or login to set the authenticated state
-  setUser: (userData) => set({ user: userData, isLoading: false }),
+  clearUser: () => {
+    set({ user: null, isLoading: false }, false, "clearUser");
+  },
 
-  // Called on logout or failed session check
-  clearUser: () => set({ user: null, isLoading: false }),
+  setLoading: (loading: boolean) => {
+    set({ isLoading: loading }, false, "setLoading");
+  },
 
-  // Set loading state (e.g., during login or initial check)
-  setLoading: (loading) => set({ isLoading: loading }),
-}));
+  updateUser: (userData: Partial<User>) => {
+    set(
+      (state) => ({
+        user: state.user ? { ...state.user, ...userData } : null,
+      }),
+      false,
+      "updateUser"
+    );
+  },
+});
+
+const useAuthStore = create<AuthState>()(
+  devtools(
+    persist(createAuthSlice, {
+      name: "auth-storage",
+      partialize: (state) => ({ user: state.user }),
+    }),
+    {
+      name: "AuthStore",
+      enabled: process.env.NODE_ENV === "development",
+    }
+  )
+);
 
 export default useAuthStore;
