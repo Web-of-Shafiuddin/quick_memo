@@ -14,6 +14,7 @@ import invoiceRoutes from "./routes/invoiceRoutes.js";
 import analyticsRoutes from "./routes/analyticsRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
+import paymentMethodRoutes from "./routes/paymentMethodRoutes.js";
 import { errorHandler, notFound } from "./middleware/errorHandler.js";
 import pool from "./config/database.js";
 import cookieParser from "cookie-parser";
@@ -58,6 +59,7 @@ app.use("/api/invoices", invoiceRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/payment-methods", paymentMethodRoutes);
 
 // Error handling
 app.use(notFound);

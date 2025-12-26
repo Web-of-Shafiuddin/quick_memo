@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Calendar,
+  CreditCard,
   Crown,
   FileText,
   Home,
@@ -199,6 +200,12 @@ export default function ProtectedUserDashboardlayout({
                   <Button variant="outline" className="w-full justify-start">
                     <Crown className="w-4 h-4 mr-2" />
                     Subscription
+                  </Button>
+                </Link>
+                <Link href="/payment-methods">
+                  <Button variant="outline" className="w-full justify-start">
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    Payment Methods
                   </Button>
                 </Link>
                 <Button
