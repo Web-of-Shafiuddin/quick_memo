@@ -335,7 +335,9 @@ export default function SubscriptionPage() {
             {plans.filter(p => p.is_active).map((plan) => {
               const price = getPrice(plan);
               const isCurrent = subscription?.plan_name === plan.name;
-              const isFree = plan.monthly_price === 0;
+              const isFree = Number(plan.monthly_price) === 0;
+              // console.log("plans: ", plans)
+              // console.log("isFree: ", isFree)
 
               return (
                 <Card
@@ -401,7 +403,7 @@ export default function SubscriptionPage() {
                       </div>
                     )}
 
-                    {isFree && !isCurrent && !subscription && (
+                    {/* {isFree && !isCurrent && !subscription && (
                       <Button
                         className="w-full"
                         variant="outline"
@@ -411,7 +413,7 @@ export default function SubscriptionPage() {
                         <Check className="w-4 h-4 mr-2" />
                         Activate Free Plan
                       </Button>
-                    )}
+                    )} */}
 
                     {!isFree && !isCurrent && (
                       <Button
