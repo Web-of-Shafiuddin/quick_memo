@@ -451,7 +451,7 @@ export default function SubscriptionPage() {
                   <p className="text-sm text-muted-foreground">{selectedPlan.description}</p>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-bold">৳{getPrice(selectedPlan).toLocaleString()}</div>
+                  <div className="text-2xl font-bold">${getPrice(selectedPlan).toLocaleString()}</div>
                   <div className="text-sm text-muted-foreground">
                     for {getDurationLabel(DURATION_MONTHS[billingCycle])}
                   </div>
@@ -464,13 +464,13 @@ export default function SubscriptionPage() {
                 <Tabs value={billingCycle} onValueChange={(v) => setBillingCycle(v as BillingCycle)}>
                   <TabsList className="w-full">
                     <TabsTrigger value="monthly" className="flex-1">
-                      Monthly - ৳{selectedPlan.monthly_price}
+                      Monthly - ${selectedPlan.monthly_price}
                     </TabsTrigger>
                     <TabsTrigger value="half_yearly" className="flex-1">
-                      6 Months - ৳{selectedPlan.half_yearly_price || selectedPlan.monthly_price * 6}
+                      6 Months - ${selectedPlan.half_yearly_price || selectedPlan.monthly_price * 6}
                     </TabsTrigger>
                     <TabsTrigger value="yearly" className="flex-1">
-                      Yearly - ৳{selectedPlan.yearly_price || selectedPlan.monthly_price * 12}
+                      Yearly - ${selectedPlan.yearly_price || selectedPlan.monthly_price * 12}
                     </TabsTrigger>
                   </TabsList>
                 </Tabs>
