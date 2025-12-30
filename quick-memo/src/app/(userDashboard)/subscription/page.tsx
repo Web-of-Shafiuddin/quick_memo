@@ -1,18 +1,40 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Crown, CheckCircle, Clock, XCircle, Send, CreditCard, AlertCircle, ExternalLink, Check } from 'lucide-react';
-import { toast } from 'sonner';
-import api from '@/lib/api';
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Crown,
+  CheckCircle,
+  Clock,
+  XCircle,
+  Send,
+  CreditCard,
+  AlertCircle,
+  ExternalLink,
+  Check,
+} from "lucide-react";
+import { toast } from "sonner";
+import api from "@/lib/api";
 
 interface Plan {
   plan_id: number;
@@ -56,19 +78,19 @@ interface SubscriptionRequest {
   created_at: string;
 }
 
-type BillingCycle = 'monthly' | 'half_yearly' | 'yearly';
+type BillingCycle = "monthly" | "half_yearly" | "yearly";
 
 const PAYMENT_METHODS = [
-  { value: 'bKash', label: 'bKash' },
-  { value: 'Nagad', label: 'Nagad' },
-  { value: 'Rocket', label: 'Rocket' },
-  { value: 'Bank Transfer', label: 'Bank Transfer' },
+  { value: "bKash", label: "bKash" },
+  { value: "Nagad", label: "Nagad" },
+  { value: "Rocket", label: "Rocket" },
+  { value: "Bank Transfer", label: "Bank Transfer" },
 ];
 
 const BILLING_LABELS: Record<BillingCycle, string> = {
-  monthly: 'Monthly',
-  half_yearly: '6 Months',
-  yearly: 'Yearly',
+  monthly: "Monthly",
+  half_yearly: "6 Months",
+  yearly: "Yearly",
 };
 
 const DURATION_MONTHS: Record<BillingCycle, number> = {
@@ -79,8 +101,8 @@ const DURATION_MONTHS: Record<BillingCycle, number> = {
 
 export default function SubscriptionPage() {
   const searchParams = useSearchParams();
-  const preselectedPlanId = searchParams.get('plan');
-  const preselectedBilling = searchParams.get('billing') as BillingCycle | null;
+  const preselectedPlanId = searchParams.get("plan");
+  const preselectedBilling = searchParams.get("billing") as BillingCycle | null;
 
   const [plans, setPlans] = useState<Plan[]>([]);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
@@ -88,12 +110,14 @@ export default function SubscriptionPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
-  const [billingCycle, setBillingCycle] = useState<BillingCycle>(preselectedBilling || 'monthly');
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>(
+    preselectedBilling || "monthly"
+  );
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
-    payment_method: '',
-    transaction_id: '',
-    phone_number: '',
+    payment_method: "",
+    transaction_id: "",
+    phone_number: "",
   });
 
   useEffect(() => {
@@ -103,7 +127,7 @@ export default function SubscriptionPage() {
   useEffect(() => {
     // Auto-select plan from URL params
     if (preselectedPlanId && plans.length > 0) {
-      const plan = plans.find(p => p.plan_id === parseInt(preselectedPlanId));
+      const plan = plans.find((p) => p.plan_id === parseInt(preselectedPlanId));
       if (plan && plan.monthly_price > 0) {
         setSelectedPlan(plan);
         setShowForm(true);
@@ -115,22 +139,25 @@ export default function SubscriptionPage() {
     try {
       setLoading(true);
       const [plansRes, subRes, requestsRes] = await Promise.all([
-        api.get('/subscriptions/plans'),
-        api.get('/subscriptions/my-subscription'),
-        api.get('/subscriptions/my-requests'),
+        api.get("/subscriptions/plans"),
+        api.get("/subscriptions/my-subscription"),
+        api.get("/subscriptions/my-requests"),
       ]);
 
       const plansData = plansRes.data.data || [];
       const parsedPlans = plansData.map((plan: any) => ({
         ...plan,
-        features: typeof plan.features === 'string' ? JSON.parse(plan.features) : plan.features || []
+        features:
+          typeof plan.features === "string"
+            ? JSON.parse(plan.features)
+            : plan.features || [],
       }));
 
       setPlans(parsedPlans);
       setSubscription(subRes.data.data || null);
       setRequests(requestsRes.data.data || []);
     } catch (error) {
-      console.error('Error fetching subscription data:', error);
+      console.error("Error fetching subscription data:", error);
     } finally {
       setLoading(false);
     }
@@ -138,9 +165,9 @@ export default function SubscriptionPage() {
 
   const getPrice = (plan: Plan): number => {
     switch (billingCycle) {
-      case 'half_yearly':
+      case "half_yearly":
         return plan.half_yearly_price || plan.monthly_price * 6;
-      case 'yearly':
+      case "yearly":
         return plan.yearly_price || plan.monthly_price * 12;
       default:
         return plan.monthly_price;
@@ -151,21 +178,23 @@ export default function SubscriptionPage() {
     setSelectedPlan(plan);
     setShowForm(true);
     setFormData({
-      payment_method: '',
-      transaction_id: '',
-      phone_number: '',
+      payment_method: "",
+      transaction_id: "",
+      phone_number: "",
     });
   };
 
   const handleActivateFreePlan = async () => {
     try {
       setSubmitting(true);
-      await api.post('/subscriptions/activate-free');
-      toast.success('Free plan activated successfully!');
+      await api.post("/subscriptions/activate-free");
+      toast.success("Free plan activated successfully!");
       fetchData();
     } catch (error: any) {
-      console.error('Error activating free plan:', error);
-      toast.error(error.response?.data?.error || 'Failed to activate free plan');
+      console.error("Error activating free plan:", error);
+      toast.error(
+        error.response?.data?.error || "Failed to activate free plan"
+      );
     } finally {
       setSubmitting(false);
     }
@@ -176,7 +205,7 @@ export default function SubscriptionPage() {
     if (!selectedPlan) return;
 
     if (!formData.payment_method || !formData.transaction_id) {
-      toast.error('Please fill in all required fields');
+      toast.error("Please fill in all required fields");
       return;
     }
 
@@ -185,7 +214,7 @@ export default function SubscriptionPage() {
 
     try {
       setSubmitting(true);
-      await api.post('/subscriptions/request', {
+      await api.post("/subscriptions/request", {
         plan_id: selectedPlan.plan_id,
         payment_method: formData.payment_method,
         transaction_id: formData.transaction_id,
@@ -194,13 +223,15 @@ export default function SubscriptionPage() {
         duration_months: durationMonths,
       });
 
-      toast.success('Subscription request submitted! We will verify your payment within 24 hours.');
+      toast.success(
+        "Subscription request submitted! We will verify your payment within 24 hours."
+      );
       setShowForm(false);
       setSelectedPlan(null);
       fetchData();
     } catch (error: any) {
-      console.error('Error submitting request:', error);
-      toast.error(error.response?.data?.error || 'Failed to submit request');
+      console.error("Error submitting request:", error);
+      toast.error(error.response?.data?.error || "Failed to submit request");
     } finally {
       setSubmitting(false);
     }
@@ -208,17 +239,37 @@ export default function SubscriptionPage() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'PENDING':
-        return <Badge className="bg-yellow-100 text-yellow-800"><Clock className="w-3 h-3 mr-1" />Pending</Badge>;
-      case 'APPROVED':
-        return <Badge className="bg-green-100 text-green-800"><CheckCircle className="w-3 h-3 mr-1" />Approved</Badge>;
-      case 'REJECTED':
-        return <Badge className="bg-red-100 text-red-800"><XCircle className="w-3 h-3 mr-1" />Rejected</Badge>;
-      case 'ACTIVE':
-        return <Badge className="bg-green-100 text-green-800"><CheckCircle className="w-3 h-3 mr-1" />Active</Badge>;
-      case 'EXPIRED':
+      case "PENDING":
+        return (
+          <Badge className="bg-yellow-100 text-yellow-800">
+            <Clock className="w-3 h-3 mr-1" />
+            Pending
+          </Badge>
+        );
+      case "APPROVED":
+        return (
+          <Badge className="bg-green-100 text-green-800">
+            <CheckCircle className="w-3 h-3 mr-1" />
+            Approved
+          </Badge>
+        );
+      case "REJECTED":
+        return (
+          <Badge className="bg-red-100 text-red-800">
+            <XCircle className="w-3 h-3 mr-1" />
+            Rejected
+          </Badge>
+        );
+      case "ACTIVE":
+        return (
+          <Badge className="bg-green-100 text-green-800">
+            <CheckCircle className="w-3 h-3 mr-1" />
+            Active
+          </Badge>
+        );
+      case "EXPIRED":
         return <Badge className="bg-gray-100 text-gray-800">Expired</Badge>;
-      case 'CANCELED':
+      case "CANCELED":
         return <Badge className="bg-red-100 text-red-800">Canceled</Badge>;
       default:
         return <Badge>{status}</Badge>;
@@ -226,21 +277,21 @@ export default function SubscriptionPage() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
   const formatLimit = (value: number) => {
-    return value === -1 ? 'Unlimited' : value.toLocaleString();
+    return value === -1 ? "Unlimited" : value.toLocaleString();
   };
 
   const getDurationLabel = (months: number) => {
-    if (months === 1) return '1 month';
-    if (months === 6) return '6 months';
-    if (months === 12) return '1 year';
+    if (months === 1) return "1 month";
+    if (months === 6) return "6 months";
+    if (months === 12) return "1 year";
     return `${months} months`;
   };
 
@@ -283,11 +334,15 @@ export default function SubscriptionPage() {
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-muted-foreground">Start Date:</span>
-                <span className="ml-2 font-medium">{formatDate(subscription.start_date)}</span>
+                <span className="ml-2 font-medium">
+                  {formatDate(subscription.start_date)}
+                </span>
               </div>
               <div>
                 <span className="text-muted-foreground">End Date:</span>
-                <span className="ml-2 font-medium">{formatDate(subscription.end_date)}</span>
+                <span className="ml-2 font-medium">
+                  {formatDate(subscription.end_date)}
+                </span>
               </div>
             </div>
           </CardContent>
@@ -295,15 +350,18 @@ export default function SubscriptionPage() {
       )}
 
       {/* Pending Request Notice */}
-      {requests.some(r => r.status === 'PENDING') && (
+      {requests.some((r) => r.status === "PENDING") && (
         <Card className="border-yellow-300 bg-yellow-50">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <AlertCircle className="w-5 h-5 text-yellow-600" />
               <div>
-                <p className="font-medium text-yellow-800">Payment Verification Pending</p>
+                <p className="font-medium text-yellow-800">
+                  Payment Verification Pending
+                </p>
                 <p className="text-sm text-yellow-700">
-                  Your subscription request is being verified. This usually takes up to 24 hours.
+                  Your subscription request is being verified. This usually
+                  takes up to 24 hours.
                 </p>
               </div>
             </div>
@@ -316,7 +374,10 @@ export default function SubscriptionPage() {
         <>
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">Available Plans</h2>
-            <Tabs value={billingCycle} onValueChange={(v) => setBillingCycle(v as BillingCycle)}>
+            <Tabs
+              value={billingCycle}
+              onValueChange={(v) => setBillingCycle(v as BillingCycle)}
+            >
               <TabsList>
                 <TabsTrigger value="monthly">Monthly</TabsTrigger>
                 <TabsTrigger value="half_yearly">
@@ -332,78 +393,111 @@ export default function SubscriptionPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {plans.filter(p => p.is_active).map((plan) => {
-              const price = getPrice(plan);
-              const isCurrent = subscription?.plan_name === plan.name;
-              const isFree = Number(plan.monthly_price) === 0;
-              // console.log("plans: ", plans)
-              // console.log("isFree: ", isFree)
+            {plans
+              .filter((p) => p.is_active)
+              .map((plan) => {
+                const price = getPrice(plan);
+                const isCurrent = subscription?.plan_name === plan.name;
+                const isFree = Number(plan.monthly_price) === 0;
+                // console.log("plans: ", plans)
+                // console.log("isFree: ", isFree)
 
-              return (
-                <Card
-                  key={plan.plan_id}
-                  className={`relative ${isCurrent ? 'border-primary border-2' : ''} ${plan.is_popular ? 'ring-2 ring-green-500' : ''}`}
-                >
-                  {isCurrent && (
-                    <Badge className="absolute top-2 right-2 bg-primary">Current</Badge>
-                  )}
-                  {plan.is_popular && !isCurrent && (
-                    <Badge className="absolute top-2 right-2 bg-green-500">Popular</Badge>
-                  )}
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                      <span>{plan.name}</span>
-                      <div className="text-right">
-                        <span className="text-2xl font-bold">
-                          {isFree ? 'Free' : `$${price.toLocaleString()}`}
-                        </span>
-                        {!isFree && (
-                          <span className="text-sm text-muted-foreground block">
-                            /{BILLING_LABELS[billingCycle].toLowerCase()}
+                return (
+                  <Card
+                    key={plan.plan_id}
+                    className={`relative ${
+                      isCurrent ? "border-primary border-2" : ""
+                    } ${plan.is_popular ? "ring-2 ring-green-500" : ""}`}
+                  >
+                    {isCurrent && (
+                      <Badge className="absolute top-2 right-2 bg-primary">
+                        Current
+                      </Badge>
+                    )}
+                    {plan.is_popular && !isCurrent && (
+                      <Badge className="absolute top-2 right-2 bg-green-500">
+                        Popular
+                      </Badge>
+                    )}
+                    <CardHeader>
+                      <CardTitle className="flex items-center justify-between">
+                        <span>{plan.name}</span>
+                        <div className="text-right">
+                          <span className="text-2xl font-bold">
+                            {isFree ? "Free" : `$${price.toLocaleString()}`}
                           </span>
-                        )}
-                      </div>
-                    </CardTitle>
-                    {plan.description && (
-                      <CardDescription>{plan.description}</CardDescription>
-                    )}
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <ul className="space-y-2 text-sm">
-                      <li className="flex justify-between">
-                        <span className="text-muted-foreground">Products</span>
-                        <span className="font-medium">{formatLimit(plan.max_products)}</span>
-                      </li>
-                      <li className="flex justify-between">
-                        <span className="text-muted-foreground">Orders/Month</span>
-                        <span className="font-medium">{formatLimit(plan.max_orders_per_month)}</span>
-                      </li>
-                      <li className="flex justify-between">
-                        <span className="text-muted-foreground">Customers</span>
-                        <span className="font-medium">{formatLimit(plan.max_customers)}</span>
-                      </li>
-                      <li className="flex justify-between">
-                        <span className="text-muted-foreground">Categories</span>
-                        <span className="font-medium">{formatLimit(plan.max_categories)}</span>
-                      </li>
-                      <li className="flex justify-between">
-                        <span className="text-muted-foreground">Image Upload</span>
-                        <span className="font-medium">{plan.can_upload_images ? 'Yes' : 'No'}</span>
-                      </li>
-                    </ul>
+                          {!isFree && (
+                            <span className="text-sm text-muted-foreground block">
+                              /{BILLING_LABELS[billingCycle].toLowerCase()}
+                            </span>
+                          )}
+                        </div>
+                      </CardTitle>
+                      {plan.description && (
+                        <CardDescription>{plan.description}</CardDescription>
+                      )}
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <ul className="space-y-2 text-sm">
+                        <li className="flex justify-between">
+                          <span className="text-muted-foreground">
+                            Products
+                          </span>
+                          <span className="font-medium">
+                            {formatLimit(plan.max_products)}
+                          </span>
+                        </li>
+                        <li className="flex justify-between">
+                          <span className="text-muted-foreground">
+                            Orders/Month
+                          </span>
+                          <span className="font-medium">
+                            {formatLimit(plan.max_orders_per_month)}
+                          </span>
+                        </li>
+                        <li className="flex justify-between">
+                          <span className="text-muted-foreground">
+                            Customers
+                          </span>
+                          <span className="font-medium">
+                            {formatLimit(plan.max_customers)}
+                          </span>
+                        </li>
+                        <li className="flex justify-between">
+                          <span className="text-muted-foreground">
+                            Categories
+                          </span>
+                          <span className="font-medium">
+                            {formatLimit(plan.max_categories)}
+                          </span>
+                        </li>
+                        <li className="flex justify-between">
+                          <span className="text-muted-foreground">
+                            Image Upload
+                          </span>
+                          <span className="font-medium">
+                            {plan.can_upload_images ? "Yes" : "No"}
+                          </span>
+                        </li>
+                      </ul>
 
-                    {plan.features && plan.features.length > 0 && (
-                      <div className="pt-2 border-t space-y-1">
-                        {plan.features.slice(0, 3).map((feature, i) => (
-                          <div key={i} className="flex items-center gap-2 text-sm">
-                            <Check className="w-4 h-4 text-green-500" />
-                            <span className="text-muted-foreground">{feature}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                      {plan.features && plan.features.length > 0 && (
+                        <div className="pt-2 border-t space-y-1">
+                          {plan.features.slice(0, 3).map((feature, i) => (
+                            <div
+                              key={i}
+                              className="flex items-center gap-2 text-sm"
+                            >
+                              <Check className="w-4 h-4 text-green-500" />
+                              <span className="text-muted-foreground">
+                                {feature}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
 
-                    {/* {isFree && !isCurrent && !subscription && (
+                      {/* {isFree && !isCurrent && !subscription && (
                       <Button
                         className="w-full"
                         variant="outline"
@@ -415,20 +509,22 @@ export default function SubscriptionPage() {
                       </Button>
                     )} */}
 
-                    {!isFree && !isCurrent && (
-                      <Button
-                        className="w-full"
-                        onClick={() => handleSelectPlan(plan)}
-                        disabled={requests.some(r => r.status === 'PENDING')}
-                      >
-                        <CreditCard className="w-4 h-4 mr-2" />
-                        Subscribe
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })}
+                      {!isFree && !isCurrent && (
+                        <Button
+                          className="w-full"
+                          onClick={() => handleSelectPlan(plan)}
+                          disabled={requests.some(
+                            (r) => r.status === "PENDING"
+                          )}
+                        >
+                          <CreditCard className="w-4 h-4 mr-2" />
+                          Subscribe
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
           </div>
         </>
       )}
@@ -448,10 +544,14 @@ export default function SubscriptionPage() {
               <div className="flex justify-between items-center mb-4">
                 <div>
                   <h3 className="font-semibold">{selectedPlan.name} Plan</h3>
-                  <p className="text-sm text-muted-foreground">{selectedPlan.description}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedPlan.description}
+                  </p>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-bold">${getPrice(selectedPlan).toLocaleString()}</div>
+                  <div className="text-2xl font-bold">
+                    ${getPrice(selectedPlan).toLocaleString()}
+                  </div>
                   <div className="text-sm text-muted-foreground">
                     for {getDurationLabel(DURATION_MONTHS[billingCycle])}
                   </div>
@@ -461,16 +561,23 @@ export default function SubscriptionPage() {
               {/* Billing Cycle Selector */}
               <div className="space-y-2">
                 <Label>Billing Cycle</Label>
-                <Tabs value={billingCycle} onValueChange={(v) => setBillingCycle(v as BillingCycle)}>
+                <Tabs
+                  value={billingCycle}
+                  onValueChange={(v) => setBillingCycle(v as BillingCycle)}
+                >
                   <TabsList className="w-full">
                     <TabsTrigger value="monthly" className="flex-1">
                       Monthly - ${selectedPlan.monthly_price}
                     </TabsTrigger>
                     <TabsTrigger value="half_yearly" className="flex-1">
-                      6 Months - ${selectedPlan.half_yearly_price || selectedPlan.monthly_price * 6}
+                      6 Months - $
+                      {selectedPlan.half_yearly_price ||
+                        selectedPlan.monthly_price * 6}
                     </TabsTrigger>
                     <TabsTrigger value="yearly" className="flex-1">
-                      Yearly - ${selectedPlan.yearly_price || selectedPlan.monthly_price * 12}
+                      Yearly - $
+                      {selectedPlan.yearly_price ||
+                        selectedPlan.monthly_price * 12}
                     </TabsTrigger>
                   </TabsList>
                 </Tabs>
@@ -478,13 +585,32 @@ export default function SubscriptionPage() {
             </div>
 
             <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-              <h3 className="font-semibold text-blue-900 mb-2">Payment Instructions</h3>
+              <h3 className="font-semibold text-blue-900 mb-2">
+                Payment Instructions
+              </h3>
               <ol className="list-decimal list-inside text-sm text-blue-800 space-y-1">
-                <li>Send <strong>৳{getPrice(selectedPlan).toLocaleString()}</strong> to our payment account</li>
-                <li>bKash/Nagad/Rocket: <span className="font-mono font-bold">01XXXXXXXXX</span></li>
+                <li>
+                  Send{" "}
+                  <strong>${getPrice(selectedPlan).toLocaleString()}</strong> to
+                  our payment account
+                </li>
+                <li>
+                  bKash/Nagad/Rocket:{" "}
+                  <span className="font-mono font-bold">01799-979-556</span>
+                </li>
                 <li>Copy the Transaction ID from your payment confirmation</li>
                 <li>Fill in the form below and submit</li>
                 <li>We will verify your payment within 24 hours</li>
+                <li>
+                  You can reach us on
+                  <a
+                    href="https://wa.me/+8801908163131"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {" "}+8801908163131 WhatsApp or Dial
+                  </a>
+                </li>
               </ol>
             </div>
 
@@ -493,7 +619,9 @@ export default function SubscriptionPage() {
                 <Label htmlFor="payment_method">Payment Method *</Label>
                 <Select
                   value={formData.payment_method}
-                  onValueChange={(value) => setFormData({ ...formData, payment_method: value })}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, payment_method: value })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select payment method" />
@@ -513,18 +641,24 @@ export default function SubscriptionPage() {
                 <Input
                   id="transaction_id"
                   value={formData.transaction_id}
-                  onChange={(e) => setFormData({ ...formData, transaction_id: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, transaction_id: e.target.value })
+                  }
                   placeholder="Enter transaction ID from payment confirmation"
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="phone_number">Phone Number (used for payment)</Label>
+                <Label htmlFor="phone_number">
+                  Phone Number (used for payment)
+                </Label>
                 <Input
                   id="phone_number"
                   value={formData.phone_number}
-                  onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, phone_number: e.target.value })
+                  }
                   placeholder="01XXXXXXXXX"
                 />
               </div>
@@ -542,7 +676,7 @@ export default function SubscriptionPage() {
                 </Button>
                 <Button type="submit" disabled={submitting}>
                   <Send className="w-4 h-4 mr-2" />
-                  {submitting ? 'Submitting...' : 'Submit Request'}
+                  {submitting ? "Submitting..." : "Submit Request"}
                 </Button>
               </div>
             </form>
@@ -555,7 +689,9 @@ export default function SubscriptionPage() {
         <Card>
           <CardHeader>
             <CardTitle>Request History</CardTitle>
-            <CardDescription>Your subscription payment requests</CardDescription>
+            <CardDescription>
+              Your subscription payment requests
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -576,12 +712,14 @@ export default function SubscriptionPage() {
                       <span className="mx-2">•</span>
                       <span>${request.amount}</span>
                       <span className="mx-2">•</span>
-                      <span>{getDurationLabel(request.duration_months || 1)}</span>
+                      <span>
+                        {getDurationLabel(request.duration_months || 1)}
+                      </span>
                     </div>
                     <div className="text-xs text-muted-foreground">
                       Submitted: {formatDate(request.created_at)}
                     </div>
-                    {request.admin_notes && request.status === 'REJECTED' && (
+                    {request.admin_notes && request.status === "REJECTED" && (
                       <div className="text-sm text-red-600 mt-2">
                         Reason: {request.admin_notes}
                       </div>

@@ -463,7 +463,7 @@ export default function HomePage() {
                   {/* Mini Dashboard Preview */}
                   <Card className="p-4">
                     <div className="flex items-center justify-between mb-4">
-                      <span className="font-medium">Today's Sales</span>
+                      <span className="font-medium">Today&apos;s Sales</span>
                       <Badge className="bg-green-100 text-green-700">+12%</Badge>
                     </div>
                     <div className="text-3xl font-bold">৳45,230</div>
@@ -602,7 +602,7 @@ export default function HomePage() {
               </Button>
             </Link>
             <Link href="/pricing">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10 text-lg px-8 py-6">
+              <Button size="lg" variant="outline" className="border-white text-black hover:text-white hover:bg-white/10 text-lg px-8 py-6">
                 View Pricing
               </Button>
             </Link>
