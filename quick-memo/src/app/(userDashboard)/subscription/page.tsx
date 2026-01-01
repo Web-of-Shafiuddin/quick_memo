@@ -497,7 +497,7 @@ export default function SubscriptionPage() {
                         </div>
                       )}
 
-                      {/* {isFree && !isCurrent && !subscription && (
+                      {isFree && !isCurrent && !subscription && (
                       <Button
                         className="w-full"
                         variant="outline"
@@ -507,7 +507,7 @@ export default function SubscriptionPage() {
                         <Check className="w-4 h-4 mr-2" />
                         Activate Free Plan
                       </Button>
-                    )} */}
+                    )}
 
                       {!isFree && !isCurrent && (
                         <Button
