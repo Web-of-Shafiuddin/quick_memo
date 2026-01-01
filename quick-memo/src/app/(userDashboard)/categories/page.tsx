@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { categoryService, Category } from "@/services/categoryService";
 import { Plus, Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 const CategoriesPage = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -73,16 +74,16 @@ const CategoriesPage = () => {
     try {
       if (editingCategory) {
         await categoryService.update(editingCategory.category_id, formData);
-        alert('Category updated successfully');
+        toast.success('Category updated successfully');
       } else {
         await categoryService.create(formData);
-        alert('Category created successfully');
+        toast.success('Category created successfully');
       }
       handleCloseDialog();
       fetchCategories();
     } catch (error: any) {
       console.error('Error saving category:', error);
-      alert(error.response?.data?.error || 'Failed to save category');
+      toast.error(error.response?.data?.error || 'Failed to save category');
     } finally {
       setFormLoading(false);
     }
@@ -93,11 +94,11 @@ const CategoriesPage = () => {
     if (isConfirmed) {
       try {
         await categoryService.delete(id);
-        alert('Category deleted successfully');
+        toast.success('Category deleted successfully');
         fetchCategories();
       } catch (error: any) {
         console.error('Error deleting category:', error);
-        alert(error.response?.data?.error || 'Failed to delete category');
+        toast.error(error.response?.data?.error || 'Failed to delete category');
       }
     }
   };
