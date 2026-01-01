@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import ProductForm from "../_components/ProductForm";
 import { productService } from "@/services/productService";
+import { toast } from "sonner";
 
 export default function AddProductPage() {
   const router = useRouter();
@@ -9,11 +10,11 @@ export default function AddProductPage() {
   const handleCreate = async (data: any) => {
     try {
       await productService.create(data);
-      alert('Product created successfully');
+      toast.success('Product created successfully');
       router.push('/products');
     } catch (error: any) {
       console.error('Error creating product:', error);
-      throw new Error(error.response?.data?.error || 'Failed to create product');
+      toast.error(error.response?.data?.error || 'Failed to create product');
     }
   };
 
