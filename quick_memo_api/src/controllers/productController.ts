@@ -4,15 +4,20 @@ import pool from "../config/database.js";
 export const getAllProducts = async (req: Request, res: Response) => {
   try {
     const userId = req.userId;
-    const { category_id, status, search } = req.query;
+    const { category_id, status, search, include_variants } = req.query;
 
     let query = `
       SELECT p.*, c.name as category_name,
              (SELECT COUNT(*) FROM products v WHERE v.parent_product_id = p.product_id) as variant_count
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.category_id
-      WHERE p.user_id = $1 AND p.parent_product_id IS NULL
+      WHERE p.user_id = $1
     `;
+
+    if (include_variants !== "true") {
+      query += ` AND p.parent_product_id IS NULL`;
+    }
+
     const params: any[] = [userId];
     let paramIndex = 2;
 

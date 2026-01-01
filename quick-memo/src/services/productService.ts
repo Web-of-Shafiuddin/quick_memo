@@ -90,6 +90,7 @@ export const productService = {
     category_id?: number;
     status?: string;
     search?: string;
+    include_variants?: boolean;
   }) => {
     const response = await api.get<{
       success: boolean;

@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -43,12 +43,16 @@ const AddOrderPage = () => {
   const { format: formatPrice, symbol } = useCurrency();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const [paymentMethods, setPaymentMethods] = useState<{ payment_method_id: number; name: string }[]>([]);
+  const [paymentMethods, setPaymentMethods] = useState<
+    { payment_method_id: number; name: string }[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
   // Form state
-  const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
+  const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(
+    null
+  );
   const [orderSource, setOrderSource] = useState("OFFLINE");
   const [paymentMethodId, setPaymentMethodId] = useState<number | null>(null);
   const [shippingAmount, setShippingAmount] = useState(0);
@@ -56,7 +60,13 @@ const AddOrderPage = () => {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
 
   // Item form state
-  const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
+  const [selectedProductId, setSelectedProductId] = useState<number | null>(
+    null
+  );
+  const [selectedVariantId, setSelectedVariantId] = useState<number | null>(
+    null
+  );
+  const [variants, setVariants] = useState<Product[]>([]);
   const [itemQuantity, setItemQuantity] = useState(1);
   const [itemDiscount, setItemDiscount] = useState(0);
 
@@ -77,24 +87,55 @@ const AddOrderPage = () => {
       // Fetch payment methods from API
       const paymentMethodsRes = await getActivePaymentMethods();
       setPaymentMethods(paymentMethodsRes);
-    } catch (error: any) {
-      console.error('Error fetching data:', error);
-      alert('Failed to load initial data');
+    } catch (error: unknown) {
+      console.error("Error fetching data:", error);
+      alert("Failed to load initial data");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleProductSelect = async (productId: number) => {
+    setSelectedProductId(productId);
+    setSelectedVariantId(null);
+    setVariants([]);
+
+    const product = products.find((p) => p.product_id === productId);
+    if (product && (product.variant_count || 0) > 0) {
+      try {
+        const response = await productService.getVariants(productId);
+        setVariants(response.data);
+      } catch (error) {
+        console.error("Error fetching variants:", error);
+      }
+    }
+  };
+
   const handleAddItem = () => {
     if (!selectedProductId) {
-      alert('Please select a product');
+      alert("Please select a product");
       return;
     }
 
-    const product = products.find(p => p.product_id === selectedProductId);
+    const product = products.find((p) => p.product_id === selectedProductId);
     if (!product) return;
 
-    const existingItemIndex = orderItems.findIndex(item => item.product_id === selectedProductId);
+    // Check if variant selection is required
+    if (variants.length > 0 && !selectedVariantId) {
+      alert("Please select a variation");
+      return;
+    }
+
+    // Use variant if selected, otherwise parent product
+    const productToAdd = selectedVariantId
+      ? variants.find((v) => v.product_id === selectedVariantId)
+      : product;
+
+    if (!productToAdd) return;
+
+    const existingItemIndex = orderItems.findIndex(
+      (item) => item.product_id === productToAdd.product_id
+    );
 
     if (existingItemIndex >= 0) {
       // Update existing item
@@ -105,31 +146,36 @@ const AddOrderPage = () => {
     } else {
       // Add new item
       const newItem: OrderItem = {
-        product_id: selectedProductId,
+        product_id: productToAdd.product_id,
         quantity: itemQuantity,
-        unit_price: product.price,
+        unit_price: productToAdd.price,
         item_discount: itemDiscount,
-        product,
+        product: productToAdd,
       };
       setOrderItems([...orderItems, newItem]);
     }
 
     // Reset item form
     setSelectedProductId(null);
+    setSelectedVariantId(null);
+    setVariants([]);
     setItemQuantity(1);
     setItemDiscount(0);
   };
 
   const handleRemoveItem = (productId: number) => {
-    setOrderItems(orderItems.filter(item => item.product_id !== productId));
+    setOrderItems(orderItems.filter((item) => item.product_id !== productId));
   };
 
   const calculateSubtotal = (item: OrderItem) => {
-    return (item.quantity * item.unit_price) - (item.item_discount || 0);
+    return item.quantity * item.unit_price - (item.item_discount || 0);
   };
 
   const calculateTotal = () => {
-    const itemsTotal = orderItems.reduce((sum, item) => sum + calculateSubtotal(item), 0);
+    const itemsTotal = orderItems.reduce(
+      (sum, item) => sum + calculateSubtotal(item),
+      0
+    );
     return itemsTotal + shippingAmount + taxAmount;
   };
 
@@ -137,17 +183,17 @@ const AddOrderPage = () => {
     e.preventDefault();
 
     if (!selectedCustomerId) {
-      alert('Please select a customer');
+      alert("Please select a customer");
       return;
     }
 
     if (!paymentMethodId) {
-      alert('Please select a payment method');
+      alert("Please select a payment method");
       return;
     }
 
     if (orderItems.length === 0) {
-      alert('Please add at least one item to the order');
+      alert("Please add at least one item to the order");
       return;
     }
 
@@ -159,7 +205,7 @@ const AddOrderPage = () => {
         payment_method_id: paymentMethodId,
         shipping_amount: shippingAmount,
         tax_amount: taxAmount,
-        items: orderItems.map(item => ({
+        items: orderItems.map((item) => ({
           product_id: item.product_id,
           quantity: item.quantity,
           unit_price: item.unit_price,
@@ -168,11 +214,15 @@ const AddOrderPage = () => {
       };
 
       await orderService.create(orderData);
-      alert('Order created successfully');
-      router.push('/orders');
-    } catch (error: any) {
-      console.error('Error creating order:', error);
-      alert(error.response?.data?.error || 'Failed to create order');
+      alert("Order created successfully");
+      router.push("/orders");
+    } catch (error: unknown) {
+      console.error("Error creating order:", error);
+      const message =
+        error instanceof Error
+          ? (error as any).response?.data?.error
+          : "Failed to create order";
+      alert(message || "Failed to create order");
     } finally {
       setSubmitting(false);
     }
@@ -182,14 +232,18 @@ const AddOrderPage = () => {
     return <div className="container mx-auto py-10">Loading...</div>;
   }
 
-  const selectedCustomer = customers.find(c => c.customer_id === selectedCustomerId);
+  const selectedCustomer = customers.find(
+    (c) => c.customer_id === selectedCustomerId
+  );
 
   return (
     <div className="container mx-auto py-10">
       <Card className="max-w-5xl mx-auto">
         <CardHeader>
           <CardTitle>Create New Order</CardTitle>
-          <CardDescription>Select customer, add products, and complete the order details</CardDescription>
+          <CardDescription>
+            Select customer, add products, and complete the order details
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -205,7 +259,9 @@ const AddOrderPage = () => {
                     description: customer.mobile || customer.email || undefined,
                   }))}
                   value={selectedCustomerId?.toString() || null}
-                  onValueChange={(value) => setSelectedCustomerId(parseInt(value))}
+                  onValueChange={(value) =>
+                    setSelectedCustomerId(parseInt(value))
+                  }
                   placeholder="Choose a customer"
                   searchPlaceholder="Search customers..."
                   emptyMessage="No customers found."
@@ -214,9 +270,18 @@ const AddOrderPage = () => {
 
               {selectedCustomer && (
                 <div className="grid grid-cols-2 gap-4 text-sm bg-muted p-3 rounded">
-                  <div><span className="font-medium">Email:</span> {selectedCustomer.email || '-'}</div>
-                  <div><span className="font-medium">Mobile:</span> {selectedCustomer.mobile || '-'}</div>
-                  <div className="col-span-2"><span className="font-medium">Address:</span> {selectedCustomer.address || '-'}</div>
+                  <div>
+                    <span className="font-medium">Email:</span>{" "}
+                    {selectedCustomer.email || "-"}
+                  </div>
+                  <div>
+                    <span className="font-medium">Mobile:</span>{" "}
+                    {selectedCustomer.mobile || "-"}
+                  </div>
+                  <div className="col-span-2">
+                    <span className="font-medium">Address:</span>{" "}
+                    {selectedCustomer.address || "-"}
+                  </div>
                 </div>
               )}
             </div>
@@ -245,14 +310,19 @@ const AddOrderPage = () => {
                   <Label htmlFor="paymentMethod">Payment Method *</Label>
                   <Select
                     value={paymentMethodId?.toString() || ""}
-                    onValueChange={(value) => setPaymentMethodId(parseInt(value))}
+                    onValueChange={(value) =>
+                      setPaymentMethodId(parseInt(value))
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Choose payment method" />
                     </SelectTrigger>
                     <SelectContent>
                       {paymentMethods.map((method) => (
-                        <SelectItem key={method.payment_method_id} value={method.payment_method_id.toString()}>
+                        <SelectItem
+                          key={method.payment_method_id}
+                          value={method.payment_method_id.toString()}
+                        >
                           {method.name}
                         </SelectItem>
                       ))}
@@ -272,14 +342,54 @@ const AddOrderPage = () => {
                     options={products.map((product) => ({
                       value: product.product_id.toString(),
                       label: product.name,
-                      description: `${formatPrice(product.price)} | Stock: ${product.stock}`,
+                      description: `${formatPrice(product.price)} | Stock: ${
+                        product.stock
+                      } | Variants: ${product.variant_count || 0}`,
                     }))}
                     value={selectedProductId?.toString() || null}
-                    onValueChange={(value) => setSelectedProductId(parseInt(value))}
+                    onValueChange={(value) =>
+                      handleProductSelect(parseInt(value))
+                    }
                     placeholder="Choose a product"
                     searchPlaceholder="Search products..."
                     emptyMessage="No products found."
                   />
+
+                  {variants.length > 0 && (
+                    <div className="mt-2">
+                      <Label
+                        htmlFor="variant"
+                        className="text-xs text-muted-foreground mb-1 block"
+                      >
+                        Select Variation
+                      </Label>
+                      <Select
+                        value={selectedVariantId?.toString() || ""}
+                        onValueChange={(val) =>
+                          setSelectedVariantId(parseInt(val))
+                        }
+                      >
+                        <SelectTrigger className="h-9">
+                          <SelectValue placeholder="Choose variation" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {variants.map((variant) => (
+                            <SelectItem
+                              key={variant.product_id}
+                              value={variant.product_id.toString()}
+                            >
+                              {variant.attributes
+                                ?.map((a) => a.attribute_value)
+                                .join(" / ") || variant.name}
+                              {` - ${formatPrice(variant.price)} (Stock: ${
+                                variant.stock
+                              })`}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -288,7 +398,9 @@ const AddOrderPage = () => {
                     type="number"
                     min="1"
                     value={itemQuantity}
-                    onChange={(e) => setItemQuantity(parseInt(e.target.value) || 1)}
+                    onChange={(e) =>
+                      setItemQuantity(parseInt(e.target.value) || 1)
+                    }
                   />
                 </div>
 
@@ -299,12 +411,18 @@ const AddOrderPage = () => {
                     min="0"
                     step="0.01"
                     value={itemDiscount}
-                    onChange={(e) => setItemDiscount(parseFloat(e.target.value) || 0)}
+                    onChange={(e) =>
+                      setItemDiscount(parseFloat(e.target.value) || 0)
+                    }
                   />
                 </div>
 
                 <div className="space-y-2 flex items-end">
-                  <Button type="button" onClick={handleAddItem} className="w-full">
+                  <Button
+                    type="button"
+                    onClick={handleAddItem}
+                    className="w-full"
+                  >
                     <Plus className="w-4 h-4 mr-2" />
                     Add
                   </Button>
@@ -330,10 +448,18 @@ const AddOrderPage = () => {
                       <TableRow key={item.product_id}>
                         <TableCell>{item.product?.name}</TableCell>
                         <TableCell>{item.product?.sku}</TableCell>
-                        <TableCell className="text-right">{formatPrice(item.unit_price)}</TableCell>
-                        <TableCell className="text-right">{item.quantity}</TableCell>
-                        <TableCell className="text-right">{formatPrice(item.item_discount || 0)}</TableCell>
-                        <TableCell className="text-right">{formatPrice(calculateSubtotal(item))}</TableCell>
+                        <TableCell className="text-right">
+                          {formatPrice(item.unit_price)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {item.quantity}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {formatPrice(item.item_discount || 0)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {formatPrice(calculateSubtotal(item))}
+                        </TableCell>
                         <TableCell className="text-right">
                           <Button
                             type="button"
@@ -362,7 +488,9 @@ const AddOrderPage = () => {
                     min="0"
                     step="0.01"
                     value={shippingAmount}
-                    onChange={(e) => setShippingAmount(parseFloat(e.target.value) || 0)}
+                    onChange={(e) =>
+                      setShippingAmount(parseFloat(e.target.value) || 0)
+                    }
                   />
                 </div>
 
@@ -373,7 +501,9 @@ const AddOrderPage = () => {
                     min="0"
                     step="0.01"
                     value={taxAmount}
-                    onChange={(e) => setTaxAmount(parseFloat(e.target.value) || 0)}
+                    onChange={(e) =>
+                      setTaxAmount(parseFloat(e.target.value) || 0)
+                    }
                   />
                 </div>
               </div>
@@ -384,7 +514,14 @@ const AddOrderPage = () => {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Items Total:</span>
-                  <span>{formatPrice(orderItems.reduce((sum, item) => sum + calculateSubtotal(item), 0))}</span>
+                  <span>
+                    {formatPrice(
+                      orderItems.reduce(
+                        (sum, item) => sum + calculateSubtotal(item),
+                        0
+                      )
+                    )}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Shipping:</span>
@@ -403,11 +540,15 @@ const AddOrderPage = () => {
 
             {/* Form Actions */}
             <div className="flex justify-end gap-4 pt-4">
-              <Button type="button" variant="outline" onClick={() => router.back()}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.back()}
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={submitting}>
-                {submitting ? 'Creating Order...' : 'Create Order'}
+                {submitting ? "Creating Order..." : "Create Order"}
               </Button>
             </div>
           </form>
