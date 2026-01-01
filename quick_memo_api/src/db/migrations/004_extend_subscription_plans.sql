@@ -19,7 +19,7 @@ ADD COLUMN IF NOT EXISTS duration_months INT NOT NULL DEFAULT 1;
 
 -- Update existing plans with extended information
 UPDATE subscription_plans SET
-    description = 'Perfect for trying out QuickMemo',
+    description = 'Perfect for trying out EzyMemo',
     half_yearly_price = 0.00,
     yearly_price = 0.00,
     max_customers = 10,

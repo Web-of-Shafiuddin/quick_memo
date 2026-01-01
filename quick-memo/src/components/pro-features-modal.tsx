@@ -34,7 +34,7 @@ const ProFeaturesModal: React.FC<ProFeaturesModalProps> = ({ shopProfile, onUpgr
     const proFeatures = [
         'Save unlimited products for quick reuse',
         'Upload custom shop logo',
-        'Remove QuickMemo watermark',
+        'Remove EzyMemo watermark',
         'Access to premium color themes',
         'Priority customer support',
         'Unlimited memo generation'
@@ -90,7 +90,7 @@ const ProFeaturesModal: React.FC<ProFeaturesModalProps> = ({ shopProfile, onUpgr
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-2xl">
                         <Crown className="w-6 h-6 text-primary" />
-                        QuickMemo Pro
+                        EzyMemo Pro
                     </DialogTitle>
                     <DialogDescription>
                         Unlock premium features for just ৳200/month

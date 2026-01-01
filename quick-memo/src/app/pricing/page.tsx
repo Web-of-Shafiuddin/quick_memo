@@ -152,7 +152,7 @@ export default function PricingPage() {
                                 <FileText className="w-6 h-6 text-primary-foreground" />
                             </div>
                             <div>
-                                <h1 className="text-2xl font-bold text-gray-900">QuickMemo BD</h1>
+                                <h1 className="text-2xl font-bold text-gray-900">EzyMemo</h1>
                                 <p className="text-sm text-gray-600">Pricing Plans</p>
                             </div>
                         </Link>
@@ -385,7 +385,7 @@ export default function PricingPage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center">
                         <p className="text-gray-400">
-                            © {new Date().getFullYear()} QuickMemo. Made with love for entrepreneurs worldwide.
+                            © {new Date().getFullYear()} EzyMemo. Made with love for entrepreneurs worldwide.
                         </p>
                     </div>
                 </div>

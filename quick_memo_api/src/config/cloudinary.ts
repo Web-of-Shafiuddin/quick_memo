@@ -13,7 +13,7 @@ export default cloudinary;
 
 // Get upload options for product images (organized by user)
 export const getProductUploadOptions = (userId: number) => ({
-  folder: `quickmemo/users/${userId}/products`,
+  folder: `ezymemo/users/${userId}/products`,
   format: 'webp',
   transformation: [
     {
@@ -29,7 +29,7 @@ export const getProductUploadOptions = (userId: number) => ({
 
 // Get upload options for shop logos (organized by user)
 export const getShopLogoUploadOptions = (userId: number) => ({
-  folder: `quickmemo/users/${userId}/logo`,
+  folder: `ezymemo/users/${userId}/logo`,
   format: 'webp',
   transformation: [
     {
@@ -45,7 +45,7 @@ export const getShopLogoUploadOptions = (userId: number) => ({
 
 // Get upload options for invoice/memo images (organized by user)
 export const getInvoiceUploadOptions = (userId: number) => ({
-  folder: `quickmemo/users/${userId}/invoices`,
+  folder: `ezymemo/users/${userId}/invoices`,
   format: 'webp',
   transformation: [
     {

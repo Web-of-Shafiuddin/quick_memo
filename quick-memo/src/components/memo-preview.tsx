@@ -254,7 +254,7 @@ const MemoPreview = React.forwardRef<HTMLDivElement, MemoPreviewProps>(
                                 {!shopProfile.isPro && (
                                     <div className="mt-4 pt-4 border-t border-gray-200">
                                         <p className="text-center text-xs text-gray-400">
-                                            Create your own free memo at QuickMemo BD
+                                            Create your own free memo at EzyMemo
                                         </p>
                                     </div>
                                 )}

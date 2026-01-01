@@ -76,7 +76,7 @@ export default function AdminLoginPage() {
             <Shield className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-white">Admin Portal</h1>
-          <p className="text-slate-400">QuickMemo BD Administration</p>
+          <p className="text-slate-400">EzyMemo Administration</p>
         </div>
 
         <Card className="bg-slate-800 border-slate-700">

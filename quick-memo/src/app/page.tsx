@@ -125,7 +125,7 @@ export default function HomePage() {
     {
       name: 'Fatima Rahman',
       role: 'Owner, Fashion House BD',
-      content: 'QuickMemo transformed how I manage my online clothing business. Creating invoices used to take 15 minutes, now it takes 30 seconds!',
+      content: 'EzyMemo transformed how I manage my online clothing business. Creating invoices used to take 15 minutes, now it takes 30 seconds!',
       rating: 5,
       avatar: 'FR',
     },
@@ -139,7 +139,7 @@ export default function HomePage() {
     {
       name: 'Nusrat Jahan',
       role: 'Handicrafts Business',
-      content: 'As a small business owner, I needed something simple yet powerful. QuickMemo is exactly that. Highly recommended!',
+      content: 'As a small business owner, I needed something simple yet powerful. EzyMemo is exactly that. Highly recommended!',
       rating: 5,
       avatar: 'NJ',
     },
@@ -173,7 +173,7 @@ export default function HomePage() {
                 <FileText className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                QuickMemo BD
+                EzyMemo
               </span>
             </Link>
 
@@ -324,7 +324,7 @@ export default function HomePage() {
                   <div className="w-3 h-3 rounded-full bg-red-500"></div>
                   <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
                   <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                  <span className="ml-4 text-gray-400 text-sm">quickmemo.bd/dashboard</span>
+                  <span className="ml-4 text-gray-400 text-sm">ezymemo.com/dashboard</span>
                 </div>
                 <div className="p-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-[300px] md:min-h-[400px] flex items-center justify-center">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-3xl">
@@ -408,7 +408,7 @@ export default function HomePage() {
               Everything You Need to Run Your Business
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              From product management to invoicing, QuickMemo has all the tools to help you
+              From product management to invoicing, EzyMemo has all the tools to help you
               manage and grow your online business efficiently.
             </p>
           </div>
@@ -434,7 +434,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
-              <Badge className="mb-4 bg-green-100 text-green-700">Why QuickMemo?</Badge>
+              <Badge className="mb-4 bg-green-100 text-green-700">Why EzyMemo?</Badge>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
                 Built for Bangladeshi Entrepreneurs
               </h2>
@@ -515,7 +515,7 @@ export default function HomePage() {
               Loved by Thousands of Businesses
             </h2>
             <p className="text-lg text-gray-600">
-              See what our users are saying about QuickMemo
+              See what our users are saying about EzyMemo
             </p>
           </div>
 
@@ -556,16 +556,16 @@ export default function HomePage() {
           <div className="space-y-4">
             {[
               {
-                q: 'Is QuickMemo really free to use?',
+                q: 'Is EzyMemo really free to use?',
                 a: 'Yes! We offer a generous free plan that includes core features. You can create invoices, manage products, and track orders without paying anything. Upgrade anytime for more features.',
               },
               {
-                q: 'Do I need technical knowledge to use QuickMemo?',
-                a: 'Not at all! QuickMemo is designed for non-technical users. If you can use Facebook, you can use QuickMemo. Our intuitive interface makes business management simple.',
+                q: 'Do I need technical knowledge to use EzyMemo?',
+                a: 'Not at all! EzyMemo is designed for non-technical users. If you can use Facebook, you can use EzyMemo. Our intuitive interface makes business management simple.',
               },
               {
-                q: 'Can I use QuickMemo on my phone?',
-                a: 'Absolutely! QuickMemo is fully responsive and works great on mobile devices. Manage your business from anywhere, anytime.',
+                q: 'Can I use EzyMemo on my phone?',
+                a: 'Absolutely! EzyMemo is fully responsive and works great on mobile devices. Manage your business from anywhere, anytime.',
               },
               {
                 q: 'What payment methods do you accept?',
@@ -592,7 +592,7 @@ export default function HomePage() {
             Ready to Grow Your Business?
           </h2>
           <p className="text-xl text-blue-100 mb-8">
-            Join thousands of Bangladeshi entrepreneurs who trust QuickMemo to manage their online business.
+            Join thousands of Bangladeshi entrepreneurs who trust EzyMemo to manage their online business.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href={isAuthenticated ? '/dashboard' : '/auth/login'}>
@@ -622,7 +622,7 @@ export default function HomePage() {
                 <div className="p-2 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg">
                   <FileText className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-xl font-bold text-white">QuickMemo BD</span>
+                <span className="text-xl font-bold text-white">EzyMemo</span>
               </Link>
               <p className="text-sm">
                 Bangladesh&apos;s leading e-commerce management platform for online sellers and small businesses.
@@ -650,14 +650,14 @@ export default function HomePage() {
               <h4 className="text-white font-semibold mb-4">Support</h4>
               <ul className="space-y-2 text-sm">
                 <li><Link href="/help" className="hover:text-white">Help Center</Link></li>
-                <li><a href="mailto:support@quickmemo.bd" className="hover:text-white">support@quickmemo.bd</a></li>
-                <li><a href="https://facebook.com/quickmemobd" className="hover:text-white">Facebook</a></li>
+                <li><a href="mailto:support@ezymemo.com" className="hover:text-white">support@ezymemo.com</a></li>
+                <li><a href="https://facebook.com/ezymemo" className="hover:text-white">Facebook</a></li>
               </ul>
             </div>
           </div>
           <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm">
-              © {new Date().getFullYear()} QuickMemo BD. All rights reserved.
+              © {new Date().getFullYear()} EzyMemo. All rights reserved.
             </p>
             <p className="text-sm">
               Made with ❤️ for Bangladeshi entrepreneurs

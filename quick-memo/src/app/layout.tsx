@@ -15,13 +15,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://quickmemo.bd"),
+  metadataBase: new URL("https://ezymemo.com"),
   title: {
-    default: "QuickMemo BD - #1 E-commerce Management Platform for Bangladesh | Invoice, Inventory & Order Management",
-    template: "%s | QuickMemo BD",
+    default: "EzyMemo - #1 E-commerce Management Platform for Bangladesh | Invoice, Inventory & Order Management",
+    template: "%s | EzyMemo",
   },
   description:
-    "QuickMemo BD is Bangladesh's leading e-commerce management platform for F-commerce sellers, online shops & small businesses. Generate professional invoices, manage inventory, track orders, handle customers & grow your business. Supports bKash, Nagad, Pathao, RedX. Free to start!",
+    "EzyMemo is Bangladesh's leading e-commerce management platform for F-commerce sellers, online shops & small businesses. Generate professional invoices, manage inventory, track orders, handle customers & grow your business. Supports bKash, Nagad, Pathao, RedX. Free to start!",
   keywords: [
     "e-commerce management Bangladesh",
     "F-commerce platform",
@@ -44,9 +44,9 @@ export const metadata: Metadata = {
     "ক্যাশ মেমো",
     "ইনভয়েস জেনারেটর",
   ],
-  authors: [{ name: "QuickMemo BD", url: "https://quickmemo.bd" }],
-  creator: "QuickMemo BD",
-  publisher: "QuickMemo BD",
+  authors: [{ name: "EzyMemo", url: "https://ezymemo.com" }],
+  creator: "EzyMemo",
+  publisher: "EzyMemo",
   formatDetection: {
     email: false,
     address: false,
@@ -62,9 +62,9 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_BD",
     alternateLocale: "bn_BD",
-    url: "https://quickmemo.bd",
-    siteName: "QuickMemo BD",
-    title: "QuickMemo BD - E-commerce Management Platform for Bangladesh",
+    url: "https://ezymemo.com",
+    siteName: "EzyMemo",
+    title: "EzyMemo - E-commerce Management Platform for Bangladesh",
     description:
       "Bangladesh's #1 platform for F-commerce sellers & online businesses. Professional invoices, inventory management, order tracking & more. Free to start!",
     images: [
@@ -72,17 +72,17 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "QuickMemo BD - E-commerce Management Platform",
+        alt: "EzyMemo - E-commerce Management Platform",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "QuickMemo BD - E-commerce Platform for Bangladesh",
+    title: "EzyMemo - E-commerce Platform for Bangladesh",
     description:
       "Manage your online business with ease. Invoices, inventory, orders & customers - all in one place. Perfect for F-commerce sellers!",
     images: ["/twitter-image.png"],
-    creator: "@quickmemobd",
+    creator: "@ezymemo",
   },
   robots: {
     index: true,
@@ -102,7 +102,7 @@ export const metadata: Metadata = {
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  name: "QuickMemo BD",
+  name: "EzyMemo",
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web Browser",
   offers: {
@@ -133,17 +133,17 @@ const jsonLd = {
   softwareVersion: "2.0",
   author: {
     "@type": "Organization",
-    name: "QuickMemo BD",
-    url: "https://quickmemo.bd",
+    name: "EzyMemo",
+    url: "https://ezymemo.com",
   },
 };
 
 const organizationJsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "QuickMemo BD",
-  url: "https://quickmemo.bd",
-  logo: "https://quickmemo.bd/logo.png",
+  name: "EzyMemo",
+  url: "https://ezymemo.com",
+  logo: "https://ezymemo.com/logo.png",
   description:
     "Bangladesh's leading e-commerce management platform for online sellers and small businesses.",
   foundingDate: "2024",
@@ -158,8 +158,8 @@ const organizationJsonLd = {
     availableLanguage: ["English", "Bengali"],
   },
   sameAs: [
-    "https://facebook.com/quickmemobd",
-    "https://instagram.com/quickmemobd",
+    "https://facebook.com/ezymemo",
+    "https://instagram.com/ezymemo",
   ],
 };
 

@@ -100,7 +100,7 @@ export const deleteImage = async (req: Request, res: Response) => {
     }
 
     // Verify the image belongs to this user (check folder path with exact match)
-    const userFolderPattern = new RegExp(`^quickmemo/users/${userId}/`);
+    const userFolderPattern = new RegExp(`^ezymemo/users/${userId}/`);
     if (!userFolderPattern.test(public_id)) {
       return res.status(403).json({ success: false, error: 'You can only delete your own images' });
     }
