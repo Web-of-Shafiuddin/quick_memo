@@ -1,7 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import ProductForm from "../../_components/ProductForm";
+import ProductForm, {
+  ProductFormSubmitData,
+} from "../../_components/ProductForm";
 import { productService, Product } from "@/services/productService";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -82,6 +84,7 @@ export default function EditProductPage() {
     [key: number]: string[];
   }>({});
   const [bulkBasePrice, setBulkBasePrice] = useState("");
+  const [bulkBaseDiscount, setBulkBaseDiscount] = useState("0");
   const [bulkBaseStock, setBulkBaseStock] = useState("0");
   const [generating, setGenerating] = useState(false);
 
@@ -90,6 +93,7 @@ export default function EditProductPage() {
       await Promise.all([fetchProduct(), fetchGlobalAttributes()]);
     };
     init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const fetchGlobalAttributes = async () => {
@@ -124,9 +128,9 @@ export default function EditProductPage() {
     }
   };
 
-  const handleUpdate = async (data: any) => {
+  const handleUpdate = async (data: ProductFormSubmitData) => {
     try {
-      await productService.update(parseInt(id), data);
+      await productService.update(parseInt(id), data as any);
       toast.success("Product updated successfully");
       router.push("/products");
     } catch (error: unknown) {
@@ -268,11 +272,12 @@ export default function EditProductPage() {
       const generateCombinations = (
         index: number,
         currentCombo: { attribute_name: string; attribute_value: string }[]
-      ): any[] => {
+      ): { attribute_name: string; attribute_value: string }[][] => {
         if (index === selectedDefs.length) return [currentCombo];
         const def = selectedDefs[index];
         const values = bulkSelections[def.attribute_def_id];
-        let combos: any[] = [];
+        let combos: { attribute_name: string; attribute_value: string }[][] =
+          [];
         for (const val of values) {
           combos = combos.concat(
             generateCombinations(index + 1, [
@@ -292,6 +297,7 @@ export default function EditProductPage() {
         return {
           name: `${product.name} - ${comboName}`,
           price: parseFloat(bulkBasePrice),
+          discount: parseFloat(bulkBaseDiscount) || 0,
           stock: parseInt(bulkBaseStock) || 0,
           attributes: combo,
         };
@@ -363,7 +369,7 @@ export default function EditProductPage() {
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-6 py-4">
-                      <div className="grid grid-cols-2 gap-4 border p-4 rounded-lg bg-gray-50/50">
+                      <div className="grid grid-cols-3 gap-4 border p-4 rounded-lg bg-gray-50/50">
                         <div className="space-y-2">
                           <Label>Base Price</Label>
                           <Input
@@ -371,6 +377,17 @@ export default function EditProductPage() {
                             placeholder="0.00"
                             value={bulkBasePrice}
                             onChange={(e) => setBulkBasePrice(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Base Discount (%)</Label>
+                          <Input
+                            type="number"
+                            placeholder="0"
+                            value={bulkBaseDiscount}
+                            onChange={(e) =>
+                              setBulkBaseDiscount(e.target.value)
+                            }
                           />
                         </div>
                         <div className="space-y-2">
