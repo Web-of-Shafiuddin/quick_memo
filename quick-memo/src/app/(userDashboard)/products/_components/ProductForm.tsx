@@ -350,7 +350,8 @@ const ProductForm = ({
                         </Select>
                       </div>
                       <div className="flex-1">
-                        {selectedDef ? (
+                        {selectedDef &&
+                        (selectedDef.values?.length ?? 0) > 0 ? (
                           <Select
                             value={attr.attribute_value}
                             onValueChange={(value) =>

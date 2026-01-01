@@ -38,6 +38,13 @@ import {
 } from "@/services/attributeService";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface VariantFormData {
   name: string;
@@ -79,8 +86,10 @@ export default function EditProductPage() {
   const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
-    fetchProduct();
-    fetchGlobalAttributes();
+    const init = async () => {
+      await Promise.all([fetchProduct(), fetchGlobalAttributes()]);
+    };
+    init();
   }, [id]);
 
   const fetchGlobalAttributes = async () => {
@@ -102,9 +111,13 @@ export default function EditProductPage() {
         const variantsResponse = await productService.getVariants(parseInt(id));
         setVariants(variantsResponse.data);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error fetching product:", error);
-      toast.error(error.response?.data?.error || "Failed to fetch product");
+      const message =
+        error instanceof Error
+          ? (error as any).response?.data?.error
+          : "Failed to fetch product";
+      toast.error(message || "Failed to fetch product");
       router.push("/products");
     } finally {
       setLoading(false);
@@ -116,11 +129,13 @@ export default function EditProductPage() {
       await productService.update(parseInt(id), data);
       toast.success("Product updated successfully");
       router.push("/products");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error updating product:", error);
-      throw new Error(
-        error.response?.data?.error || "Failed to update product"
-      );
+      const message =
+        error instanceof Error
+          ? (error as any).response?.data?.error
+          : "Failed to update product";
+      throw new Error(message || "Failed to update product");
     }
   };
 
@@ -183,9 +198,13 @@ export default function EditProductPage() {
         attributes: [{ attribute_name: "", attribute_value: "" }],
       });
       fetchProduct();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error creating variant:", error);
-      toast.error(error.response?.data?.error || "Failed to create variant");
+      const message =
+        error instanceof Error
+          ? (error as any).response?.data?.error
+          : "Failed to create variant";
+      toast.error(message || "Failed to create variant");
     } finally {
       setVariantLoading(false);
     }
@@ -207,9 +226,13 @@ export default function EditProductPage() {
       await productService.delete(variantId);
       toast.success("Variant deleted successfully");
       fetchProduct();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error deleting variant:", error);
-      toast.error(error.response?.data?.error || "Failed to delete variant");
+      const message =
+        error instanceof Error
+          ? (error as any).response?.data?.error
+          : "Failed to delete variant";
+      toast.error(message || "Failed to delete variant");
     }
   };
 
@@ -263,7 +286,9 @@ export default function EditProductPage() {
 
       const combinations = generateCombinations(0, []);
       const variantsToCreate = combinations.map((combo) => {
-        const comboName = combo.map((c: any) => c.attribute_value).join(" / ");
+        const comboName = combo
+          .map((c: { attribute_value: string }) => c.attribute_value)
+          .join(" / ");
         return {
           name: `${product.name} - ${comboName}`,
           price: parseFloat(bulkBasePrice),
@@ -279,9 +304,13 @@ export default function EditProductPage() {
       setBulkDialogOpen(false);
       setBulkSelections({});
       fetchProduct();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Bulk generation error:", error);
-      toast.error(error.response?.data?.error || "Bulk generation failed");
+      const message =
+        error instanceof Error
+          ? (error as any).response?.data?.error
+          : "Bulk generation failed";
+      toast.error(message || "Bulk generation failed");
     } finally {
       setGenerating(false);
     }
@@ -517,42 +546,111 @@ export default function EditProductPage() {
                           </Button>
                         </div>
                         <div className="space-y-2">
-                          {variantForm.attributes.map((attr, index) => (
-                            <div key={index} className="flex gap-2">
-                              <Input
-                                placeholder="Name"
-                                value={attr.attribute_name}
-                                onChange={(e) =>
-                                  handleAttributeChange(
-                                    index,
-                                    "attribute_name",
-                                    e.target.value
-                                  )
-                                }
-                              />
-                              <Input
-                                placeholder="Value"
-                                value={attr.attribute_value}
-                                onChange={(e) =>
-                                  handleAttributeChange(
-                                    index,
-                                    "attribute_value",
-                                    e.target.value
-                                  )
-                                }
-                              />
-                              {variantForm.attributes.length > 1 && (
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => handleRemoveAttribute(index)}
-                                >
-                                  <X className="w-4 h-4" />
-                                </Button>
-                              )}
-                            </div>
-                          ))}
+                          {variantForm.attributes.map((attr, index) => {
+                            const selectedDef = globalAttributes.find(
+                              (ga) => ga.name === attr.attribute_name
+                            );
+                            return (
+                              <div
+                                key={index}
+                                className="flex gap-2 items-start"
+                              >
+                                <div className="flex-1">
+                                  <Select
+                                    value={attr.attribute_name}
+                                    onValueChange={(value) => {
+                                      handleAttributeChange(
+                                        index,
+                                        "attribute_name",
+                                        value
+                                      );
+                                      handleAttributeChange(
+                                        index,
+                                        "attribute_value",
+                                        ""
+                                      );
+                                    }}
+                                  >
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Name" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {globalAttributes.map((ga) => (
+                                        <SelectItem
+                                          key={ga.attribute_def_id}
+                                          value={ga.name}
+                                        >
+                                          {ga.name}
+                                        </SelectItem>
+                                      ))}
+                                      {attr.attribute_name &&
+                                        !globalAttributes.some(
+                                          (ga) =>
+                                            ga.name === attr.attribute_name
+                                        ) && (
+                                          <SelectItem
+                                            value={attr.attribute_name}
+                                          >
+                                            {attr.attribute_name}
+                                          </SelectItem>
+                                        )}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <div className="flex-1">
+                                  {selectedDef &&
+                                  (selectedDef.values?.length ?? 0) > 0 ? (
+                                    <Select
+                                      value={attr.attribute_value}
+                                      onValueChange={(value) =>
+                                        handleAttributeChange(
+                                          index,
+                                          "attribute_value",
+                                          value
+                                        )
+                                      }
+                                    >
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Value" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {selectedDef.values?.map((val) => (
+                                          <SelectItem
+                                            key={val.attribute_value_id}
+                                            value={val.value}
+                                          >
+                                            {val.value}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  ) : (
+                                    <Input
+                                      placeholder="Value"
+                                      value={attr.attribute_value}
+                                      onChange={(e) =>
+                                        handleAttributeChange(
+                                          index,
+                                          "attribute_value",
+                                          e.target.value
+                                        )
+                                      }
+                                    />
+                                  )}
+                                </div>
+                                {variantForm.attributes.length > 1 && (
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => handleRemoveAttribute(index)}
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </Button>
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     </div>
