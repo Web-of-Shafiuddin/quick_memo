@@ -4,7 +4,7 @@ import pool from "../config/database.js";
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
     const result = await pool.query(`
-            SELECT user_id, email, name, mobile, shop_name, shop_owner_name, shop_mobile, shop_email, shop_address, shop_logo_url, created_at, updated_at
+            SELECT user_id, email, name, mobile, shop_name, shop_owner_name, shop_mobile, shop_email, shop_address, shop_logo_url, shop_slug, created_at, updated_at
             FROM users
         `);
 
@@ -20,7 +20,7 @@ export const getUserById = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     const userResult = await pool.query(
-      'SELECT user_id, name, email, mobile, preferred_currency, shop_name, shop_owner_name, shop_mobile, shop_email, shop_address, shop_logo_url, created_at, updated_at FROM users WHERE user_id = $1',
+      "SELECT user_id, name, email, mobile, preferred_currency, shop_name, shop_owner_name, shop_mobile, shop_email, shop_address, shop_logo_url, shop_slug, created_at, updated_at FROM users WHERE user_id = $1",
       [id]
     );
 
@@ -40,7 +40,19 @@ export const getUserById = async (req: Request, res: Response) => {
 export const updateUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { email, name, mobile, preferred_currency, shop_name, shop_owner_name, shop_mobile, shop_email, shop_address, shop_logo_url } = req.body;
+    const {
+      email,
+      name,
+      mobile,
+      preferred_currency,
+      shop_name,
+      shop_owner_name,
+      shop_mobile,
+      shop_email,
+      shop_address,
+      shop_logo_url,
+      shop_slug,
+    } = req.body;
 
     const updates: string[] = [];
     const values: any[] = [];
@@ -85,6 +97,10 @@ export const updateUser = async (req: Request, res: Response) => {
     if (shop_logo_url !== undefined) {
       updates.push(`shop_logo_url = $${paramIndex++}`);
       values.push(shop_logo_url);
+    }
+    if (shop_slug !== undefined) {
+      updates.push(`shop_slug = $${paramIndex++}`);
+      values.push(shop_slug);
     }
 
     if (updates.length > 0) {
@@ -134,6 +150,11 @@ export const updateUser = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error("Error updating user:", error);
     if (error.code === "23505") {
+      if (error.detail?.includes("shop_slug")) {
+        return res
+          .status(409)
+          .json({ success: false, error: "Shop URL already taken" });
+      }
       return res
         .status(409)
         .json({ success: false, error: "Email already exists" });
@@ -146,7 +167,7 @@ export const deleteUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    await pool.query('DELETE FROM users WHERE user_id = $1', [id]);
+    await pool.query("DELETE FROM users WHERE user_id = $1", [id]);
 
     res.json({ success: true, message: "User deleted successfully" });
   } catch (error) {

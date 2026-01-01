@@ -16,6 +16,7 @@ import uploadRoutes from "./routes/uploadRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import paymentMethodRoutes from "./routes/paymentMethodRoutes.js";
 import attributeRoutes from "./routes/attributeRoutes.js";
+import publicShopRoutes from "./routes/publicShopRoutes.js";
 import { errorHandler, notFound } from "./middleware/errorHandler.js";
 import pool from "./config/database.js";
 import cookieParser from "cookie-parser";
@@ -75,6 +76,7 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/payment-methods", paymentMethodRoutes);
 app.use("/api/attributes", attributeRoutes);
+app.use("/api/shop", publicShopRoutes);
 
 // Error handling
 app.use(notFound);

@@ -1,18 +1,32 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { CurrencySelector } from '@/components/CurrencySelector';
-import { ImageUpload } from '@/components/ImageUpload';
-import { userService } from '@/services/userService';
-import useAuthStore from '@/store/authStore';
-import { useShallow } from 'zustand/react/shallow';
-import { Save, Store, User as UserIcon, DollarSign } from 'lucide-react';
-import { toast } from 'sonner';
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { CurrencySelector } from "@/components/CurrencySelector";
+import { ImageUpload } from "@/components/ImageUpload";
+import { userService } from "@/services/userService";
+import useAuthStore from "@/store/authStore";
+import { useShallow } from "zustand/react/shallow";
+import {
+  Save,
+  Store,
+  User as UserIcon,
+  DollarSign,
+  ExternalLink,
+  Copy,
+  RefreshCw,
+} from "lucide-react";
+import { toast } from "sonner";
 
 const ProfilePage = () => {
   const { user } = useAuthStore(
@@ -23,32 +37,33 @@ const ProfilePage = () => {
 
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    mobile: '',
-    preferred_currency: 'USD',
-    shop_name: '',
-    shop_owner_name: '',
-    shop_mobile: '',
-    shop_email: '',
-    shop_address: '',
-    shop_logo_url: '',
+    name: "",
+    email: "",
+    mobile: "",
+    preferred_currency: "USD",
+    shop_name: "",
+    shop_owner_name: "",
+    shop_mobile: "",
+    shop_email: "",
+    shop_address: "",
+    shop_logo_url: "",
+    shop_slug: "",
   });
 
   useEffect(() => {
     if (user) {
       // First, populate with data from auth store
       setFormData({
-        name: user.name || '',
-        email: user.email || '',
-        mobile: user.mobile || '',
-        preferred_currency: user.preferred_currency || 'USD',
-        shop_name: user.shop_name || '',
-        shop_owner_name: user.shop_owner_name || '',
-        shop_mobile: user.shop_mobile || '',
-        shop_email: user.shop_email || '',
-        shop_address: user.shop_address || '',
-        shop_logo_url: user.shop_logo_url || '',
+        name: user.name || "",
+        email: user.email || "",
+        mobile: user.mobile || "",
+        preferred_currency: user.preferred_currency || "USD",
+        shop_name: user.shop_name || "",
+        shop_owner_name: user.shop_owner_name || "",
+        shop_mobile: user.shop_mobile || "",
+        shop_email: user.shop_email || "",
+        shop_address: user.shop_address || "",
+        shop_logo_url: user.shop_logo_url || "",
       });
 
       // Then fetch fresh data from API
@@ -64,20 +79,20 @@ const ProfilePage = () => {
       const userData = response.data;
 
       setFormData({
-        name: userData.name || '',
-        email: userData.email || '',
-        mobile: userData.mobile || '',
-        preferred_currency: userData.preferred_currency || 'USD',
-        shop_name: userData.shop_name || '',
-        shop_owner_name: userData.shop_owner_name || '',
-        shop_mobile: userData.shop_mobile || '',
-        shop_email: userData.shop_email || '',
-        shop_address: userData.shop_address || '',
-        shop_logo_url: userData.shop_logo_url || '',
+        name: userData.name || "",
+        email: userData.email || "",
+        mobile: userData.mobile || "",
+        preferred_currency: userData.preferred_currency || "USD",
+        shop_name: userData.shop_name || "",
+        shop_owner_name: userData.shop_owner_name || "",
+        shop_mobile: userData.shop_mobile || "",
+        shop_email: userData.shop_email || "",
+        shop_address: userData.shop_address || "",
+        shop_logo_url: userData.shop_logo_url || "",
       });
     } catch (error: any) {
-      console.error('Error fetching profile:', error);
-      toast.error(error.response?.data?.error || 'Failed to fetch profile');
+      console.error("Error fetching profile:", error);
+      toast.error(error.response?.data?.error || "Failed to fetch profile");
     }
   };
 
@@ -88,32 +103,58 @@ const ProfilePage = () => {
     try {
       setLoading(true);
       await userService.update(user.user_id.toString(), formData);
-      toast.success('Profile updated successfully');
+      toast.success("Profile updated successfully");
 
       // Update the auth store with new user data
       const response = await userService.getById(user.user_id.toString());
       useAuthStore.setState({ user: response.data });
-      localStorage.setItem('user', JSON.stringify(response.data));
+      localStorage.setItem("user", JSON.stringify(response.data));
     } catch (error: any) {
-      console.error('Error updating profile:', error);
-      toast.error(error.response?.data?.error || 'Failed to update profile');
+      console.error("Error updating profile:", error);
+      toast.error(error.response?.data?.error || "Failed to update profile");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
   };
 
+  const generateSlug = () => {
+    if (!formData.shop_name) {
+      toast.error("Please enter a Shop Name first");
+      return;
+    }
+    const newSlug = formData.shop_name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    setFormData({ ...formData, shop_slug: newSlug });
+  };
+
+  const copyShopLink = () => {
+    if (!formData.shop_slug) {
+      toast.error("No shop link to copy");
+      return;
+    }
+    const url = `${window.location.origin}/s/${formData.shop_slug}`;
+    navigator.clipboard.writeText(url);
+    toast.success("Shop link copied!");
+  };
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Profile Settings</h1>
-        <p className="text-muted-foreground">Manage your account and shop information</p>
+        <p className="text-muted-foreground">
+          Manage your account and shop information
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -171,7 +212,8 @@ const ProfilePage = () => {
               Business Settings
             </CardTitle>
             <CardDescription>
-              Configure your business currency for products, orders, and invoices.
+              Configure your business currency for products, orders, and
+              invoices.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -180,10 +222,13 @@ const ProfilePage = () => {
                 <Label htmlFor="preferred_currency">Business Currency</Label>
                 <CurrencySelector
                   value={formData.preferred_currency}
-                  onChange={(value) => setFormData({ ...formData, preferred_currency: value })}
+                  onChange={(value) =>
+                    setFormData({ ...formData, preferred_currency: value })
+                  }
                 />
                 <p className="text-sm text-muted-foreground">
-                  This currency will be used for your products, orders, and invoices.
+                  This currency will be used for your products, orders, and
+                  invoices.
                 </p>
               </div>
             </div>
@@ -198,7 +243,8 @@ const ProfilePage = () => {
               Shop Information
             </CardTitle>
             <CardDescription>
-              This information will appear on your order memos and invoices. Make sure to fill in all fields for a professional look.
+              This information will appear on your order memos and invoices.
+              Make sure to fill in all fields for a professional look.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -212,6 +258,67 @@ const ProfilePage = () => {
                   onChange={handleChange}
                   placeholder="Your Shop Name"
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="shop_slug">Shop URL / Slug</Label>
+                <div className="flex gap-2">
+                  <div className="flex-1 relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                      /s/
+                    </span>
+                    <Input
+                      id="shop_slug"
+                      name="shop_slug"
+                      value={formData.shop_slug}
+                      onChange={handleChange}
+                      className="pl-9"
+                      placeholder="shop-name"
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={generateSlug}
+                    title="Auto-generate from Shop Name"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                  </Button>
+                  {formData.shop_slug && (
+                    <>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={copyShopLink}
+                        title="Copy Shop Link"
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        asChild
+                        title="Open Public Shop"
+                      >
+                        <a
+                          href={`/s/${formData.shop_slug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                      </Button>
+                    </>
+                  )}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Your unique shop address:{" "}
+                  {typeof window !== "undefined" ? window.location.host : ""}/s/
+                  {formData.shop_slug || "..."}
+                </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="shop_owner_name">Shop Owner Name</Label>
@@ -258,7 +365,9 @@ const ProfilePage = () => {
               <div className="space-y-2 md:col-span-2">
                 <ImageUpload
                   value={formData.shop_logo_url}
-                  onChange={(url) => setFormData({ ...formData, shop_logo_url: url })}
+                  onChange={(url) =>
+                    setFormData({ ...formData, shop_logo_url: url })
+                  }
                   type="logo"
                   label="Shop Logo"
                   disabled={loading}
@@ -272,7 +381,7 @@ const ProfilePage = () => {
         <div className="flex justify-end">
           <Button type="submit" size="lg" disabled={loading}>
             <Save className="w-4 h-4 mr-2" />
-            {loading ? 'Saving...' : 'Save Changes'}
+            {loading ? "Saving..." : "Save Changes"}
           </Button>
         </div>
       </form>

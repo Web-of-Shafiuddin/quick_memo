@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -25,7 +31,16 @@ import {
   BarChart3,
   Activity,
   Target,
+  ExternalLink,
+  Copy,
+  Edit2,
+  RefreshCw,
 } from "lucide-react";
+import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import useAuthStore from "@/store/authStore";
+import { userService } from "@/services/userService";
 import {
   LineChart,
   Line,
@@ -60,7 +75,14 @@ import {
 import { formatCurrency } from "@/lib/currency";
 import { useCurrency } from "@/hooks/useCurrency";
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
+const COLORS = [
+  "#0088FE",
+  "#00C49F",
+  "#FFBB28",
+  "#FF8042",
+  "#8884d8",
+  "#82ca9d",
+];
 
 interface PieDataItem {
   name: string;
@@ -69,12 +91,12 @@ interface PieDataItem {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  PENDING: '#FFBB28',
-  PROCESSING: '#0088FE',
-  SHIPPED: '#00C49F',
-  DELIVERED: '#82ca9d',
-  CANCELLED: '#FF8042',
-  RETURNED: '#8884d8',
+  PENDING: "#FFBB28",
+  PROCESSING: "#0088FE",
+  SHIPPED: "#00C49F",
+  DELIVERED: "#82ca9d",
+  CANCELLED: "#FF8042",
+  RETURNED: "#8884d8",
 };
 
 export default function Dashboard() {
@@ -87,7 +109,9 @@ export default function Dashboard() {
   const formatPrice = (amount: number) => formatCurrency(amount, currency);
 
   // Analytics data states
-  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(
+    null
+  );
   const [salesOverTime, setSalesOverTime] = useState<SalesDataPoint[]>([]);
   const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
   const [topCustomers, setTopCustomers] = useState<TopCustomer[]>([]);
@@ -99,12 +123,61 @@ export default function Dashboard() {
   const [monthlyRevenue, setMonthlyRevenue] = useState<MonthlyRevenue[]>([]);
   const [prediction, setPrediction] = useState<SalesPrediction | null>(null);
 
+  // Shop Slug State
+  const { user, setUser } = useAuthStore();
+  const [slug, setSlug] = useState("");
+  const [slugLoading, setSlugLoading] = useState(false);
+  const [isEditingSlug, setIsEditingSlug] = useState(false);
+
+  useEffect(() => {
+    if (user?.shop_slug) {
+      setSlug(user.shop_slug);
+    }
+  }, [user]);
+
+  const generateSlug = () => {
+    if (!user?.shop_name) return;
+    const newSlug = user.shop_name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    setSlug(newSlug);
+  };
+
+  const updateSlug = async () => {
+    if (!user) return;
+    try {
+      setSlugLoading(true);
+      const res = await userService.update(user.user_id.toString(), {
+        shop_slug: slug,
+      });
+      setUser(res.data);
+      setIsEditingSlug(false);
+      toast.success("Shop URL updated successfully!");
+    } catch (error: unknown) {
+      console.error("Error updating slug:", error);
+      const message =
+        (error as any).response?.data?.error || "Failed to update Shop URL";
+      toast.error(message);
+    } finally {
+      setSlugLoading(false);
+    }
+  };
+
+  const copyShopLink = () => {
+    const url = `${window.location.origin}/s/${user?.shop_slug}`;
+    navigator.clipboard.writeText(url);
+    toast.success("Shop link copied!");
+  };
+
   useEffect(() => {
     fetchAllAnalytics();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     fetchSalesOverTime();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period]);
 
   const fetchAllAnalytics = async () => {
@@ -165,12 +238,15 @@ export default function Dashboard() {
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
 
   const formatMonth = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      year: "2-digit",
+    });
   };
 
   if (loading) {
@@ -190,7 +266,9 @@ export default function Dashboard() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back! Here&apos;s your business overview.</p>
+          <p className="text-muted-foreground">
+            Welcome back! Here&apos;s your business overview.
+          </p>
         </div>
         <Select value={period} onValueChange={setPeriod}>
           <SelectTrigger className="w-[180px]">
@@ -205,7 +283,102 @@ export default function Dashboard() {
         </Select>
       </div>
 
-      {/* Key Stats Cards */}
+      {/* Public Shop Share Card */}
+      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+        <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <ExternalLink className="h-5 w-5 text-blue-600" />
+              Your Public Shop Link
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Share this link with your customers to let them order directly.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+            {!user?.shop_slug && !isEditingSlug ? (
+              <Button
+                onClick={() => {
+                  setIsEditingSlug(true);
+                  generateSlug();
+                }}
+              >
+                Create Shop Link
+              </Button>
+            ) : isEditingSlug ? (
+              <div className="flex items-center gap-2 w-full md:w-auto">
+                <div className="flex-1 relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                    /s/
+                  </span>
+                  <Input
+                    value={slug}
+                    onChange={(e) => setSlug(e.target.value)}
+                    className="pl-8 w-full min-w-[200px]"
+                    placeholder="shop-name"
+                  />
+                </div>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={generateSlug}
+                  title="Auto-generate from Shop Name"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+                <Button onClick={updateSlug} disabled={slugLoading}>
+                  {slugLoading ? "Saving..." : "Save"}
+                </Button>
+                <Button variant="ghost" onClick={() => setIsEditingSlug(false)}>
+                  Cancel
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 bg-background p-2 rounded border w-full md:w-auto">
+                <span className="text-muted-foreground text-sm pl-2">
+                  {typeof window !== "undefined" ? window.location.host : ""}/s/
+                </span>
+                <span className="font-medium text-blue-700">
+                  {user?.shop_slug}
+                </span>
+                <div className="flex items-center gap-1 ml-2 border-l pl-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => setIsEditingSlug(true)}
+                  >
+                    <Edit2 className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={copyShopLink}
+                  >
+                    <Copy className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    asChild
+                  >
+                    <a
+                      href={`/s/${user?.shop_slug}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                    </a>
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -213,17 +386,23 @@ export default function Dashboard() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatPrice(dashboardStats?.totals.revenue || 0)}</div>
+            <div className="text-2xl font-bold">
+              {formatPrice(dashboardStats?.totals.revenue || 0)}
+            </div>
             <div className="flex items-center text-xs text-muted-foreground">
               {(dashboardStats?.growth.revenue || 0) >= 0 ? (
                 <>
                   <ArrowUpRight className="h-3 w-3 text-green-500 mr-1" />
-                  <span className="text-green-500">+{dashboardStats?.growth.revenue}%</span>
+                  <span className="text-green-500">
+                    +{dashboardStats?.growth.revenue}%
+                  </span>
                 </>
               ) : (
                 <>
                   <ArrowDownRight className="h-3 w-3 text-red-500 mr-1" />
-                  <span className="text-red-500">{dashboardStats?.growth.revenue}%</span>
+                  <span className="text-red-500">
+                    {dashboardStats?.growth.revenue}%
+                  </span>
                 </>
               )}
               <span className="ml-1">from last month</span>
@@ -237,17 +416,23 @@ export default function Dashboard() {
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{dashboardStats?.totals.orders || 0}</div>
+            <div className="text-2xl font-bold">
+              {dashboardStats?.totals.orders || 0}
+            </div>
             <div className="flex items-center text-xs text-muted-foreground">
               {(dashboardStats?.growth.orders || 0) >= 0 ? (
                 <>
                   <ArrowUpRight className="h-3 w-3 text-green-500 mr-1" />
-                  <span className="text-green-500">+{dashboardStats?.growth.orders}%</span>
+                  <span className="text-green-500">
+                    +{dashboardStats?.growth.orders}%
+                  </span>
                 </>
               ) : (
                 <>
                   <ArrowDownRight className="h-3 w-3 text-red-500 mr-1" />
-                  <span className="text-red-500">{dashboardStats?.growth.orders}%</span>
+                  <span className="text-red-500">
+                    {dashboardStats?.growth.orders}%
+                  </span>
                 </>
               )}
               <span className="ml-1">from last month</span>
@@ -257,11 +442,15 @@ export default function Dashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Customers</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Customers
+            </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{dashboardStats?.totals.customers || 0}</div>
+            <div className="text-2xl font-bold">
+              {dashboardStats?.totals.customers || 0}
+            </div>
             <p className="text-xs text-muted-foreground">Active customers</p>
           </CardContent>
         </Card>
@@ -272,7 +461,9 @@ export default function Dashboard() {
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{dashboardStats?.totals.products || 0}</div>
+            <div className="text-2xl font-bold">
+              {dashboardStats?.totals.products || 0}
+            </div>
             <p className="text-xs text-muted-foreground">Total products</p>
           </CardContent>
         </Card>
@@ -285,7 +476,9 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-yellow-800">Pending</p>
-                <p className="text-2xl font-bold text-yellow-900">{dashboardStats?.totals.pendingOrders || 0}</p>
+                <p className="text-2xl font-bold text-yellow-900">
+                  {dashboardStats?.totals.pendingOrders || 0}
+                </p>
               </div>
               <Clock className="h-8 w-8 text-yellow-500" />
             </div>
@@ -297,7 +490,9 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-green-800">Delivered</p>
-                <p className="text-2xl font-bold text-green-900">{dashboardStats?.totals.deliveredOrders || 0}</p>
+                <p className="text-2xl font-bold text-green-900">
+                  {dashboardStats?.totals.deliveredOrders || 0}
+                </p>
               </div>
               <TrendingUp className="h-8 w-8 text-green-500" />
             </div>
@@ -309,7 +504,9 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-blue-800">This Month</p>
-                <p className="text-2xl font-bold text-blue-900">{formatPrice(dashboardStats?.thisMonth.revenue || 0)}</p>
+                <p className="text-2xl font-bold text-blue-900">
+                  {formatPrice(dashboardStats?.thisMonth.revenue || 0)}
+                </p>
               </div>
               <Activity className="h-8 w-8 text-blue-500" />
             </div>
@@ -320,8 +517,12 @@ export default function Dashboard() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-purple-800">Last Month</p>
-                <p className="text-2xl font-bold text-purple-900">{formatPrice(dashboardStats?.lastMonth.revenue || 0)}</p>
+                <p className="text-sm font-medium text-purple-800">
+                  Last Month
+                </p>
+                <p className="text-2xl font-bold text-purple-900">
+                  {formatPrice(dashboardStats?.lastMonth.revenue || 0)}
+                </p>
               </div>
               <BarChart3 className="h-8 w-8 text-purple-500" />
             </div>
@@ -344,7 +545,9 @@ export default function Dashboard() {
           <Card>
             <CardHeader>
               <CardTitle>Sales Over Time</CardTitle>
-              <CardDescription>Revenue and order trends for the selected period</CardDescription>
+              <CardDescription>
+                Revenue and order trends for the selected period
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-[350px]">
@@ -356,8 +559,8 @@ export default function Dashboard() {
                     <YAxis yAxisId="right" orientation="right" />
                     <Tooltip
                       formatter={(value: number, name: string) => [
-                        name === 'revenue' ? formatPrice(value) : value,
-                        name === 'revenue' ? 'Revenue' : 'Orders'
+                        name === "revenue" ? formatPrice(value) : value,
+                        name === "revenue" ? "Revenue" : "Orders",
                       ]}
                       labelFormatter={formatDate}
                     />
@@ -391,27 +594,42 @@ export default function Dashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>Sales by Category</CardTitle>
-                <CardDescription>Revenue distribution across categories</CardDescription>
+                <CardDescription>
+                  Revenue distribution across categories
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <RechartsPieChart>
                       <Pie
-                        data={salesByCategory.map(c => ({ name: c.category_name, value: c.total_revenue } as PieDataItem))}
+                        data={salesByCategory.map(
+                          (c) =>
+                            ({
+                              name: c.category_name,
+                              value: c.total_revenue,
+                            } as PieDataItem)
+                        )}
                         cx="50%"
                         cy="50%"
                         labelLine={false}
-                        label={({ name, percent }) => `${name} (${((percent || 0) * 100).toFixed(0)}%)`}
+                        label={({ name, percent }) =>
+                          `${name} (${((percent || 0) * 100).toFixed(0)}%)`
+                        }
                         outerRadius={100}
                         fill="#8884d8"
                         dataKey="value"
                       >
                         {salesByCategory.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={COLORS[index % COLORS.length]}
+                          />
                         ))}
                       </Pie>
-                      <Tooltip formatter={(value: number) => formatPrice(value)} />
+                      <Tooltip
+                        formatter={(value: number) => formatPrice(value)}
+                      />
                     </RechartsPieChart>
                   </ResponsiveContainer>
                 </div>
@@ -429,11 +647,17 @@ export default function Dashboard() {
                     <BarChart data={salesBySource} layout="vertical">
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis type="number" />
-                      <YAxis dataKey="order_source" type="category" width={100} />
-                      <Tooltip formatter={(value: number, name: string) => [
-                        name === 'total_revenue' ? formatPrice(value) : value,
-                        name === 'total_revenue' ? 'Revenue' : 'Orders'
-                      ]} />
+                      <YAxis
+                        dataKey="order_source"
+                        type="category"
+                        width={100}
+                      />
+                      <Tooltip
+                        formatter={(value: number, name: string) => [
+                          name === "total_revenue" ? formatPrice(value) : value,
+                          name === "total_revenue" ? "Revenue" : "Orders",
+                        ]}
+                      />
                       <Bar dataKey="order_count" fill="#8884d8" name="Orders" />
                     </BarChart>
                   </ResponsiveContainer>
@@ -458,7 +682,13 @@ export default function Dashboard() {
                     <Tooltip />
                     <Bar dataKey="count" name="Orders">
                       {orderStatus.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={STATUS_COLORS[entry.status] || COLORS[index % COLORS.length]} />
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={
+                            STATUS_COLORS[entry.status] ||
+                            COLORS[index % COLORS.length]
+                          }
+                        />
                       ))}
                     </Bar>
                   </BarChart>
@@ -475,17 +705,27 @@ export default function Dashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>Top Selling Products</CardTitle>
-                <CardDescription>Best performers by quantity sold</CardDescription>
+                <CardDescription>
+                  Best performers by quantity sold
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {topProducts.map((product, index) => (
-                    <div key={product.product_id} className="flex items-center gap-4">
+                    <div
+                      key={product.product_id}
+                      className="flex items-center gap-4"
+                    >
                       <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold">
                         {index + 1}
                       </div>
                       {product.image ? (
-                        <img src={product.image} alt={product.name} className="w-10 h-10 rounded object-cover" />
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="w-10 h-10 rounded object-cover"
+                        />
                       ) : (
                         <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">
                           <Package className="h-5 w-5 text-muted-foreground" />
@@ -493,16 +733,24 @@ export default function Dashboard() {
                       )}
                       <div className="flex-1 min-w-0">
                         <p className="font-medium truncate">{product.name}</p>
-                        <p className="text-sm text-muted-foreground">{product.total_sold} sold</p>
+                        <p className="text-sm text-muted-foreground">
+                          {product.total_sold} sold
+                        </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-medium">{formatPrice(product.total_revenue)}</p>
-                        <p className="text-xs text-muted-foreground">{product.order_count} orders</p>
+                        <p className="font-medium">
+                          {formatPrice(product.total_revenue)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {product.order_count} orders
+                        </p>
                       </div>
                     </div>
                   ))}
                   {topProducts.length === 0 && (
-                    <p className="text-center text-muted-foreground py-8">No product data yet</p>
+                    <p className="text-center text-muted-foreground py-8">
+                      No product data yet
+                    </p>
                   )}
                 </div>
               </CardContent>
@@ -515,14 +763,24 @@ export default function Dashboard() {
                   <AlertTriangle className="h-5 w-5 text-yellow-500" />
                   Low Stock Alert
                 </CardTitle>
-                <CardDescription>Products running low on inventory</CardDescription>
+                <CardDescription>
+                  Products running low on inventory
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {lowStock.map((product) => (
-                    <div key={product.product_id} className="flex items-center gap-4">
+                    <div
+                      key={product.product_id}
+                      className="flex items-center gap-4"
+                    >
                       {product.image ? (
-                        <img src={product.image} alt={product.name} className="w-10 h-10 rounded object-cover" />
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="w-10 h-10 rounded object-cover"
+                        />
                       ) : (
                         <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">
                           <Package className="h-5 w-5 text-muted-foreground" />
@@ -530,15 +788,23 @@ export default function Dashboard() {
                       )}
                       <div className="flex-1 min-w-0">
                         <p className="font-medium truncate">{product.name}</p>
-                        <p className="text-sm text-muted-foreground">SKU: {product.sku}</p>
+                        <p className="text-sm text-muted-foreground">
+                          SKU: {product.sku}
+                        </p>
                       </div>
-                      <Badge variant={product.stock === 0 ? "destructive" : "secondary"}>
+                      <Badge
+                        variant={
+                          product.stock === 0 ? "destructive" : "secondary"
+                        }
+                      >
                         {product.stock} left
                       </Badge>
                     </div>
                   ))}
                   {lowStock.length === 0 && (
-                    <p className="text-center text-muted-foreground py-8">All products well stocked!</p>
+                    <p className="text-center text-muted-foreground py-8">
+                      All products well stocked!
+                    </p>
                   )}
                 </div>
               </CardContent>
@@ -549,7 +815,9 @@ export default function Dashboard() {
           <Card>
             <CardHeader>
               <CardTitle>Product Revenue Comparison</CardTitle>
-              <CardDescription>Revenue generated by top products</CardDescription>
+              <CardDescription>
+                Revenue generated by top products
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-[300px]">
@@ -558,8 +826,14 @@ export default function Dashboard() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
-                    <Tooltip formatter={(value: number) => formatPrice(value)} />
-                    <Bar dataKey="total_revenue" fill="#8884d8" name="Revenue" />
+                    <Tooltip
+                      formatter={(value: number) => formatPrice(value)}
+                    />
+                    <Bar
+                      dataKey="total_revenue"
+                      fill="#8884d8"
+                      name="Revenue"
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -579,24 +853,33 @@ export default function Dashboard() {
               <CardContent>
                 <div className="space-y-4">
                   {topCustomers.map((customer, index) => (
-                    <div key={customer.customer_id} className="flex items-center gap-4">
+                    <div
+                      key={customer.customer_id}
+                      className="flex items-center gap-4"
+                    >
                       <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold">
                         {index + 1}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium truncate">{customer.name}</p>
                         <p className="text-sm text-muted-foreground">
-                          {customer.mobile || customer.email || 'No contact'}
+                          {customer.mobile || customer.email || "No contact"}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-medium">{formatPrice(customer.total_spent)}</p>
-                        <p className="text-xs text-muted-foreground">{customer.order_count} orders</p>
+                        <p className="font-medium">
+                          {formatPrice(customer.total_spent)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {customer.order_count} orders
+                        </p>
                       </div>
                     </div>
                   ))}
                   {topCustomers.length === 0 && (
-                    <p className="text-center text-muted-foreground py-8">No customer data yet</p>
+                    <p className="text-center text-muted-foreground py-8">
+                      No customer data yet
+                    </p>
                   )}
                 </div>
               </CardContent>
@@ -611,25 +894,38 @@ export default function Dashboard() {
               <CardContent>
                 <div className="space-y-4">
                   {recentOrders.map((order) => (
-                    <div key={order.transaction_id} className="flex items-center gap-4">
+                    <div
+                      key={order.transaction_id}
+                      className="flex items-center gap-4"
+                    >
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">{order.customer_name}</p>
+                        <p className="font-medium truncate">
+                          {order.customer_name}
+                        </p>
                         <p className="text-sm text-muted-foreground">
                           {new Date(order.order_date).toLocaleDateString()}
                         </p>
                       </div>
-                      <Badge variant={
-                        order.order_status === 'DELIVERED' ? 'default' :
-                        order.order_status === 'CANCELLED' ? 'destructive' :
-                        'secondary'
-                      }>
+                      <Badge
+                        variant={
+                          order.order_status === "DELIVERED"
+                            ? "default"
+                            : order.order_status === "CANCELLED"
+                            ? "destructive"
+                            : "secondary"
+                        }
+                      >
                         {order.order_status}
                       </Badge>
-                      <p className="font-medium">{formatPrice(order.total_amount)}</p>
+                      <p className="font-medium">
+                        {formatPrice(order.total_amount)}
+                      </p>
                     </div>
                   ))}
                   {recentOrders.length === 0 && (
-                    <p className="text-center text-muted-foreground py-8">No orders yet</p>
+                    <p className="text-center text-muted-foreground py-8">
+                      No orders yet
+                    </p>
                   )}
                 </div>
               </CardContent>
@@ -649,8 +945,14 @@ export default function Dashboard() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis type="number" />
                     <YAxis dataKey="name" type="category" width={120} />
-                    <Tooltip formatter={(value: number) => formatPrice(value)} />
-                    <Bar dataKey="total_spent" fill="#82ca9d" name="Total Spent" />
+                    <Tooltip
+                      formatter={(value: number) => formatPrice(value)}
+                    />
+                    <Bar
+                      dataKey="total_spent"
+                      fill="#82ca9d"
+                      name="Total Spent"
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -676,14 +978,28 @@ export default function Dashboard() {
                     <YAxis yAxisId="right" orientation="right" />
                     <Tooltip
                       formatter={(value: number, name: string) => [
-                        name === 'revenue' ? formatPrice(value) : value,
-                        name === 'revenue' ? 'Revenue' : 'Orders'
+                        name === "revenue" ? formatPrice(value) : value,
+                        name === "revenue" ? "Revenue" : "Orders",
                       ]}
                       labelFormatter={formatMonth}
                     />
                     <Legend />
-                    <Line yAxisId="left" type="monotone" dataKey="revenue" stroke="#8884d8" strokeWidth={2} name="Revenue" />
-                    <Line yAxisId="right" type="monotone" dataKey="orders" stroke="#82ca9d" strokeWidth={2} name="Orders" />
+                    <Line
+                      yAxisId="left"
+                      type="monotone"
+                      dataKey="revenue"
+                      stroke="#8884d8"
+                      strokeWidth={2}
+                      name="Revenue"
+                    />
+                    <Line
+                      yAxisId="right"
+                      type="monotone"
+                      dataKey="orders"
+                      stroke="#82ca9d"
+                      strokeWidth={2}
+                      name="Orders"
+                    />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -698,18 +1014,26 @@ export default function Dashboard() {
                   <Target className="h-5 w-5 text-purple-600" />
                   Next Month Prediction
                 </CardTitle>
-                <CardDescription>Based on 3-month moving average</CardDescription>
+                <CardDescription>
+                  Based on 3-month moving average
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-muted-foreground">Predicted Revenue</p>
+                    <p className="text-sm text-muted-foreground">
+                      Predicted Revenue
+                    </p>
                     <p className="text-2xl font-bold text-purple-700">
-                      {formatPrice(prediction?.prediction.nextMonth.revenue || 0)}
+                      {formatPrice(
+                        prediction?.prediction.nextMonth.revenue || 0
+                      )}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Predicted Orders</p>
+                    <p className="text-sm text-muted-foreground">
+                      Predicted Orders
+                    </p>
                     <p className="text-2xl font-bold text-purple-700">
                       {prediction?.prediction.nextMonth.orders || 0}
                     </p>
@@ -729,27 +1053,46 @@ export default function Dashboard() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-muted-foreground">Revenue Trend</p>
+                    <p className="text-sm text-muted-foreground">
+                      Revenue Trend
+                    </p>
                     <div className="flex items-center gap-2">
-                      {Number(prediction?.prediction.trends.revenue || 0) >= 0 ? (
+                      {Number(prediction?.prediction.trends.revenue || 0) >=
+                      0 ? (
                         <TrendingUp className="h-5 w-5 text-green-600" />
                       ) : (
                         <TrendingDown className="h-5 w-5 text-red-600" />
                       )}
-                      <p className={`text-2xl font-bold ${Number(prediction?.prediction.trends.revenue || 0) >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+                      <p
+                        className={`text-2xl font-bold ${
+                          Number(prediction?.prediction.trends.revenue || 0) >=
+                          0
+                            ? "text-green-700"
+                            : "text-red-700"
+                        }`}
+                      >
                         {prediction?.prediction.trends.revenue || 0}%
                       </p>
                     </div>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Orders Trend</p>
+                    <p className="text-sm text-muted-foreground">
+                      Orders Trend
+                    </p>
                     <div className="flex items-center gap-2">
-                      {Number(prediction?.prediction.trends.orders || 0) >= 0 ? (
+                      {Number(prediction?.prediction.trends.orders || 0) >=
+                      0 ? (
                         <TrendingUp className="h-5 w-5 text-green-600" />
                       ) : (
                         <TrendingDown className="h-5 w-5 text-red-600" />
                       )}
-                      <p className={`text-2xl font-bold ${Number(prediction?.prediction.trends.orders || 0) >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+                      <p
+                        className={`text-2xl font-bold ${
+                          Number(prediction?.prediction.trends.orders || 0) >= 0
+                            ? "text-green-700"
+                            : "text-red-700"
+                        }`}
+                      >
                         {prediction?.prediction.trends.orders || 0}%
                       </p>
                     </div>
@@ -764,18 +1107,24 @@ export default function Dashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>Historical Performance (Last 3 Months)</CardTitle>
-                <CardDescription>Data used for prediction calculations</CardDescription>
+                <CardDescription>
+                  Data used for prediction calculations
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {prediction.historical.map((month, index) => (
                     <Card key={index} className="bg-muted/50">
                       <CardContent className="p-4">
-                        <p className="font-medium text-center mb-2">{formatMonth(month.month)}</p>
+                        <p className="font-medium text-center mb-2">
+                          {formatMonth(month.month)}
+                        </p>
                         <div className="grid grid-cols-2 gap-2 text-sm">
                           <div>
                             <p className="text-muted-foreground">Revenue</p>
-                            <p className="font-semibold">{formatPrice(month.revenue)}</p>
+                            <p className="font-semibold">
+                              {formatPrice(month.revenue)}
+                            </p>
                           </div>
                           <div>
                             <p className="text-muted-foreground">Orders</p>
