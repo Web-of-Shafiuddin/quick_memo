@@ -29,7 +29,9 @@ export const adminAuthMiddleware = (
   res: Response,
   next: NextFunction
 ) => {
-  const token = req.cookies["quick_memo_admin_token"];
+  // support both cookie and Authorization header
+  const token = req.cookies["quick_memo_admin_token"] ||
+                req.headers.authorization?.replace('Bearer ', '');
   if (!token) {
     return res.status(401).json({ success: false, error: "Unauthorized, Admin token not found" });
   }
