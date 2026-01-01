@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText } from 'lucide-react';
+import { Eye, EyeClosed, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { authService } from '@/services/authService';
 import useAuthStore from '@/store/authStore';
@@ -18,6 +18,7 @@ import { useShallow } from 'zustand/react/shallow';
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('login');
     const { setUser } = useAuthStore(useShallow((state) => ({ setUser: state.setUser })));
@@ -131,16 +132,28 @@ export default function LoginPage() {
                                             required
                                         />
                                     </div>
-                                    <div>
+                                    <div className='relative'>
                                         <Label htmlFor="password">Password</Label>
                                         <Input
                                             id="password"
-                                            type="password"
+                                            type={showPassword ? 'text' : 'password'}
                                             value={password}
                                             onChange={(e) => setPassword(e.target.value)}
                                             placeholder="Enter any password"
+                                            className='pr-10'
                                             required
                                         />
+                                        {/* view password */}
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            className="absolute right-0 top-3 border-none cursor-pointer"
+                                            onClick={() => {
+                                                setShowPassword(!showPassword);
+                                            }}
+                                        >
+                                            {showPassword ? <Eye className="w-4 h-4" /> : <EyeClosed className="w-4 h-4" />}
+                                        </Button>
                                     </div>
                                     <div className="text-xs text-gray-500 bg-blue-50 p-3 rounded">
                                         💡 Demo Mode: Enter any email and password to login
@@ -187,15 +200,26 @@ export default function LoginPage() {
                                             placeholder="01xxxxxxxxx"
                                         />
                                     </div>
-                                    <div>
+                                    <div className='relative'>
                                         <Label htmlFor="reg-password">Password</Label>
                                         <Input
                                             id="reg-password"
                                             name="password"
-                                            type="password"
+                                            type={showPassword ? 'text' : 'password'}
                                             placeholder="Create a password"
                                             required
                                         />
+                                        {/* view password */}
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            className="absolute right-0 top-3 border-none cursor-pointer"
+                                            onClick={() => {
+                                                setShowPassword(!showPassword);
+                                            }}
+                                        >
+                                            {showPassword ? <Eye className="w-4 h-4" /> : <EyeClosed className="w-4 h-4" />}
+                                        </Button>
                                     </div>
                                     <div className="text-xs text-gray-500 bg-blue-50 p-3 rounded">
                                         💡 Demo Mode: Registration is simulated locally
