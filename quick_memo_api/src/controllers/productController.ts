@@ -1,5 +1,5 @@
-import { Request, Response } from 'express';
-import pool from '../config/database.js';
+import { Request, Response } from "express";
+import pool from "../config/database.js";
 
 export const getAllProducts = async (req: Request, res: Response) => {
   try {
@@ -7,10 +7,11 @@ export const getAllProducts = async (req: Request, res: Response) => {
     const { category_id, status, search } = req.query;
 
     let query = `
-      SELECT p.*, c.name as category_name
+      SELECT p.*, c.name as category_name,
+             (SELECT COUNT(*) FROM products v WHERE v.parent_product_id = p.product_id) as variant_count
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.category_id
-      WHERE p.user_id = $1
+      WHERE p.user_id = $1 AND p.parent_product_id IS NULL
     `;
     const params: any[] = [userId];
     let paramIndex = 2;
@@ -33,13 +34,13 @@ export const getAllProducts = async (req: Request, res: Response) => {
       paramIndex++;
     }
 
-    query += ' ORDER BY p.created_at DESC';
+    query += " ORDER BY p.created_at DESC";
 
     const result = await pool.query(query, params);
     res.json({ success: true, data: result.rows });
   } catch (error) {
-    console.error('Error fetching products:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch products' });
+    console.error("Error fetching products:", error);
+    res.status(500).json({ success: false, error: "Failed to fetch products" });
   }
 };
 
@@ -57,18 +58,20 @@ export const getProductById = async (req: Request, res: Response) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, error: 'Product not found' });
+      return res
+        .status(404)
+        .json({ success: false, error: "Product not found" });
     }
 
     // Get variants if this is a parent product
     const variantsResult = await pool.query(
-      'SELECT * FROM products WHERE parent_product_id = $1',
+      "SELECT * FROM products WHERE parent_product_id = $1",
       [id]
     );
 
     // Get variant attributes if this product has a parent
     const attributesResult = await pool.query(
-      'SELECT * FROM product_variant_attributes WHERE product_id = $1',
+      "SELECT * FROM product_variant_attributes WHERE product_id = $1",
       [id]
     );
 
@@ -80,8 +83,8 @@ export const getProductById = async (req: Request, res: Response) => {
 
     res.json({ success: true, data: product });
   } catch (error) {
-    console.error('Error fetching product:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch product' });
+    console.error("Error fetching product:", error);
+    res.status(500).json({ success: false, error: "Failed to fetch product" });
   }
 };
 
@@ -99,13 +102,15 @@ export const getProductBySku = async (req: Request, res: Response) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, error: 'Product not found' });
+      return res
+        .status(404)
+        .json({ success: false, error: "Product not found" });
     }
 
     res.json({ success: true, data: result.rows[0] });
   } catch (error) {
-    console.error('Error fetching product:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch product' });
+    console.error("Error fetching product:", error);
+    res.status(500).json({ success: false, error: "Failed to fetch product" });
   }
 };
 
@@ -118,7 +123,7 @@ export const createProduct = async (req: Request, res: Response) => {
       price,
       discount = 0,
       stock = 0,
-      status = 'ACTIVE',
+      status = "ACTIVE",
       image,
       parent_product_id,
       attributes = [],
@@ -128,18 +133,22 @@ export const createProduct = async (req: Request, res: Response) => {
     // Auto-generate SKU if not provided
     if (!sku) {
       const timestamp = Date.now();
-      const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+      const random = Math.floor(Math.random() * 1000)
+        .toString()
+        .padStart(3, "0");
       sku = `SKU-${timestamp}-${random}`;
     }
 
     // Check if category belongs to user
     const categoryCheck = await pool.query(
-      'SELECT category_id FROM categories WHERE category_id = $1 AND user_id = $2',
+      "SELECT category_id FROM categories WHERE category_id = $1 AND user_id = $2",
       [category_id, userId]
     );
 
     if (categoryCheck.rows.length === 0) {
-      return res.status(404).json({ success: false, error: 'Category not found' });
+      return res
+        .status(404)
+        .json({ success: false, error: "Category not found" });
     }
 
     const result = await pool.query(
@@ -147,7 +156,18 @@ export const createProduct = async (req: Request, res: Response) => {
        (user_id, sku, name, category_id, price, discount, stock, status, image, parent_product_id)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        RETURNING *`,
-      [userId, sku, name, category_id, price, discount, stock, status, image || null, parent_product_id || null]
+      [
+        userId,
+        sku,
+        name,
+        category_id,
+        price,
+        discount,
+        stock,
+        status,
+        image || null,
+        parent_product_id || null,
+      ]
     );
 
     const product = result.rows[0];
@@ -168,14 +188,16 @@ export const createProduct = async (req: Request, res: Response) => {
 
     res.status(201).json({
       success: true,
-      data: { ...product, attributes: createdAttributes }
+      data: { ...product, attributes: createdAttributes },
     });
   } catch (error: any) {
-    console.error('Error creating product:', error);
-    if (error.code === '23505') {
-      return res.status(409).json({ success: false, error: 'Product SKU already exists' });
+    console.error("Error creating product:", error);
+    if (error.code === "23505") {
+      return res
+        .status(409)
+        .json({ success: false, error: "Product SKU already exists" });
     }
-    res.status(500).json({ success: false, error: 'Failed to create product' });
+    res.status(500).json({ success: false, error: "Failed to create product" });
   }
 };
 
@@ -190,7 +212,17 @@ export const updateProduct = async (req: Request, res: Response) => {
     const values: any[] = [];
     let paramIndex = 1;
 
-    const allowedFields = ['sku', 'name', 'category_id', 'price', 'discount', 'stock', 'status', 'image', 'parent_product_id'];
+    const allowedFields = [
+      "sku",
+      "name",
+      "category_id",
+      "price",
+      "discount",
+      "stock",
+      "status",
+      "image",
+      "parent_product_id",
+    ];
 
     for (const field of allowedFields) {
       if (updateData[field] !== undefined) {
@@ -203,12 +235,14 @@ export const updateProduct = async (req: Request, res: Response) => {
     // If category_id is being updated, verify it belongs to the user
     if (updateData.category_id) {
       const categoryCheck = await pool.query(
-        'SELECT category_id FROM categories WHERE category_id = $1 AND user_id = $2',
+        "SELECT category_id FROM categories WHERE category_id = $1 AND user_id = $2",
         [updateData.category_id, userId]
       );
 
       if (categoryCheck.rows.length === 0) {
-        return res.status(404).json({ success: false, error: 'Category not found' });
+        return res
+          .status(404)
+          .json({ success: false, error: "Category not found" });
       }
     }
 
@@ -219,7 +253,7 @@ export const updateProduct = async (req: Request, res: Response) => {
       values.push(id, userId);
       const query = `
         UPDATE products
-        SET ${updates.join(', ')}
+        SET ${updates.join(", ")}
         WHERE product_id = $${paramIndex} AND user_id = $${paramIndex + 1}
         RETURNING *
       `;
@@ -227,17 +261,21 @@ export const updateProduct = async (req: Request, res: Response) => {
       const result = await pool.query(query, values);
 
       if (result.rows.length === 0) {
-        return res.status(404).json({ success: false, error: 'Product not found' });
+        return res
+          .status(404)
+          .json({ success: false, error: "Product not found" });
       }
       product = result.rows[0];
     } else {
       // Verify product exists
       const productCheck = await pool.query(
-        'SELECT * FROM products WHERE product_id = $1 AND user_id = $2',
+        "SELECT * FROM products WHERE product_id = $1 AND user_id = $2",
         [id, userId]
       );
       if (productCheck.rows.length === 0) {
-        return res.status(404).json({ success: false, error: 'Product not found' });
+        return res
+          .status(404)
+          .json({ success: false, error: "Product not found" });
       }
       product = productCheck.rows[0];
     }
@@ -246,7 +284,7 @@ export const updateProduct = async (req: Request, res: Response) => {
     if (Array.isArray(attributes)) {
       // Delete existing attributes
       await pool.query(
-        'DELETE FROM product_variant_attributes WHERE product_id = $1',
+        "DELETE FROM product_variant_attributes WHERE product_id = $1",
         [id]
       );
 
@@ -267,7 +305,7 @@ export const updateProduct = async (req: Request, res: Response) => {
     } else {
       // Fetch existing attributes
       const attrResult = await pool.query(
-        'SELECT * FROM product_variant_attributes WHERE product_id = $1',
+        "SELECT * FROM product_variant_attributes WHERE product_id = $1",
         [id]
       );
       product.attributes = attrResult.rows;
@@ -275,11 +313,13 @@ export const updateProduct = async (req: Request, res: Response) => {
 
     res.json({ success: true, data: product });
   } catch (error: any) {
-    console.error('Error updating product:', error);
-    if (error.code === '23505') {
-      return res.status(409).json({ success: false, error: 'Product SKU already exists' });
+    console.error("Error updating product:", error);
+    if (error.code === "23505") {
+      return res
+        .status(409)
+        .json({ success: false, error: "Product SKU already exists" });
     }
-    res.status(500).json({ success: false, error: 'Failed to update product' });
+    res.status(500).json({ success: false, error: "Failed to update product" });
   }
 };
 
@@ -289,18 +329,20 @@ export const deleteProduct = async (req: Request, res: Response) => {
     const userId = req.userId;
 
     const result = await pool.query(
-      'DELETE FROM products WHERE product_id = $1 AND user_id = $2 RETURNING *',
+      "DELETE FROM products WHERE product_id = $1 AND user_id = $2 RETURNING *",
       [id, userId]
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, error: 'Product not found' });
+      return res
+        .status(404)
+        .json({ success: false, error: "Product not found" });
     }
 
-    res.json({ success: true, message: 'Product deleted successfully' });
+    res.json({ success: true, message: "Product deleted successfully" });
   } catch (error) {
-    console.error('Error deleting product:', error);
-    res.status(500).json({ success: false, error: 'Failed to delete product' });
+    console.error("Error deleting product:", error);
+    res.status(500).json({ success: false, error: "Failed to delete product" });
   }
 };
 
@@ -312,12 +354,14 @@ export const addVariantAttribute = async (req: Request, res: Response) => {
 
     // Verify product belongs to user
     const productCheck = await pool.query(
-      'SELECT product_id FROM products WHERE product_id = $1 AND user_id = $2',
+      "SELECT product_id FROM products WHERE product_id = $1 AND user_id = $2",
       [id, userId]
     );
 
     if (productCheck.rows.length === 0) {
-      return res.status(404).json({ success: false, error: 'Product not found' });
+      return res
+        .status(404)
+        .json({ success: false, error: "Product not found" });
     }
 
     const result = await pool.query(
@@ -329,8 +373,10 @@ export const addVariantAttribute = async (req: Request, res: Response) => {
 
     res.status(201).json({ success: true, data: result.rows[0] });
   } catch (error) {
-    console.error('Error adding variant attribute:', error);
-    res.status(500).json({ success: false, error: 'Failed to add variant attribute' });
+    console.error("Error adding variant attribute:", error);
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to add variant attribute" });
   }
 };
 
@@ -340,23 +386,27 @@ export const updateStock = async (req: Request, res: Response) => {
     const { stock } = req.body;
     const userId = req.userId;
 
-    if (typeof stock !== 'number' || stock < 0) {
-      return res.status(400).json({ success: false, error: 'Invalid stock value' });
+    if (typeof stock !== "number" || stock < 0) {
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid stock value" });
     }
 
     const result = await pool.query(
-      'UPDATE products SET stock = $1 WHERE product_id = $2 AND user_id = $3 RETURNING *',
+      "UPDATE products SET stock = $1 WHERE product_id = $2 AND user_id = $3 RETURNING *",
       [stock, id, userId]
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, error: 'Product not found' });
+      return res
+        .status(404)
+        .json({ success: false, error: "Product not found" });
     }
 
     res.json({ success: true, data: result.rows[0] });
   } catch (error) {
-    console.error('Error updating stock:', error);
-    res.status(500).json({ success: false, error: 'Failed to update stock' });
+    console.error("Error updating stock:", error);
+    res.status(500).json({ success: false, error: "Failed to update stock" });
   }
 };
 
@@ -368,12 +418,14 @@ export const getProductVariants = async (req: Request, res: Response) => {
 
     // Verify parent product belongs to user
     const productCheck = await pool.query(
-      'SELECT product_id FROM products WHERE product_id = $1 AND user_id = $2',
+      "SELECT product_id FROM products WHERE product_id = $1 AND user_id = $2",
       [id, userId]
     );
 
     if (productCheck.rows.length === 0) {
-      return res.status(404).json({ success: false, error: 'Product not found' });
+      return res
+        .status(404)
+        .json({ success: false, error: "Product not found" });
     }
 
     // Get all variant products
@@ -389,7 +441,7 @@ export const getProductVariants = async (req: Request, res: Response) => {
     const variantsWithAttributes = await Promise.all(
       variantsResult.rows.map(async (variant) => {
         const attributesResult = await pool.query(
-          'SELECT * FROM product_variant_attributes WHERE product_id = $1',
+          "SELECT * FROM product_variant_attributes WHERE product_id = $1",
           [variant.product_id]
         );
         return {
@@ -401,8 +453,8 @@ export const getProductVariants = async (req: Request, res: Response) => {
 
     res.json({ success: true, data: variantsWithAttributes });
   } catch (error) {
-    console.error('Error fetching product variants:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch variants' });
+    console.error("Error fetching product variants:", error);
+    res.status(500).json({ success: false, error: "Failed to fetch variants" });
   }
 };
 
@@ -417,19 +469,22 @@ export const createVariant = async (req: Request, res: Response) => {
       price,
       discount = 0,
       stock = 0,
-      status = 'ACTIVE',
+      status = "ACTIVE",
       image,
       attributes = [],
     } = req.body;
 
     // Verify parent product belongs to user and get its category
     const parentProduct = await pool.query(
-      'SELECT product_id, category_id, name FROM products WHERE product_id = $1 AND user_id = $2 AND parent_product_id IS NULL',
+      "SELECT product_id, category_id, name FROM products WHERE product_id = $1 AND user_id = $2 AND parent_product_id IS NULL",
       [id, userId]
     );
 
     if (parentProduct.rows.length === 0) {
-      return res.status(404).json({ success: false, error: 'Parent product not found or is already a variant' });
+      return res.status(404).json({
+        success: false,
+        error: "Parent product not found or is already a variant",
+      });
     }
 
     const parent = parentProduct.rows[0];
@@ -437,7 +492,9 @@ export const createVariant = async (req: Request, res: Response) => {
     // Auto-generate SKU for variant if not provided
     if (!sku) {
       const timestamp = Date.now();
-      const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+      const random = Math.floor(Math.random() * 1000)
+        .toString()
+        .padStart(3, "0");
       sku = `VAR-${id}-${timestamp}-${random}`;
     }
 
@@ -450,7 +507,18 @@ export const createVariant = async (req: Request, res: Response) => {
        (user_id, sku, name, category_id, price, discount, stock, status, image, parent_product_id)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        RETURNING *`,
-      [userId, sku, variantName, parent.category_id, price, discount, stock, status, image || null, id]
+      [
+        userId,
+        sku,
+        variantName,
+        parent.category_id,
+        price,
+        discount,
+        stock,
+        status,
+        image || null,
+        id,
+      ]
     );
 
     const variant = variantResult.rows[0];
@@ -477,11 +545,119 @@ export const createVariant = async (req: Request, res: Response) => {
       },
     });
   } catch (error: any) {
-    console.error('Error creating variant:', error);
-    if (error.code === '23505') {
-      return res.status(409).json({ success: false, error: 'Variant SKU already exists' });
+    console.error("Error creating variant:", error);
+    if (error.code === "23505") {
+      return res
+        .status(409)
+        .json({ success: false, error: "Variant SKU already exists" });
     }
-    res.status(500).json({ success: false, error: 'Failed to create variant' });
+    res.status(500).json({ success: false, error: "Failed to create variant" });
+  }
+};
+
+export const bulkCreateVariants = async (req: Request, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { id } = req.params;
+    const userId = req.userId;
+    const { variants } = req.body; // Array of variant objects
+
+    if (!Array.isArray(variants) || variants.length === 0) {
+      return res
+        .status(400)
+        .json({ success: false, error: "Variants must be a non-empty array" });
+    }
+
+    // Verify parent product
+    const parentProduct = await pool.query(
+      "SELECT product_id, category_id, name FROM products WHERE product_id = $1 AND user_id = $2 AND parent_product_id IS NULL",
+      [id, userId]
+    );
+
+    if (parentProduct.rows.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, error: "Parent product not found" });
+    }
+
+    const parent = parentProduct.rows[0];
+    const createdVariants = [];
+
+    await client.query("BEGIN");
+
+    for (const v of variants) {
+      const {
+        sku: variantSku,
+        name: variantName,
+        price,
+        discount = 0,
+        stock = 0,
+        status = "ACTIVE",
+        image,
+        attributes = [],
+      } = v;
+
+      // Auto-generate SKU
+      let sku = variantSku;
+      if (!sku) {
+        const timestamp = Date.now();
+        const random = Math.floor(Math.random() * 1000)
+          .toString()
+          .padStart(3, "0");
+        sku = `VAR-${id}-${timestamp}-${random}`;
+      }
+
+      const name = variantName || `${parent.name} Variant`;
+
+      // Insert variant
+      const vResult = await client.query(
+        `INSERT INTO products
+         (user_id, sku, name, category_id, price, discount, stock, status, image, parent_product_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+         RETURNING *`,
+        [
+          userId,
+          sku,
+          name,
+          parent.category_id,
+          price,
+          discount,
+          stock,
+          status,
+          image || null,
+          id,
+        ]
+      );
+
+      const variant = vResult.rows[0];
+
+      // Insert attributes
+      const createdAttributes = [];
+      for (const attr of attributes) {
+        if (attr.attribute_name && attr.attribute_value) {
+          const attrResult = await client.query(
+            `INSERT INTO product_variant_attributes (product_id, attribute_name, attribute_value)
+             VALUES ($1, $2, $3)
+             RETURNING *`,
+            [variant.product_id, attr.attribute_name, attr.attribute_value]
+          );
+          createdAttributes.push(attrResult.rows[0]);
+        }
+      }
+
+      createdVariants.push({ ...variant, attributes: createdAttributes });
+    }
+
+    await client.query("COMMIT");
+    res.status(201).json({ success: true, data: createdVariants });
+  } catch (error: any) {
+    await client.query("ROLLBACK");
+    console.error("Error in bulk variant creation:", error);
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to create variants in bulk" });
+  } finally {
+    client.release();
   }
 };
 
@@ -494,12 +670,14 @@ export const updateVariantAttribute = async (req: Request, res: Response) => {
 
     // Verify product belongs to user
     const productCheck = await pool.query(
-      'SELECT product_id FROM products WHERE product_id = $1 AND user_id = $2',
+      "SELECT product_id FROM products WHERE product_id = $1 AND user_id = $2",
       [id, userId]
     );
 
     if (productCheck.rows.length === 0) {
-      return res.status(404).json({ success: false, error: 'Product not found' });
+      return res
+        .status(404)
+        .json({ success: false, error: "Product not found" });
     }
 
     const updates: string[] = [];
@@ -519,13 +697,15 @@ export const updateVariantAttribute = async (req: Request, res: Response) => {
     }
 
     if (updates.length === 0) {
-      return res.status(400).json({ success: false, error: 'No fields to update' });
+      return res
+        .status(400)
+        .json({ success: false, error: "No fields to update" });
     }
 
     values.push(attributeId, id);
     const query = `
       UPDATE product_variant_attributes
-      SET ${updates.join(', ')}
+      SET ${updates.join(", ")}
       WHERE attribute_id = $${paramIndex} AND product_id = $${paramIndex + 1}
       RETURNING *
     `;
@@ -533,13 +713,17 @@ export const updateVariantAttribute = async (req: Request, res: Response) => {
     const result = await pool.query(query, values);
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, error: 'Attribute not found' });
+      return res
+        .status(404)
+        .json({ success: false, error: "Attribute not found" });
     }
 
     res.json({ success: true, data: result.rows[0] });
   } catch (error) {
-    console.error('Error updating variant attribute:', error);
-    res.status(500).json({ success: false, error: 'Failed to update attribute' });
+    console.error("Error updating variant attribute:", error);
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to update attribute" });
   }
 };
 
@@ -551,27 +735,33 @@ export const deleteVariantAttribute = async (req: Request, res: Response) => {
 
     // Verify product belongs to user
     const productCheck = await pool.query(
-      'SELECT product_id FROM products WHERE product_id = $1 AND user_id = $2',
+      "SELECT product_id FROM products WHERE product_id = $1 AND user_id = $2",
       [id, userId]
     );
 
     if (productCheck.rows.length === 0) {
-      return res.status(404).json({ success: false, error: 'Product not found' });
+      return res
+        .status(404)
+        .json({ success: false, error: "Product not found" });
     }
 
     const result = await pool.query(
-      'DELETE FROM product_variant_attributes WHERE attribute_id = $1 AND product_id = $2 RETURNING *',
+      "DELETE FROM product_variant_attributes WHERE attribute_id = $1 AND product_id = $2 RETURNING *",
       [attributeId, id]
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, error: 'Attribute not found' });
+      return res
+        .status(404)
+        .json({ success: false, error: "Attribute not found" });
     }
 
-    res.json({ success: true, message: 'Attribute deleted successfully' });
+    res.json({ success: true, message: "Attribute deleted successfully" });
   } catch (error) {
-    console.error('Error deleting variant attribute:', error);
-    res.status(500).json({ success: false, error: 'Failed to delete attribute' });
+    console.error("Error deleting variant attribute:", error);
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to delete attribute" });
   }
 };
 
@@ -583,22 +773,26 @@ export const getVariantAttributes = async (req: Request, res: Response) => {
 
     // Verify product belongs to user
     const productCheck = await pool.query(
-      'SELECT product_id FROM products WHERE product_id = $1 AND user_id = $2',
+      "SELECT product_id FROM products WHERE product_id = $1 AND user_id = $2",
       [id, userId]
     );
 
     if (productCheck.rows.length === 0) {
-      return res.status(404).json({ success: false, error: 'Product not found' });
+      return res
+        .status(404)
+        .json({ success: false, error: "Product not found" });
     }
 
     const result = await pool.query(
-      'SELECT * FROM product_variant_attributes WHERE product_id = $1 ORDER BY attribute_name',
+      "SELECT * FROM product_variant_attributes WHERE product_id = $1 ORDER BY attribute_name",
       [id]
     );
 
     res.json({ success: true, data: result.rows });
   } catch (error) {
-    console.error('Error fetching variant attributes:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch attributes' });
+    console.error("Error fetching variant attributes:", error);
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to fetch attributes" });
   }
 };

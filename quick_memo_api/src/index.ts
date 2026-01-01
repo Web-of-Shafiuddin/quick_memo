@@ -15,6 +15,7 @@ import analyticsRoutes from "./routes/analyticsRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import paymentMethodRoutes from "./routes/paymentMethodRoutes.js";
+import attributeRoutes from "./routes/attributeRoutes.js";
 import { errorHandler, notFound } from "./middleware/errorHandler.js";
 import pool from "./config/database.js";
 import cookieParser from "cookie-parser";
@@ -27,7 +28,7 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware
 const allowedOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
+  ? process.env.CORS_ORIGIN.split(",").map((origin) => origin.trim())
   : ["http://localhost:3000"];
 
 app.use(
@@ -36,10 +37,10 @@ app.use(
       // Allow requests with no origin (mobile apps, curl, etc.)
       if (!origin) return callback(null, true);
 
-      if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+      if (allowedOrigins.includes(origin) || allowedOrigins.includes("*")) {
         callback(null, true);
       } else {
-        callback(new Error('Not allowed by CORS'));
+        callback(new Error("Not allowed by CORS"));
       }
     },
     credentials: true,
@@ -73,6 +74,7 @@ app.use("/api/analytics", analyticsRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/payment-methods", paymentMethodRoutes);
+app.use("/api/attributes", attributeRoutes);
 
 // Error handling
 app.use(notFound);

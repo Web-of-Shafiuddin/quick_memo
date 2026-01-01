@@ -24,32 +24,57 @@ import { Product } from "@/services/productService";
 import { categoryService, Category } from "@/services/categoryService";
 import { Plus, X } from "lucide-react";
 import { useCurrency } from "@/hooks/useCurrency";
+import {
+  attributeService,
+  AttributeDefinition,
+} from "@/services/attributeService";
 
 interface Attribute {
   attribute_name: string;
   attribute_value: string;
 }
 
+export interface ProductFormSubmitData {
+  sku?: string;
+  name: string;
+  category_id: number;
+  price: number;
+  discount: number;
+  stock: number;
+  status: "ACTIVE" | "INACTIVE" | "DISCONTINUED";
+  image: string | null;
+  attributes: Attribute[];
+}
+
 interface ProductFormProps {
   product?: Product | null;
-  onSubmit: (data: any) => Promise<void>;
+  onSubmit: (data: ProductFormSubmitData) => Promise<void>;
   title: string;
   description: string;
   submitButtonText: string;
 }
 
-const ProductForm = ({ product, onSubmit, title, description, submitButtonText }: ProductFormProps) => {
+const ProductForm = ({
+  product,
+  onSubmit,
+  title,
+  description,
+  submitButtonText,
+}: ProductFormProps) => {
   const router = useRouter();
   const { symbol } = useCurrency();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [attributes, setAttributes] = useState<Attribute[]>(
-    product?.attributes?.map(a => ({
+    product?.attributes?.map((a) => ({
       attribute_name: a.attribute_name,
-      attribute_value: a.attribute_value
+      attribute_value: a.attribute_value,
     })) || []
   );
+  const [globalAttributes, setGlobalAttributes] = useState<
+    AttributeDefinition[]
+  >([]);
   const [formData, setFormData] = useState({
     sku: product?.sku || "",
     name: product?.name || "",
@@ -63,15 +88,25 @@ const ProductForm = ({ product, onSubmit, title, description, submitButtonText }
 
   useEffect(() => {
     fetchCategories();
+    fetchGlobalAttributes();
   }, []);
+
+  const fetchGlobalAttributes = async () => {
+    try {
+      const res = await attributeService.getAll();
+      setGlobalAttributes(res.data);
+    } catch (error) {
+      console.error("Error fetching global attributes:", error);
+    }
+  };
 
   const fetchCategories = async () => {
     try {
       const response = await categoryService.getAll();
       setCategories(response.data);
     } catch (error: any) {
-      console.error('Error fetching categories:', error);
-      setError('Failed to load categories');
+      console.error("Error fetching categories:", error);
+      setError("Failed to load categories");
     }
   };
 
@@ -81,32 +116,31 @@ const ProductForm = ({ product, onSubmit, title, description, submitButtonText }
     setLoading(true);
 
     try {
-      const submitData: any = {
+      const submitData: ProductFormSubmitData = {
         name: formData.name,
         category_id: parseInt(formData.category_id),
         price: parseFloat(formData.price),
         discount: parseFloat(formData.discount) || 0,
         stock: parseInt(formData.stock) || 0,
-        status: formData.status as 'ACTIVE' | 'INACTIVE' | 'DISCONTINUED',
+        status: formData.status as "ACTIVE" | "INACTIVE" | "DISCONTINUED",
         image: formData.image || null,
-        attributes: attributes.filter(a => a.attribute_name.trim() && a.attribute_value.trim()),
+        attributes: attributes.filter(
+          (a) => a.attribute_name.trim() && a.attribute_value.trim()
+        ),
+        sku:
+          formData.sku && formData.sku.trim() ? formData.sku.trim() : undefined,
       };
 
-      // Only include SKU if it's provided
-      if (formData.sku && formData.sku.trim()) {
-        submitData.sku = formData.sku.trim();
-      }
-
       await onSubmit(submitData);
-    } catch (err: any) {
-      setError(err.message || 'An error occurred');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
     }
   };
 
   const handleChange = (name: string, value: string) => {
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const addAttribute = () => {
@@ -117,7 +151,11 @@ const ProductForm = ({ product, onSubmit, title, description, submitButtonText }
     setAttributes(attributes.filter((_, i) => i !== index));
   };
 
-  const updateAttribute = (index: number, field: keyof Attribute, value: string) => {
+  const updateAttribute = (
+    index: number,
+    field: keyof Attribute,
+    value: string
+  ) => {
     const updated = [...attributes];
     updated[index][field] = value;
     setAttributes(updated);
@@ -133,12 +171,14 @@ const ProductForm = ({ product, onSubmit, title, description, submitButtonText }
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="sku">SKU (Optional - Auto-generated if empty)</Label>
+              <Label htmlFor="sku">
+                SKU (Optional - Auto-generated if empty)
+              </Label>
               <Input
                 id="sku"
                 name="sku"
                 value={formData.sku}
-                onChange={(e) => handleChange('sku', e.target.value)}
+                onChange={(e) => handleChange("sku", e.target.value)}
                 readOnly={!!product}
                 placeholder="Leave empty for auto-generation"
               />
@@ -149,7 +189,7 @@ const ProductForm = ({ product, onSubmit, title, description, submitButtonText }
                 id="name"
                 name="name"
                 value={formData.name}
-                onChange={(e) => handleChange('name', e.target.value)}
+                onChange={(e) => handleChange("name", e.target.value)}
                 placeholder="e.g., Wireless Mouse"
                 required
               />
@@ -158,7 +198,7 @@ const ProductForm = ({ product, onSubmit, title, description, submitButtonText }
 
           <ImageUpload
             value={formData.image}
-            onChange={(url) => handleChange('image', url)}
+            onChange={(url) => handleChange("image", url)}
             type="product"
             label="Product Image"
             disabled={loading}
@@ -170,7 +210,7 @@ const ProductForm = ({ product, onSubmit, title, description, submitButtonText }
               <Select
                 name="category_id"
                 value={formData.category_id}
-                onValueChange={(value) => handleChange('category_id', value)}
+                onValueChange={(value) => handleChange("category_id", value)}
                 required
               >
                 <SelectTrigger>
@@ -178,7 +218,10 @@ const ProductForm = ({ product, onSubmit, title, description, submitButtonText }
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((cat) => (
-                    <SelectItem key={cat.category_id} value={cat.category_id.toString()}>
+                    <SelectItem
+                      key={cat.category_id}
+                      value={cat.category_id.toString()}
+                    >
                       {cat.name}
                     </SelectItem>
                   ))}
@@ -194,7 +237,7 @@ const ProductForm = ({ product, onSubmit, title, description, submitButtonText }
                 step="0.01"
                 min="0"
                 value={formData.price}
-                onChange={(e) => handleChange('price', e.target.value)}
+                onChange={(e) => handleChange("price", e.target.value)}
                 required
               />
             </div>
@@ -210,7 +253,7 @@ const ProductForm = ({ product, onSubmit, title, description, submitButtonText }
                 min="0"
                 max="100"
                 value={formData.discount}
-                onChange={(e) => handleChange('discount', e.target.value)}
+                onChange={(e) => handleChange("discount", e.target.value)}
                 placeholder="e.g., 10"
               />
             </div>
@@ -222,7 +265,7 @@ const ProductForm = ({ product, onSubmit, title, description, submitButtonText }
                 type="number"
                 min="0"
                 value={formData.stock}
-                onChange={(e) => handleChange('stock', e.target.value)}
+                onChange={(e) => handleChange("stock", e.target.value)}
                 required
               />
             </div>
@@ -231,7 +274,7 @@ const ProductForm = ({ product, onSubmit, title, description, submitButtonText }
               <Select
                 name="status"
                 value={formData.status}
-                onValueChange={(value) => handleChange('status', value)}
+                onValueChange={(value) => handleChange("status", value)}
                 required
               >
                 <SelectTrigger>
@@ -249,7 +292,9 @@ const ProductForm = ({ product, onSubmit, title, description, submitButtonText }
           {/* Product Attributes */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <Label className="text-base font-medium">Product Attributes</Label>
+              <Label className="text-base font-medium">
+                Product Attributes
+              </Label>
               <Button
                 type="button"
                 variant="outline"
@@ -265,33 +310,93 @@ const ProductForm = ({ product, onSubmit, title, description, submitButtonText }
             </p>
             {attributes.length > 0 && (
               <div className="space-y-3">
-                {attributes.map((attr, index) => (
-                  <div key={index} className="flex gap-2 items-start">
-                    <div className="flex-1">
-                      <Input
-                        placeholder="Attribute name (e.g., Size)"
-                        value={attr.attribute_name}
-                        onChange={(e) => updateAttribute(index, 'attribute_name', e.target.value)}
-                      />
+                {attributes.map((attr, index) => {
+                  const selectedDef = globalAttributes.find(
+                    (ga) => ga.name === attr.attribute_name
+                  );
+
+                  return (
+                    <div key={index} className="flex gap-2 items-start">
+                      <div className="flex-1">
+                        <Select
+                          value={attr.attribute_name}
+                          onValueChange={(value) => {
+                            updateAttribute(index, "attribute_name", value);
+                            updateAttribute(index, "attribute_value", ""); // Reset value when name changes
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Attribute (e.g. Size)" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {globalAttributes.map((ga) => (
+                              <SelectItem
+                                key={ga.attribute_def_id}
+                                value={ga.name}
+                              >
+                                {ga.name}
+                              </SelectItem>
+                            ))}
+                            {/* Allow custom if not found but primarily encourage global */}
+                            {!globalAttributes.some(
+                              (ga) => ga.name === attr.attribute_name
+                            ) &&
+                              attr.attribute_name && (
+                                <SelectItem value={attr.attribute_name}>
+                                  {attr.attribute_name}
+                                </SelectItem>
+                              )}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex-1">
+                        {selectedDef ? (
+                          <Select
+                            value={attr.attribute_value}
+                            onValueChange={(value) =>
+                              updateAttribute(index, "attribute_value", value)
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Value (e.g. Large)" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {selectedDef.values?.map((val) => (
+                                <SelectItem
+                                  key={val.attribute_value_id}
+                                  value={val.value}
+                                >
+                                  {val.value}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <Input
+                            placeholder="Value (e.g., Large)"
+                            value={attr.attribute_value}
+                            onChange={(e) =>
+                              updateAttribute(
+                                index,
+                                "attribute_value",
+                                e.target.value
+                              )
+                            }
+                          />
+                        )}
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeAttribute(index)}
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
                     </div>
-                    <div className="flex-1">
-                      <Input
-                        placeholder="Value (e.g., Large)"
-                        value={attr.attribute_value}
-                        onChange={(e) => updateAttribute(index, 'attribute_value', e.target.value)}
-                      />
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => removeAttribute(index)}
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -299,7 +404,11 @@ const ProductForm = ({ product, onSubmit, title, description, submitButtonText }
           {error && <p className="text-red-600">{error}</p>}
 
           <div className="flex justify-end gap-4 pt-4">
-            <Button type="button" variant="outline" onClick={() => router.back()}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.back()}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>

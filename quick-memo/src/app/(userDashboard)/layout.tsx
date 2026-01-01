@@ -11,6 +11,7 @@ import {
   LogOut,
   Palette,
   Save,
+  Tag,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -45,7 +46,7 @@ export default function ProtectedUserDashboardlayout({
   const [subscription, setSubscription] = useState<Subscription | null>(null);
 
   useEffect(() => {
-    if(isLoading === false && !user) {
+    if (isLoading === false && !user) {
       router.push("/auth/login");
     }
   }, [isLoading, user, router]);
@@ -53,10 +54,10 @@ export default function ProtectedUserDashboardlayout({
   useEffect(() => {
     const fetchSubscription = async () => {
       try {
-        const response = await api.get('/subscriptions/my-subscription');
+        const response = await api.get("/subscriptions/my-subscription");
         setSubscription(response.data.data || null);
       } catch (error) {
-        console.error('Error fetching subscription:', error);
+        console.error("Error fetching subscription:", error);
       }
     };
 
@@ -103,29 +104,33 @@ export default function ProtectedUserDashboardlayout({
               </div>
             </div>
             <div className="flex items-center gap-4">
-              {subscription && subscription.status === 'ACTIVE' && subscription.plan_name !== 'Free' && (
-                <Badge className="bg-green-100 text-green-800">
-                  <Crown className="w-3 h-3 mr-1" />
-                  {subscription.plan_name} Active
-                </Badge>
-              )}
-              {subscription && subscription.status === 'GRACE_PERIOD' && (
+              {subscription &&
+                subscription.status === "ACTIVE" &&
+                subscription.plan_name !== "Free" && (
+                  <Badge className="bg-green-100 text-green-800">
+                    <Crown className="w-3 h-3 mr-1" />
+                    {subscription.plan_name} Active
+                  </Badge>
+                )}
+              {subscription && subscription.status === "GRACE_PERIOD" && (
                 <Link href="/subscription">
                   <Badge className="bg-orange-100 text-orange-800 cursor-pointer hover:bg-orange-200">
                     Grace Period - Renew Now
                   </Badge>
                 </Link>
               )}
-              {subscription && subscription.status === 'EXPIRED' && (
+              {subscription && subscription.status === "EXPIRED" && (
                 <Link href="/subscription">
                   <Badge className="bg-red-100 text-red-800 cursor-pointer hover:bg-red-200">
                     Expired - Renew Now
                   </Badge>
                 </Link>
               )}
-              {subscription && subscription.status === 'ACTIVE' && subscription.plan_name === 'Free' && (
-                <Badge className="bg-gray-100 text-gray-800">Free Plan</Badge>
-              )}
+              {subscription &&
+                subscription.status === "ACTIVE" &&
+                subscription.plan_name === "Free" && (
+                  <Badge className="bg-gray-100 text-gray-800">Free Plan</Badge>
+                )}
               {!subscription && (
                 <Link href="/subscription">
                   <Badge className="bg-blue-100 text-blue-800 cursor-pointer hover:bg-blue-200">
@@ -164,6 +169,12 @@ export default function ProtectedUserDashboardlayout({
                   <Button variant="outline" className="w-full justify-start">
                     <FileText className="w-4 h-4 mr-2" />
                     Categories
+                  </Button>
+                </Link>
+                <Link href="/attributes">
+                  <Button variant="outline" className="w-full justify-start">
+                    <Tag className="w-4 h-4 mr-2" />
+                    Attributes
                   </Button>
                 </Link>
                 <Link href="/products">

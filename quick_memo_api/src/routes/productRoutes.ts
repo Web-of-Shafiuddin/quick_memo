@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router } from "express";
 import {
   getAllProducts,
   getProductById,
@@ -10,14 +10,19 @@ import {
   updateStock,
   getProductVariants,
   createVariant,
+  bulkCreateVariants,
   updateVariantAttribute,
   deleteVariantAttribute,
   getVariantAttributes,
-} from '../controllers/productController.js';
-import { authMiddleware } from '../middleware/authMiddleware.js';
-import { checkProductLimit } from '../middleware/subscriptionLimits.js';
-import { validate } from '../middleware/validator.js';
-import { createProductSchema, updateProductSchema, createVariantAttributeSchema } from '../schemas/productSchema.js';
+} from "../controllers/productController.js";
+import { authMiddleware } from "../middleware/authMiddleware.js";
+import { checkProductLimit } from "../middleware/subscriptionLimits.js";
+import { validate } from "../middleware/validator.js";
+import {
+  createProductSchema,
+  updateProductSchema,
+  createVariantAttributeSchema,
+} from "../schemas/productSchema.js";
 
 const router = Router();
 
@@ -25,24 +30,34 @@ const router = Router();
 router.use(authMiddleware);
 
 // Product CRUD
-router.get('/', getAllProducts);
-router.get('/:id', getProductById);
-router.get('/sku/:sku', getProductBySku);
-router.post('/', checkProductLimit, validate(createProductSchema), createProduct);
-router.put('/:id', validate(updateProductSchema), updateProduct);
-router.delete('/:id', deleteProduct);
+router.get("/", getAllProducts);
+router.get("/:id", getProductById);
+router.get("/sku/:sku", getProductBySku);
+router.post(
+  "/",
+  checkProductLimit,
+  validate(createProductSchema),
+  createProduct
+);
+router.put("/:id", validate(updateProductSchema), updateProduct);
+router.delete("/:id", deleteProduct);
 
 // Variant management - Full CRUD for variants
-router.get('/:id/variants', getProductVariants);
-router.post('/:id/variants', checkProductLimit, createVariant);
+router.get("/:id/variants", getProductVariants);
+router.post("/:id/variants", checkProductLimit, createVariant);
+router.post("/:id/variants/bulk", checkProductLimit, bulkCreateVariants);
 
 // Variant attributes management
-router.get('/:id/attributes', getVariantAttributes);
-router.post('/:id/attributes', validate(createVariantAttributeSchema), addVariantAttribute);
-router.put('/:id/attributes/:attributeId', updateVariantAttribute);
-router.delete('/:id/attributes/:attributeId', deleteVariantAttribute);
+router.get("/:id/attributes", getVariantAttributes);
+router.post(
+  "/:id/attributes",
+  validate(createVariantAttributeSchema),
+  addVariantAttribute
+);
+router.put("/:id/attributes/:attributeId", updateVariantAttribute);
+router.delete("/:id/attributes/:attributeId", deleteVariantAttribute);
 
 // Stock management
-router.patch('/:id/stock', updateStock);
+router.patch("/:id/stock", updateStock);
 
 export default router;

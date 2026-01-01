@@ -1,20 +1,20 @@
-'use client'
+"use client";
 import { useRouter } from "next/navigation";
-import ProductForm from "../_components/ProductForm";
+import ProductForm, { ProductFormSubmitData } from "../_components/ProductForm";
 import { productService } from "@/services/productService";
 import { toast } from "sonner";
 
 export default function AddProductPage() {
   const router = useRouter();
 
-  const handleCreate = async (data: any) => {
+  const handleCreate = async (data: ProductFormSubmitData) => {
     try {
-      await productService.create(data);
-      toast.success('Product created successfully');
-      router.push('/products');
+      const response = await productService.create(data as any); // Service expects CreateProductInput, but current data is compatible
+      toast.success("Product created successfully");
+      router.push(`/products/edit/${response.data.product_id}`);
     } catch (error: any) {
-      console.error('Error creating product:', error);
-      toast.error(error.response?.data?.error || 'Failed to create product');
+      console.error("Error creating product:", error);
+      toast.error(error.response?.data?.error || "Failed to create product");
     }
   };
 

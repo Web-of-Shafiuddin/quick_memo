@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import React, { useState, useEffect } from "react";
 import {
   Table,
@@ -30,33 +30,43 @@ const ProductsPage = () => {
       setLoading(true);
       const response = await productService.getAll();
       setProducts(response.data);
-    } catch (error: any) {
-      console.error('Error fetching products:', error);
-      alert(error.response?.data?.error || 'Failed to fetch products');
+    } catch (error: unknown) {
+      console.error("Error fetching products:", error);
+      const message =
+        error instanceof Error
+          ? (error as any).response?.data?.error
+          : "Failed to fetch products";
+      alert(message || "Failed to fetch products");
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id: number, name: string) => {
-    const isConfirmed = window.confirm(`Are you sure you want to delete ${name}?`);
+    const isConfirmed = window.confirm(
+      `Are you sure you want to delete ${name}?`
+    );
     if (isConfirmed) {
       try {
         await productService.delete(id);
-        alert('Product deleted successfully');
+        alert("Product deleted successfully");
         fetchProducts();
-      } catch (error: any) {
-        console.error('Error deleting product:', error);
-        alert(error.response?.data?.error || 'Failed to delete product');
+      } catch (error: unknown) {
+        console.error("Error deleting product:", error);
+        const message =
+          error instanceof Error
+            ? (error as any).response?.data?.error
+            : "Failed to delete product";
+        alert(message || "Failed to delete product");
       }
     }
   };
 
   const totalStockValue = products.reduce((acc, product) => {
-    return acc + (product.price * product.stock);
+    return acc + product.price * product.stock;
   }, 0);
 
-  const getStatusBadgeVariant = (status: Product['status']) => {
+  const getStatusBadgeVariant = (status: Product["status"]) => {
     switch (status) {
       case "ACTIVE":
         return "default";
@@ -83,7 +93,9 @@ const ProductsPage = () => {
       </div>
 
       <Table>
-        <TableCaption>A list of all your products, including their stock levels and value.</TableCaption>
+        <TableCaption>
+          A list of all your products, including their stock levels and value.
+        </TableCaption>
         <TableHeader>
           <TableRow>
             <TableHead className="w-[100px]">Image</TableHead>
@@ -113,15 +125,27 @@ const ProductsPage = () => {
                 )}
               </TableCell>
               <TableCell className="font-medium">{product.sku}</TableCell>
-              <TableCell>{product.name}</TableCell>
-              <TableCell>{product.category_name || 'N/A'}</TableCell>
+              <TableCell>
+                <div className="flex flex-col">
+                  <span>{product.name}</span>
+                  {product.variant_count && product.variant_count > 0 ? (
+                    <span className="text-xs text-muted-foreground">
+                      {product.variant_count}{" "}
+                      {product.variant_count === 1 ? "variant" : "variants"}
+                    </span>
+                  ) : null}
+                </div>
+              </TableCell>
+              <TableCell>{product.category_name || "N/A"}</TableCell>
               <TableCell>
                 <Badge variant={getStatusBadgeVariant(product.status)}>
                   {product.status}
                 </Badge>
               </TableCell>
               <TableCell>{product.stock}</TableCell>
-              <TableCell className="text-right">{formatPrice(product.price)}</TableCell>
+              <TableCell className="text-right">
+                {formatPrice(product.price)}
+              </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
                   <Link href={`/products/edit/${product.product_id}`}>
@@ -132,7 +156,9 @@ const ProductsPage = () => {
                   <Button
                     variant="destructive"
                     size="sm"
-                    onClick={() => handleDelete(product.product_id, product.name)}
+                    onClick={() =>
+                      handleDelete(product.product_id, product.name)
+                    }
                   >
                     Delete
                   </Button>

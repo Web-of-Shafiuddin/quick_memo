@@ -11,13 +11,14 @@ interface ProductFromAPI {
   price: string; // PostgreSQL returns NUMERIC as string
   discount: string; // PostgreSQL returns REAL as string
   stock: string; // PostgreSQL returns INT as string in some cases
-  status: 'ACTIVE' | 'INACTIVE' | 'DISCONTINUED';
+  status: "ACTIVE" | "INACTIVE" | "DISCONTINUED";
   image?: string | null;
   parent_product_id?: number | null;
   created_at: string;
   updated_at: string;
   variants?: ProductFromAPI[];
   attributes?: VariantAttribute[];
+  variant_count?: string | number;
 }
 
 // Client-side types (what we use in the app)
@@ -31,13 +32,14 @@ export interface Product {
   price: number;
   discount: number;
   stock: number;
-  status: 'ACTIVE' | 'INACTIVE' | 'DISCONTINUED';
+  status: "ACTIVE" | "INACTIVE" | "DISCONTINUED";
   image?: string | null;
   parent_product_id?: number | null;
   created_at: string;
   updated_at: string;
   variants?: Product[];
   attributes?: VariantAttribute[];
+  variant_count?: number;
 }
 
 export interface VariantAttribute {
@@ -54,7 +56,7 @@ export interface CreateProductInput {
   price: number;
   discount?: number;
   stock?: number;
-  status?: 'ACTIVE' | 'INACTIVE' | 'DISCONTINUED';
+  status?: "ACTIVE" | "INACTIVE" | "DISCONTINUED";
   image?: string | null;
   parent_product_id?: number | null;
 }
@@ -66,7 +68,7 @@ export interface UpdateProductInput {
   price?: number;
   discount?: number;
   stock?: number;
-  status?: 'ACTIVE' | 'INACTIVE' | 'DISCONTINUED';
+  status?: "ACTIVE" | "INACTIVE" | "DISCONTINUED";
   image?: string | null;
   parent_product_id?: number | null;
 }
@@ -77,6 +79,9 @@ const transformProduct = (product: ProductFromAPI): Product => ({
   price: parseFloat(product.price),
   discount: parseFloat(product.discount),
   stock: parseInt(product.stock, 10),
+  variant_count: product.variant_count
+    ? parseInt(product.variant_count.toString(), 10)
+    : 0,
   variants: product.variants?.map(transformProduct),
 });
 
@@ -86,10 +91,10 @@ export const productService = {
     status?: string;
     search?: string;
   }) => {
-    const response = await api.get<{ success: boolean; data: ProductFromAPI[] }>(
-      "/products",
-      { params }
-    );
+    const response = await api.get<{
+      success: boolean;
+      data: ProductFromAPI[];
+    }>("/products", { params });
     return {
       ...response.data,
       data: response.data.data.map(transformProduct),
@@ -166,9 +171,10 @@ export const productService = {
 
   // Variant management
   getVariants: async (parentId: number) => {
-    const response = await api.get<{ success: boolean; data: ProductFromAPI[] }>(
-      `/products/${parentId}/variants`
-    );
+    const response = await api.get<{
+      success: boolean;
+      data: ProductFromAPI[];
+    }>(`/products/${parentId}/variants`);
     return {
       ...response.data,
       data: response.data.data.map(transformProduct),
@@ -183,7 +189,7 @@ export const productService = {
       price: number;
       discount?: number;
       stock?: number;
-      status?: 'ACTIVE' | 'INACTIVE' | 'DISCONTINUED';
+      status?: "ACTIVE" | "INACTIVE" | "DISCONTINUED";
       image?: string | null;
       attributes?: { attribute_name: string; attribute_value: string }[];
     }
@@ -198,11 +204,35 @@ export const productService = {
     };
   },
 
+  bulkCreateVariants: async (
+    parentId: number,
+    variants: {
+      sku?: string;
+      name?: string;
+      price: number;
+      discount?: number;
+      stock?: number;
+      status?: "ACTIVE" | "INACTIVE" | "DISCONTINUED";
+      image?: string | null;
+      attributes: { attribute_name: string; attribute_value: string }[];
+    }[]
+  ) => {
+    const response = await api.post<{
+      success: boolean;
+      data: ProductFromAPI[];
+    }>(`/products/${parentId}/variants/bulk`, { variants });
+    return {
+      ...response.data,
+      data: response.data.data.map(transformProduct),
+    };
+  },
+
   // Attribute management
   getAttributes: async (productId: number) => {
-    const response = await api.get<{ success: boolean; data: VariantAttribute[] }>(
-      `/products/${productId}/attributes`
-    );
+    const response = await api.get<{
+      success: boolean;
+      data: VariantAttribute[];
+    }>(`/products/${productId}/attributes`);
     return response.data;
   },
 
@@ -211,10 +241,10 @@ export const productService = {
     attributeId: number,
     data: { attribute_name?: string; attribute_value?: string }
   ) => {
-    const response = await api.put<{ success: boolean; data: VariantAttribute }>(
-      `/products/${productId}/attributes/${attributeId}`,
-      data
-    );
+    const response = await api.put<{
+      success: boolean;
+      data: VariantAttribute;
+    }>(`/products/${productId}/attributes/${attributeId}`, data);
     return response.data;
   },
 
