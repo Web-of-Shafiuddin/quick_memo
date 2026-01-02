@@ -482,7 +482,7 @@ const ProductForm = ({
           </div>
 
           {/* Gallery Images */}
-          <div className="space-y-4">
+          {product?.parent_product_id === null && <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label className="text-base font-medium">Product Gallery</Label>
               <div className="w-40">
@@ -551,7 +551,7 @@ const ProductForm = ({
                 No gallery images added yet.
               </p>
             )}
-          </div>
+          </div>}
 
           {error && <p className="text-red-600">{error}</p>}
 
