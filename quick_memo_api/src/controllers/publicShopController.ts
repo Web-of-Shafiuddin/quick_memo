@@ -25,11 +25,14 @@ export const getShopBySlug = async (req: Request, res: Response) => {
 };
 
 // Get products for a shop by user ID (fetched via slug on frontend or passed directly if public API design differs)
-// Better design: get products by slug directly to keep it public-friendly
 export const getShopProducts = async (req: Request, res: Response) => {
   try {
     const { slug } = req.params;
-    const { category_id, search, sort } = req.query;
+    const { category_id, search, sort, page = 1, limit = 12 } = req.query;
+
+    const pageNum = parseInt(page as string) || 1;
+    const limitNum = parseInt(limit as string) || 12;
+    const offset = (pageNum - 1) * limitNum;
 
     // First get user_id from slug
     const user = await pool.query(
@@ -41,9 +44,7 @@ export const getShopProducts = async (req: Request, res: Response) => {
     }
     const userId = user.rows[0].user_id;
 
-    let query = `
-      SELECT p.*, c.name as category_name,
-             (SELECT COUNT(*) FROM products v WHERE v.parent_product_id = p.product_id) as variant_count
+    let baseQuery = `
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.category_id
       WHERE p.user_id = $1 AND p.parent_product_id IS NULL AND p.status = 'ACTIVE'
@@ -52,16 +53,30 @@ export const getShopProducts = async (req: Request, res: Response) => {
     let paramIndex = 2;
 
     if (category_id) {
-      query += ` AND p.category_id = $${paramIndex}`;
+      baseQuery += ` AND p.category_id = $${paramIndex}`;
       params.push(category_id);
       paramIndex++;
     }
 
     if (search) {
-      query += ` AND (p.name ILIKE $${paramIndex} OR p.sku ILIKE $${paramIndex})`;
+      baseQuery += ` AND (p.name ILIKE $${paramIndex} OR p.sku ILIKE $${paramIndex})`;
       params.push(`%${search}%`);
       paramIndex++;
     }
+
+    // Count query
+    const countResult = await pool.query(
+      `SELECT COUNT(*) ${baseQuery}`,
+      params
+    );
+    const totalProducts = parseInt(countResult.rows[0].count);
+
+    // Data query
+    let query = `
+      SELECT p.*, c.name as category_name,
+             (SELECT COUNT(*) FROM products v WHERE v.parent_product_id = p.product_id) as variant_count
+      ${baseQuery}
+    `;
 
     if (sort === "price_asc") {
       query += " ORDER BY p.price ASC";
@@ -71,8 +86,21 @@ export const getShopProducts = async (req: Request, res: Response) => {
       query += " ORDER BY p.created_at DESC";
     }
 
+    query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+    params.push(limitNum, offset);
+
     const result = await pool.query(query, params);
-    res.json({ success: true, data: result.rows });
+
+    res.json({
+      success: true,
+      data: result.rows,
+      pagination: {
+        total: totalProducts,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(totalProducts / limitNum),
+      },
+    });
   } catch (error) {
     console.error("Error fetching shop products:", error);
     res.status(500).json({ success: false, error: "Failed to fetch products" });
@@ -110,13 +138,19 @@ export const getShopProductBySku = async (req: Request, res: Response) => {
 
     // Get variants
     const variantsResult = await pool.query(
-      "SELECT * FROM products WHERE parent_product_id = $1",
+      "SELECT * FROM products WHERE parent_product_id = $1 AND status = 'ACTIVE'",
       [product.product_id]
     );
 
-    // Get attributes
+    // Get attributes (global for this product)
     const attributesResult = await pool.query(
       "SELECT * FROM product_variant_attributes WHERE product_id = $1",
+      [product.product_id]
+    );
+
+    // Get gallery images
+    const galleryResult = await pool.query(
+      "SELECT * FROM product_gallery_images WHERE product_id = $1",
       [product.product_id]
     );
 
@@ -137,6 +171,7 @@ export const getShopProductBySku = async (req: Request, res: Response) => {
         ...product,
         attributes: attributesResult.rows,
         variants: variantsWithAttributes,
+        gallery_images: galleryResult.rows,
       },
     });
   } catch (error) {

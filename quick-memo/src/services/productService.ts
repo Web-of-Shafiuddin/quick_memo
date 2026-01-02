@@ -34,12 +34,23 @@ export interface Product {
   stock: number;
   status: "ACTIVE" | "INACTIVE" | "DISCONTINUED";
   image?: string | null;
+  description?: string | null;
+  video_url?: string | null;
   parent_product_id?: number | null;
   created_at: string;
   updated_at: string;
   variants?: Product[];
   attributes?: VariantAttribute[];
+  gallery_images?: ProductGalleryImage[];
   variant_count?: number;
+}
+
+export interface ProductGalleryImage {
+  gallery_id: number;
+  product_id: number;
+  image_url: string;
+  attribute_value?: string | null; // e.g. "Red"
+  created_at?: string;
 }
 
 export interface VariantAttribute {
@@ -58,7 +69,12 @@ export interface CreateProductInput {
   stock?: number;
   status?: "ACTIVE" | "INACTIVE" | "DISCONTINUED";
   image?: string | null;
+  description?: string | null;
+  video_url?: string | null;
   parent_product_id?: number | null;
+  // Attributes can be passed if needed during creation
+  attributes?: { attribute_name: string; attribute_value: string }[];
+  gallery_images?: { image_url: string; attribute_value?: string }[];
 }
 
 export interface UpdateProductInput {
@@ -70,7 +86,11 @@ export interface UpdateProductInput {
   stock?: number;
   status?: "ACTIVE" | "INACTIVE" | "DISCONTINUED";
   image?: string | null;
+  description?: string | null;
+  video_url?: string | null;
   parent_product_id?: number | null;
+  attributes?: { attribute_name: string; attribute_value: string }[];
+  gallery_images?: { image_url: string; attribute_value?: string }[];
 }
 
 // Helper function to transform product data from API

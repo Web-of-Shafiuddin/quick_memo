@@ -63,9 +63,9 @@ const AddOrderPage = () => {
   const [selectedProductId, setSelectedProductId] = useState<number | null>(
     null
   );
-  const [selectedVariantId, setSelectedVariantId] = useState<number | null>(
-    null
-  );
+  const [selectedOptions, setSelectedOptions] = useState<
+    Record<string, string>
+  >({});
   const [variants, setVariants] = useState<Product[]>([]);
   const [itemQuantity, setItemQuantity] = useState(1);
   const [itemDiscount, setItemDiscount] = useState(0);
@@ -73,6 +73,23 @@ const AddOrderPage = () => {
   useEffect(() => {
     fetchInitialData();
   }, []);
+
+  // Helper to extract options
+  const getProductOptions = (variants: Product[]) => {
+    const options: Record<string, Set<string>> = {};
+    variants.forEach((v) => {
+      v.attributes?.forEach((a) => {
+        if (!options[a.attribute_name]) {
+          options[a.attribute_name] = new Set();
+        }
+        options[a.attribute_name].add(a.attribute_value);
+      });
+    });
+    return Object.entries(options).map(([name, values]) => ({
+      name,
+      values: Array.from(values),
+    }));
+  };
 
   const fetchInitialData = async () => {
     try {
@@ -97,17 +114,59 @@ const AddOrderPage = () => {
 
   const handleProductSelect = async (productId: number) => {
     setSelectedProductId(productId);
-    setSelectedVariantId(null);
+    setSelectedOptions({});
     setVariants([]);
 
-    const product = products.find((p) => p.product_id === productId);
-    if (product && (product.variant_count || 0) > 0) {
-      try {
-        const response = await productService.getVariants(productId);
-        setVariants(response.data);
-      } catch (error) {
-        console.error("Error fetching variants:", error);
+    try {
+      setLoading(true);
+      // Fetch full product details (to get attributes of parent) and simple variant list
+      // Note: productService.getVariants returns Product[] (which are children)
+      const [productRes, variantsRes] = await Promise.all([
+        productService.getById(productId),
+        // We only try to fetch variants if the initial listing suggested so,
+        // but calling it anyway for safety or we can check productRes first.
+        // Optimistically fetching both is faster.
+        productService.getVariants(productId).catch(() => ({ data: [] })),
+      ]);
+
+      const fullProduct = productRes.data;
+      const variantsData = variantsRes.data || [];
+
+      // Determine if we should show selectors
+      const hasVariants =
+        (fullProduct.variant_count || 0) > 0 || variantsData.length > 0;
+
+      if (hasVariants) {
+        // Combine parent with children variants to form the complete option set
+        // Public shop logic: const allItems = [product, ...(product.variants || [])];
+        // Here `fullProduct` has `attributes` and so do `variantsData`.
+        const allVariants = [fullProduct, ...variantsData];
+        setVariants(allVariants);
+
+        // Auto-select defaults from the first available item (usually parent or first variant)
+        if (allVariants.length > 0) {
+          const first = allVariants[0];
+          const defaults: Record<string, string> = {};
+          first.attributes?.forEach(
+            (a) => (defaults[a.attribute_name] = a.attribute_value)
+          );
+          setSelectedOptions(defaults);
+        }
+      } else {
+        // Even if no children, check if the product itself has attributes (single variant case)
+        if (fullProduct.attributes && fullProduct.attributes.length > 0) {
+          setVariants([fullProduct]);
+          const defaults: Record<string, string> = {};
+          fullProduct.attributes.forEach(
+            (a) => (defaults[a.attribute_name] = a.attribute_value)
+          );
+          setSelectedOptions(defaults);
+        }
       }
+    } catch (error) {
+      console.error("Error fetching product details:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -120,21 +179,41 @@ const AddOrderPage = () => {
     const product = products.find((p) => p.product_id === selectedProductId);
     if (!product) return;
 
-    // Check if variant selection is required
-    if (variants.length > 0 && !selectedVariantId) {
-      alert("Please select a variation");
-      return;
-    }
+    let productToAdd: Product | undefined = product;
 
-    // Use variant if selected, otherwise parent product
-    const productToAdd = selectedVariantId
-      ? variants.find((v) => v.product_id === selectedVariantId)
-      : product;
+    // Check if we have variants and need resolution
+    if (variants.length > 0) {
+      // Find matching variant
+      const matchedVariant = variants.find((v) => {
+        if (!v.attributes) return false;
+        return v.attributes.every(
+          (a) => selectedOptions[a.attribute_name] === a.attribute_value
+        );
+      });
+
+      // If we have variants but no match found (and options are selected), user might have selected invalid combo
+      // But we pre-filled options.
+      // If user hasn't selected anything yet?
+
+      if (matchedVariant) {
+        productToAdd = matchedVariant;
+      } else if (Object.keys(selectedOptions).length > 0) {
+        // Try to see if this combination is valid. If not, alert.
+        // But wait, if `variants` include the parent attributes, it might be the parent.
+        // If we didn't fetch parent attributes, we can't match it.
+        // Assumption: `variants` covers all selectable items.
+        alert("Please select a valid variation combination.");
+        return;
+      } else {
+        alert("Please select variation options.");
+        return;
+      }
+    }
 
     if (!productToAdd) return;
 
     const existingItemIndex = orderItems.findIndex(
-      (item) => item.product_id === productToAdd.product_id
+      (item) => item.product_id === productToAdd!.product_id
     );
 
     if (existingItemIndex >= 0) {
@@ -157,7 +236,7 @@ const AddOrderPage = () => {
 
     // Reset item form
     setSelectedProductId(null);
-    setSelectedVariantId(null);
+    setSelectedOptions({});
     setVariants([]);
     setItemQuantity(1);
     setItemDiscount(0);
@@ -356,38 +435,56 @@ const AddOrderPage = () => {
                   />
 
                   {variants.length > 0 && (
-                    <div className="mt-2">
-                      <Label
-                        htmlFor="variant"
-                        className="text-xs text-muted-foreground mb-1 block"
-                      >
-                        Select Variation
-                      </Label>
-                      <Select
-                        value={selectedVariantId?.toString() || ""}
-                        onValueChange={(val) =>
-                          setSelectedVariantId(parseInt(val))
+                    <div className="mt-2 space-y-2">
+                      {getProductOptions(variants).map((option) => (
+                        <div key={option.name}>
+                          <Label className="text-xs text-muted-foreground mb-1 block">
+                            {option.name}
+                          </Label>
+                          <Select
+                            value={selectedOptions[option.name] || ""}
+                            onValueChange={(val) =>
+                              setSelectedOptions((prev) => ({
+                                ...prev,
+                                [option.name]: val,
+                              }))
+                            }
+                          >
+                            <SelectTrigger className="h-9">
+                              <SelectValue
+                                placeholder={`Select ${option.name}`}
+                              />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {option.values.map((val) => (
+                                <SelectItem key={val} value={val}>
+                                  {val}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      ))}
+
+                      {/* Show resolved variant price/stock if available */}
+                      {(() => {
+                        const matched = variants.find((v) =>
+                          v.attributes?.every(
+                            (a) =>
+                              selectedOptions[a.attribute_name] ===
+                              a.attribute_value
+                          )
+                        );
+                        if (matched) {
+                          return (
+                            <div className="text-xs text-muted-foreground mt-2">
+                              Price: {formatPrice(matched.price)} | Stock:{" "}
+                              {matched.stock}
+                            </div>
+                          );
                         }
-                      >
-                        <SelectTrigger className="h-9">
-                          <SelectValue placeholder="Choose variation" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {variants.map((variant) => (
-                            <SelectItem
-                              key={variant.product_id}
-                              value={variant.product_id.toString()}
-                            >
-                              {variant.attributes
-                                ?.map((a) => a.attribute_value)
-                                .join(" / ") || variant.name}
-                              {` - ${formatPrice(variant.price)} (Stock: ${
-                                variant.stock
-                              })`}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        return null;
+                      })()}
                     </div>
                   )}
                 </div>

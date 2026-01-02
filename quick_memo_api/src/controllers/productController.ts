@@ -80,10 +80,17 @@ export const getProductById = async (req: Request, res: Response) => {
       [id]
     );
 
+    // Get gallery images
+    const galleryResult = await pool.query(
+      "SELECT * FROM product_gallery_images WHERE product_id = $1",
+      [id]
+    );
+
     const product = {
       ...result.rows[0],
       variants: variantsResult.rows,
       attributes: attributesResult.rows,
+      gallery_images: galleryResult.rows,
     };
 
     res.json({ success: true, data: product });
@@ -112,7 +119,18 @@ export const getProductBySku = async (req: Request, res: Response) => {
         .json({ success: false, error: "Product not found" });
     }
 
-    res.json({ success: true, data: result.rows[0] });
+    const product = result.rows[0];
+
+    // Get gallery images
+    const galleryResult = await pool.query(
+      "SELECT * FROM product_gallery_images WHERE product_id = $1",
+      [product.product_id]
+    );
+
+    res.json({
+      success: true,
+      data: { ...product, gallery_images: galleryResult.rows },
+    });
   } catch (error) {
     console.error("Error fetching product:", error);
     res.status(500).json({ success: false, error: "Failed to fetch product" });
@@ -132,6 +150,9 @@ export const createProduct = async (req: Request, res: Response) => {
       image,
       parent_product_id,
       attributes = [],
+      description,
+      video_url,
+      gallery_images = [], // Array of { image_url, attribute_value }
     } = req.body;
     const userId = req.userId;
 
@@ -158,8 +179,8 @@ export const createProduct = async (req: Request, res: Response) => {
 
     const result = await pool.query(
       `INSERT INTO products
-       (user_id, sku, name, category_id, price, discount, stock, status, image, parent_product_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+       (user_id, sku, name, category_id, price, discount, stock, status, image, parent_product_id, description, video_url)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING *`,
       [
         userId,
@@ -172,6 +193,8 @@ export const createProduct = async (req: Request, res: Response) => {
         status,
         image || null,
         parent_product_id || null,
+        description || null,
+        video_url || null,
       ]
     );
 
@@ -191,9 +214,29 @@ export const createProduct = async (req: Request, res: Response) => {
       }
     }
 
+    // Add gallery images
+    const createdGallery = [];
+    if (Array.isArray(gallery_images)) {
+      for (const img of gallery_images) {
+        if (img.image_url) {
+          const galleryResult = await pool.query(
+            `INSERT INTO product_gallery_images (product_id, image_url, attribute_value)
+             VALUES ($1, $2, $3)
+             RETURNING *`,
+            [product.product_id, img.image_url, img.attribute_value || null]
+          );
+          createdGallery.push(galleryResult.rows[0]);
+        }
+      }
+    }
+
     res.status(201).json({
       success: true,
-      data: { ...product, attributes: createdAttributes },
+      data: {
+        ...product,
+        attributes: createdAttributes,
+        gallery_images: createdGallery,
+      },
     });
   } catch (error: any) {
     console.error("Error creating product:", error);
@@ -210,7 +253,7 @@ export const updateProduct = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const userId = req.userId;
-    const { attributes, ...updateData } = req.body;
+    const { attributes, gallery_images, ...updateData } = req.body;
 
     // Build dynamic update query
     const updates: string[] = [];
@@ -227,6 +270,8 @@ export const updateProduct = async (req: Request, res: Response) => {
       "status",
       "image",
       "parent_product_id",
+      "description",
+      "video_url",
     ];
 
     for (const field of allowedFields) {
@@ -314,6 +359,37 @@ export const updateProduct = async (req: Request, res: Response) => {
         [id]
       );
       product.attributes = attrResult.rows;
+    }
+
+    // Handle gallery images if provided
+    if (Array.isArray(gallery_images)) {
+      // Delete existing gallery images (simple replace strategy for now)
+      // Or we can differentiate between new/delete? For simplicity, we'll replace or we can check IDs.
+      // Replace strategy is easier for "save form" behavior
+      await pool.query(
+        "DELETE FROM product_gallery_images WHERE product_id = $1",
+        [id]
+      );
+
+      const createdGallery = [];
+      for (const img of gallery_images) {
+        if (img.image_url) {
+          const galleryResult = await pool.query(
+            `INSERT INTO product_gallery_images (product_id, image_url, attribute_value)
+             VALUES ($1, $2, $3)
+             RETURNING *`,
+            [id, img.image_url, img.attribute_value || null]
+          );
+          createdGallery.push(galleryResult.rows[0]);
+        }
+      }
+      product.gallery_images = createdGallery;
+    } else {
+      const galleryResult = await pool.query(
+        "SELECT * FROM product_gallery_images WHERE product_id = $1",
+        [id]
+      );
+      product.gallery_images = galleryResult.rows;
     }
 
     res.json({ success: true, data: product });

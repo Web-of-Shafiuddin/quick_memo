@@ -43,7 +43,10 @@ export interface ProductFormSubmitData {
   stock: number;
   status: "ACTIVE" | "INACTIVE" | "DISCONTINUED";
   image: string | null;
+  description: string | null;
+  video_url: string | null;
   attributes: Attribute[];
+  gallery_images: { image_url: string; attribute_value?: string }[];
 }
 
 interface ProductFormProps {
@@ -72,6 +75,15 @@ const ProductForm = ({
       attribute_value: a.attribute_value,
     })) || []
   );
+  const [galleryImages, setGalleryImages] = useState<
+    { image_url: string; attribute_value: string }[]
+  >(
+    product?.gallery_images?.map((img) => ({
+      image_url: img.image_url,
+      attribute_value: img.attribute_value || "",
+    })) || []
+  );
+
   const [globalAttributes, setGlobalAttributes] = useState<
     AttributeDefinition[]
   >([]);
@@ -84,6 +96,8 @@ const ProductForm = ({
     stock: product?.stock?.toString() || "0",
     status: product?.status || "ACTIVE",
     image: product?.image || "",
+    description: product?.description || "",
+    video_url: product?.video_url || "",
   });
 
   useEffect(() => {
@@ -124,9 +138,15 @@ const ProductForm = ({
         stock: parseInt(formData.stock) || 0,
         status: formData.status as "ACTIVE" | "INACTIVE" | "DISCONTINUED",
         image: formData.image || null,
+        description: formData.description || null,
+        video_url: formData.video_url || null,
         attributes: attributes.filter(
           (a) => a.attribute_name.trim() && a.attribute_value.trim()
         ),
+        gallery_images: galleryImages.map((img) => ({
+          image_url: img.image_url,
+          attribute_value: img.attribute_value || undefined, // Send undefined if empty string
+        })),
         sku:
           formData.sku && formData.sku.trim() ? formData.sku.trim() : undefined,
       };
@@ -161,8 +181,32 @@ const ProductForm = ({
     setAttributes(updated);
   };
 
+  const addGalleryImage = (url: string) => {
+    if (url) {
+      setGalleryImages([
+        ...galleryImages,
+        { image_url: url, attribute_value: "" },
+      ]);
+    }
+  };
+
+  const removeGalleryImage = (index: number) => {
+    setGalleryImages(galleryImages.filter((_, i) => i !== index));
+  };
+
+  const updateGalleryImageAttribute = (index: number, value: string) => {
+    const updated = [...galleryImages];
+    updated[index].attribute_value = value;
+    setGalleryImages(updated);
+  };
+
+  // Get distinct attribute values from the product's attributes for the gallery dropdown
+  const availableAttributeValues = attributes
+    .filter((a) => a.attribute_value.trim() !== "")
+    .map((a) => a.attribute_value);
+
   return (
-    <Card className="max-w-2xl mx-auto">
+    <Card className="max-w-4xl mx-auto">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
@@ -196,13 +240,47 @@ const ProductForm = ({
             </div>
           </div>
 
-          <ImageUpload
-            value={formData.image}
-            onChange={(url) => handleChange("image", url)}
-            type="product"
-            label="Product Image"
-            disabled={loading}
-          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div>
+                <Label>Main Product Image</Label>
+                <div className="mt-2">
+                  <ImageUpload
+                    value={formData.image}
+                    onChange={(url) => handleChange("image", url)}
+                    type="product"
+                    label=""
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <textarea
+                  id="description"
+                  name="description"
+                  className="flex min-h-[120px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  value={formData.description}
+                  onChange={(e) => handleChange("description", e.target.value)}
+                  placeholder="Product details, features, etc."
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="video_url">Video URL (Optional)</Label>
+                <Input
+                  id="video_url"
+                  name="video_url"
+                  type="url"
+                  value={formData.video_url}
+                  onChange={(e) => handleChange("video_url", e.target.value)}
+                  placeholder="https://youtube.com/..."
+                />
+              </div>
+            </div>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -306,7 +384,8 @@ const ProductForm = ({
               </Button>
             </div>
             <p className="text-sm text-muted-foreground">
-              Add attributes like Size, Color, Material, etc.
+              Add attributes like Size, Color, Material, etc. These can be
+              linked to gallery images.
             </p>
             {attributes.length > 0 && (
               <div className="space-y-3">
@@ -399,6 +478,78 @@ const ProductForm = ({
                   );
                 })}
               </div>
+            )}
+          </div>
+
+          {/* Gallery Images */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label className="text-base font-medium">Product Gallery</Label>
+              <div className="w-40">
+                {/* Invisible uploader used via trigger, or simply separate button? 
+                    Reusing ImageUpload is easiest if we treat it as "Add Image"
+                */}
+                <ImageUpload
+                  value="" // Always empty to allow new uploads
+                  onChange={addGalleryImage}
+                  type="product"
+                  label=""
+                />
+                <p className="text-xs text-center text-muted-foreground mt-1">
+                  Upload New Image
+                </p>
+              </div>
+            </div>
+
+            {galleryImages.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                {galleryImages.map((img, index) => (
+                  <Card key={index} className="relative group overflow-hidden">
+                    <div className="aspect-square relative">
+                      <img
+                        src={img.image_url}
+                        alt={`Gallery ${index}`}
+                        className="object-cover w-full h-full"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => removeGalleryImage(index)}
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
+                    <div className="p-2 bg-muted/50">
+                      <Select
+                        value={img.attribute_value}
+                        onValueChange={(val) =>
+                          updateGalleryImageAttribute(index, val)
+                        }
+                      >
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder="Link to Attribute" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">
+                            CheckAll (Default)
+                          </SelectItem>
+                          {availableAttributeValues.map((val) => (
+                            <SelectItem key={val} value={val}>
+                              {val}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground italic">
+                No gallery images added yet.
+              </p>
             )}
           </div>
 
