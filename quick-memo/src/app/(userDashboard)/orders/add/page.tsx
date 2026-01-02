@@ -185,10 +185,31 @@ const AddOrderPage = () => {
     if (variants.length > 0) {
       // Find matching variant
       const matchedVariant = variants.find((v) => {
-        if (!v.attributes) return false;
-        return v.attributes.every(
-          (a) => selectedOptions[a.attribute_name] === a.attribute_value
+        if (!v.attributes || v.attributes.length === 0) return false;
+
+        const variantAttrMap: Record<string, string[]> = {};
+        v.attributes.forEach((a) => {
+          if (!variantAttrMap[a.attribute_name])
+            variantAttrMap[a.attribute_name] = [];
+          variantAttrMap[a.attribute_name].push(a.attribute_value);
+        });
+
+        const variantAttrNames = Object.keys(variantAttrMap);
+        const selectedAttrNames = Object.keys(selectedOptions);
+
+        // 1. Every selected option must be supported by the variant
+        const allSelectedItemsMatch = selectedAttrNames.every((name) =>
+          variantAttrMap[name]?.includes(selectedOptions[name])
         );
+        if (!allSelectedItemsMatch) return false;
+
+        // 2. Every attribute type defined in the variant must be present in the selection
+        const allVariantTypesPresent = variantAttrNames.every(
+          (name) => selectedOptions[name] !== undefined
+        );
+        if (!allVariantTypesPresent) return false;
+
+        return true;
       });
 
       // If we have variants but no match found (and options are selected), user might have selected invalid combo

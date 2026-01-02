@@ -86,10 +86,32 @@ export default function ProductDetailPage() {
     return (
       allItems.find((v) => {
         if (!v.attributes || v.attributes.length === 0) return false;
-        // Check if this variant has ALL the selected attributes matching
-        return v.attributes.every(
-          (a) => selectedOptions[a.attribute_name] === a.attribute_value
+
+        // Group variant attributes by name
+        const variantAttrMap: Record<string, string[]> = {};
+        v.attributes.forEach((a) => {
+          if (!variantAttrMap[a.attribute_name])
+            variantAttrMap[a.attribute_name] = [];
+          variantAttrMap[a.attribute_name].push(a.attribute_value);
+        });
+
+        const variantAttrNames = Object.keys(variantAttrMap);
+        const selectedAttrNames = Object.keys(selectedOptions);
+
+        // 1. Every selected option must be supported by the variant
+        const allSelectedItemsMatch = selectedAttrNames.every((name) =>
+          variantAttrMap[name]?.includes(selectedOptions[name])
         );
+        if (!allSelectedItemsMatch) return false;
+
+        // 2. Every attribute type defined in the variant must be present in the selection
+        // This prevents a variant with ONLY "Storage: 1TB" from matching "Storage: 1TB + Color: Red"
+        const allVariantTypesPresent = variantAttrNames.every(
+          (name) => selectedOptions[name] !== undefined
+        );
+        if (!allVariantTypesPresent) return false;
+
+        return true;
       }) || null
     );
   }, [product, selectedOptions]);
