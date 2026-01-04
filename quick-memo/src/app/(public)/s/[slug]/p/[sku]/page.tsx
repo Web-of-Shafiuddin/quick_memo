@@ -12,9 +12,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useCurrency } from "@/hooks/useCurrency";
-import { ShoppingCart, ArrowLeft, Loader2 } from "lucide-react";
+import {
+  ShoppingCart,
+  ArrowLeft,
+  Loader2,
+  Star,
+  MessageSquare,
+} from "lucide-react";
+import { format } from "date-fns";
 import { toast } from "sonner";
 import api from "@/lib/api";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface Attribute {
   attribute_name: string;
@@ -34,10 +42,19 @@ interface Product {
   category_name: string;
   attributes?: Attribute[];
   gallery_images?: { image_url: string; attribute_value?: string }[];
+  average_rating?: number;
+  review_count?: number;
 }
 
 interface ProductDetail extends Product {
   variants?: Product[];
+  reviews?: {
+    review_id: number;
+    customer_name: string;
+    rating: number;
+    comment: string;
+    created_at: string;
+  }[];
 }
 
 export default function ProductDetailPage() {
@@ -145,7 +162,7 @@ export default function ProductDetailPage() {
     if (slug && sku) fetchProduct();
   }, [slug, sku, router]);
 
-  console.log("active image: ", activeImage)
+  console.log("active image: ", activeImage);
 
   // Update image when variant changes or manually selected
   useEffect(() => {
@@ -346,6 +363,28 @@ export default function ProductDetailPage() {
             <p className="text-sm text-muted-foreground mt-2">
               SKU: {currentProduct.sku}
             </p>
+            {product.review_count !== undefined && product.review_count > 0 && (
+              <div className="flex items-center gap-2 mt-4">
+                <div className="flex">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`w-4 h-4 ${
+                        i < Math.round(product.average_rating || 0)
+                          ? "fill-yellow-400 text-yellow-400"
+                          : "text-gray-300"
+                      }`}
+                    />
+                  ))}
+                </div>
+                <span className="text-sm font-medium text-gray-700">
+                  {Number(product.average_rating).toFixed(1)}
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  ({product.review_count} reviews)
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="flex items-baseline gap-3">
@@ -446,6 +485,59 @@ export default function ProductDetailPage() {
           <div className="col-span-2 prose prose-sm text-gray-600 max-w-none mt-6">
             <h3 className="font-semibold text-gray-900 mb-1">Description</h3>
             <p className="whitespace-pre-line">{product.description}</p>
+          </div>
+        )}
+      </div>
+
+      {/* Customer Reviews Section */}
+      <div className="mt-16 pt-12 border-t">
+        <div className="flex items-center gap-2 mb-8">
+          <MessageSquare className="w-6 h-6 text-primary" />
+          <h2 className="text-2xl font-bold text-gray-900">Customer Reviews</h2>
+        </div>
+
+        {product.reviews && product.reviews.length > 0 ? (
+          <div className="grid gap-6 md:grid-cols-2">
+            {product.reviews.map((review) => (
+              <Card
+                key={review.review_id}
+                className="bg-gray-50/50 border-none shadow-none"
+              >
+                <CardContent className="p-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <div className="font-semibold text-gray-900">
+                        {review.customer_name}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {format(new Date(review.created_at), "MMM d, yyyy")}
+                      </div>
+                    </div>
+                    <div className="flex">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-3 h-3 ${
+                            i < review.rating
+                              ? "fill-yellow-400 text-yellow-400"
+                              : "text-gray-300"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-gray-600 leading-relaxed italic">
+                    &quot;{review.comment}&quot;
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="bg-gray-50 rounded-xl p-12 text-center">
+            <p className="text-muted-foreground">
+              No reviews for this product yet.
+            </p>
           </div>
         )}
       </div>

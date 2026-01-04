@@ -15,4 +15,10 @@ export interface User {
   updated_at?: string;
   createdAt?: string;
   updatedAt?: string;
+  shop_description?: string | null;
+  nid_license_url?: string | null;
+  social_links?: any;
+  is_verified?: boolean;
+  has_badge?: boolean;
+  is_active?: boolean;
 }

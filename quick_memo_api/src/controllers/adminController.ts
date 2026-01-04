@@ -9,6 +9,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
 
     let query = `
       SELECT u.user_id, u.name, u.email, u.mobile, u.shop_name, u.created_at, u.updated_at,
+             u.is_verified, u.has_badge, u.is_active, u.nid_license_url,
              s.status as subscription_status, sp.name as plan_name, s.end_date as subscription_end
       FROM users u
       LEFT JOIN subscriptions s ON u.user_id = s.user_id
@@ -21,13 +22,15 @@ export const getAllUsers = async (req: Request, res: Response) => {
       params.push(`%${search}%`);
     }
 
-    query += ` ORDER BY u.created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+    query += ` ORDER BY u.created_at DESC LIMIT $${params.length + 1} OFFSET $${
+      params.length + 2
+    }`;
     params.push(Number(limit), offset);
 
     const result = await pool.query(query, params);
 
     // Get total count
-    let countQuery = 'SELECT COUNT(*) FROM users';
+    let countQuery = "SELECT COUNT(*) FROM users";
     const countParams: any[] = [];
     if (search) {
       countQuery += ` WHERE name ILIKE $1 OR email ILIKE $1 OR mobile ILIKE $1`;
@@ -42,8 +45,10 @@ export const getAllUsers = async (req: Request, res: Response) => {
         total: parseInt(countResult.rows[0].count),
         page: Number(page),
         limit: Number(limit),
-        totalPages: Math.ceil(parseInt(countResult.rows[0].count) / Number(limit))
-      }
+        totalPages: Math.ceil(
+          parseInt(countResult.rows[0].count) / Number(limit)
+        ),
+      },
     });
   } catch (error) {
     console.error("Error fetching users:", error);
@@ -58,7 +63,8 @@ export const getUserDetails = async (req: Request, res: Response) => {
 
     // Get user info
     const userResult = await pool.query(
-      `SELECT user_id, name, email, mobile, shop_name, shop_owner_name, shop_mobile, shop_email, shop_address, created_at, updated_at
+      `SELECT user_id, name, email, mobile, shop_name, shop_owner_name, shop_mobile, shop_email, shop_address, 
+              created_at, updated_at, is_verified, has_badge, is_active, nid_license_url, social_links, shop_description
        FROM users WHERE user_id = $1`,
       [id]
     );
@@ -105,12 +111,14 @@ export const getUserDetails = async (req: Request, res: Response) => {
         ...user,
         subscription: subResult.rows[0] || null,
         subscription_requests: requestsResult.rows,
-        stats: statsResult.rows[0]
-      }
+        stats: statsResult.rows[0],
+      },
     });
   } catch (error) {
     console.error("Error fetching user details:", error);
-    res.status(500).json({ success: false, error: "Failed to fetch user details" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to fetch user details" });
   }
 };
 
@@ -118,7 +126,19 @@ export const getUserDetails = async (req: Request, res: Response) => {
 export const updateUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { name, email, mobile, shop_name, shop_owner_name, shop_mobile, shop_email, shop_address } = req.body;
+    const {
+      name,
+      email,
+      mobile,
+      shop_name,
+      shop_owner_name,
+      shop_mobile,
+      shop_email,
+      shop_address,
+      is_verified,
+      has_badge,
+      is_active,
+    } = req.body;
 
     const updates: string[] = [];
     const values: any[] = [];
@@ -156,9 +176,23 @@ export const updateUser = async (req: Request, res: Response) => {
       updates.push(`shop_address = $${paramIndex++}`);
       values.push(shop_address);
     }
+    if (is_verified !== undefined) {
+      updates.push(`is_verified = $${paramIndex++}`);
+      values.push(is_verified);
+    }
+    if (has_badge !== undefined) {
+      updates.push(`has_badge = $${paramIndex++}`);
+      values.push(has_badge);
+    }
+    if (is_active !== undefined) {
+      updates.push(`is_active = $${paramIndex++}`);
+      values.push(is_active);
+    }
 
     if (updates.length === 0) {
-      return res.status(400).json({ success: false, error: "No fields to update" });
+      return res
+        .status(400)
+        .json({ success: false, error: "No fields to update" });
     }
 
     updates.push(`updated_at = $${paramIndex++}`);
@@ -166,7 +200,9 @@ export const updateUser = async (req: Request, res: Response) => {
     values.push(id);
 
     const result = await pool.query(
-      `UPDATE users SET ${updates.join(", ")} WHERE user_id = $${paramIndex} RETURNING *`,
+      `UPDATE users SET ${updates.join(
+        ", "
+      )} WHERE user_id = $${paramIndex} RETURNING *`,
       values
     );
 
@@ -178,7 +214,9 @@ export const updateUser = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error("Error updating user:", error);
     if (error.code === "23505") {
-      return res.status(409).json({ success: false, error: "Email already exists" });
+      return res
+        .status(409)
+        .json({ success: false, error: "Email already exists" });
     }
     res.status(500).json({ success: false, error: "Failed to update user" });
   }
@@ -190,13 +228,16 @@ export const deleteUser = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     // Check if user exists
-    const userResult = await pool.query('SELECT * FROM users WHERE user_id = $1', [id]);
+    const userResult = await pool.query(
+      "SELECT * FROM users WHERE user_id = $1",
+      [id]
+    );
     if (userResult.rows.length === 0) {
       return res.status(404).json({ success: false, error: "User not found" });
     }
 
     // Delete user (cascades to related tables based on FK constraints)
-    await pool.query('DELETE FROM users WHERE user_id = $1', [id]);
+    await pool.query("DELETE FROM users WHERE user_id = $1", [id]);
 
     res.json({ success: true, message: "User deleted successfully" });
   } catch (error) {
@@ -214,20 +255,24 @@ export const setUserSubscription = async (req: Request, res: Response) => {
     const { plan_id, duration_months } = req.body;
 
     if (!plan_id || !duration_months) {
-      return res.status(400).json({ success: false, error: "Plan ID and duration are required" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Plan ID and duration are required" });
     }
 
-    await client.query('BEGIN');
+    await client.query("BEGIN");
 
     // Check if plan exists
     const planResult = await client.query(
-      'SELECT * FROM subscription_plans WHERE plan_id = $1 AND is_active = true',
+      "SELECT * FROM subscription_plans WHERE plan_id = $1 AND is_active = true",
       [plan_id]
     );
 
     if (planResult.rows.length === 0) {
-      await client.query('ROLLBACK');
-      return res.status(400).json({ success: false, error: "Invalid or inactive plan" });
+      await client.query("ROLLBACK");
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid or inactive plan" });
     }
 
     // Calculate dates
@@ -237,7 +282,7 @@ export const setUserSubscription = async (req: Request, res: Response) => {
 
     // Check if user already has a subscription
     const existingSubResult = await client.query(
-      'SELECT * FROM subscriptions WHERE user_id = $1',
+      "SELECT * FROM subscriptions WHERE user_id = $1",
       [id]
     );
 
@@ -258,13 +303,15 @@ export const setUserSubscription = async (req: Request, res: Response) => {
       );
     }
 
-    await client.query('COMMIT');
+    await client.query("COMMIT");
 
     res.json({ success: true, message: "Subscription updated successfully" });
   } catch (error) {
-    await client.query('ROLLBACK');
+    await client.query("ROLLBACK");
     console.error("Error setting subscription:", error);
-    res.status(500).json({ success: false, error: "Failed to set subscription" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to set subscription" });
   } finally {
     client.release();
   }
@@ -281,13 +328,17 @@ export const cancelUserSubscription = async (req: Request, res: Response) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, error: "Subscription not found" });
+      return res
+        .status(404)
+        .json({ success: false, error: "Subscription not found" });
     }
 
     res.json({ success: true, message: "Subscription canceled" });
   } catch (error) {
     console.error("Error canceling subscription:", error);
-    res.status(500).json({ success: false, error: "Failed to cancel subscription" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to cancel subscription" });
   }
 };
 
@@ -309,5 +360,52 @@ export const getDashboardStats = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error fetching dashboard stats:", error);
     res.status(500).json({ success: false, error: "Failed to fetch stats" });
+  }
+};
+
+// Get all reports
+export const getReports = async (req: Request, res: Response) => {
+  try {
+    const query = `
+      SELECT r.*, u.shop_name, u.shop_slug
+      FROM shop_reports r
+      JOIN users u ON r.shop_id = u.user_id
+      ORDER BY r.created_at DESC
+    `;
+    const result = await pool.query(query);
+    res.json({ success: true, data: result.rows });
+  } catch (error) {
+    console.error("Error fetching reports:", error);
+    res.status(500).json({ success: false, error: "Failed to fetch reports" });
+  }
+};
+
+// Get all reviews
+export const getReviews = async (req: Request, res: Response) => {
+  try {
+    const query = `
+      SELECT r.*, u.shop_name, u.shop_slug, p.name as product_name
+      FROM shop_reviews r
+      JOIN users u ON r.shop_id = u.user_id
+      LEFT JOIN products p ON r.product_id = p.product_id
+      ORDER BY r.created_at DESC
+    `;
+    const result = await pool.query(query);
+    res.json({ success: true, data: result.rows });
+  } catch (error) {
+    console.error("Error fetching reviews:", error);
+    res.status(500).json({ success: false, error: "Failed to fetch reviews" });
+  }
+};
+
+// Delete a review
+export const deleteReview = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    await pool.query("DELETE FROM shop_reviews WHERE review_id = $1", [id]);
+    res.json({ success: true, message: "Review deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting review:", error);
+    res.status(500).json({ success: false, error: "Failed to delete review" });
   }
 };

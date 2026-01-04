@@ -6,7 +6,16 @@ import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Search, ShoppingBag } from "lucide-react";
+import {
+  Search,
+  ShoppingBag,
+  Facebook,
+  Instagram,
+  Send,
+  Star,
+  ExternalLink,
+  AlertTriangle,
+} from "lucide-react";
 import api from "@/lib/api";
 import { useCurrency } from "@/hooks/useCurrency";
 
@@ -22,6 +31,22 @@ interface Product {
   category_name?: string;
   stock: number;
   discount: number;
+  average_rating?: number;
+  review_count?: number;
+}
+
+interface SocialLink {
+  platform: string;
+  url: string;
+}
+
+interface ShopInfo {
+  shop_name: string;
+  shop_description: string | null;
+  social_links: SocialLink[];
+  average_rating: number;
+  review_count: number;
+  is_active: boolean;
 }
 
 export default function ShopLandingPage() {
@@ -35,6 +60,20 @@ export default function ShopLandingPage() {
   // Using backend search is better with pagination
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [shopInfo, setShopInfo] = useState<ShopInfo | null>(null);
+
+  const fetchShopInfo = useCallback(async () => {
+    try {
+      const res = await api.get(`/shop/${slug}`);
+      setShopInfo(res.data.data);
+    } catch (error) {
+      console.error("Error fetching shop info:", error);
+    }
+  }, [slug]);
+
+  useEffect(() => {
+    fetchShopInfo();
+  }, [fetchShopInfo]);
 
   const fetchProducts = useCallback(
     async (currentPage: number, searchTerm: string) => {
@@ -68,7 +107,7 @@ export default function ShopLandingPage() {
       fetchProducts(1, search); // Reset to page 1 on search
     }, 500);
     return () => clearTimeout(timer);
-  }, [search]);
+  }, [search, fetchProducts]);
 
   if (loading && products.length === 0) {
     return (
@@ -78,8 +117,97 @@ export default function ShopLandingPage() {
     );
   }
 
+  if (shopInfo && !shopInfo.is_active) {
+    return (
+      <div className="max-w-md mx-auto py-20 text-center space-y-6">
+        <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto">
+          <AlertTriangle className="h-10 w-10 text-red-600" />
+        </div>
+        <h1 className="text-3xl font-bold text-gray-900">Shop Suspended</h1>
+        <p className="text-muted-foreground">
+          This shop is currently unavailable for safety reasons or
+          investigation. Please contact support if you believe this is an error.
+        </p>
+      </div>
+    );
+  }
+
+  const getSocialIcon = (platform: string) => {
+    switch (platform.toLowerCase()) {
+      case "facebook":
+        return <Facebook className="h-4 w-4" />;
+      case "instagram":
+        return <Instagram className="h-4 w-4" />;
+      case "telegram":
+        return <Send className="h-4 w-4" />;
+      default:
+        return <ExternalLink className="h-4 w-4" />;
+    }
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      {/* Shop Info Header */}
+      {shopInfo && (
+        <Card className="border-0 shadow-sm bg-white">
+          <CardContent className="p-6 md:p-8">
+            <div className="flex flex-col md:flex-row gap-6 items-start">
+              <div className="flex-1 space-y-4">
+                <div className="space-y-2">
+                  <h1 className="text-3xl font-bold text-gray-900">
+                    {shopInfo.shop_name}
+                  </h1>
+                  {shopInfo.shop_description && (
+                    <p className="text-gray-600 max-w-2xl leading-relaxed">
+                      {shopInfo.shop_description}
+                    </p>
+                  )}
+                </div>
+
+                {shopInfo.social_links && shopInfo.social_links.length > 0 && (
+                  <div className="flex flex-wrap gap-3">
+                    {shopInfo.social_links.map(
+                      (link: SocialLink, i: number) => (
+                        <a
+                          key={i}
+                          href={
+                            link.url.startsWith("http")
+                              ? link.url
+                              : `https://${link.url}`
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 hover:bg-primary/10 hover:text-primary transition-colors text-sm font-medium"
+                        >
+                          {getSocialIcon(link.platform)}
+                          <span className="capitalize">{link.platform}</span>
+                        </a>
+                      )
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-3 min-w-[200px]">
+                <div className="p-4 rounded-xl border border-yellow-100 bg-yellow-50/50 flex flex-col items-center text-center">
+                  <span className="text-sm font-medium text-yellow-800 mb-1">
+                    Store Rating
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                    <span className="text-2xl font-bold text-gray-900">
+                      {Number(shopInfo.average_rating || 0).toFixed(1)}
+                    </span>
+                  </div>
+                  <span className="text-xs text-muted-foreground mt-1">
+                    Based on {shopInfo.review_count} reviews
+                  </span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
       {/* Search using backend now */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
@@ -147,6 +275,26 @@ export default function ShopLandingPage() {
                         {product.variant_count} options available
                       </div>
                     )}
+                    {product.review_count !== undefined &&
+                      product.review_count > 0 && (
+                        <div className="flex items-center gap-1 mt-2">
+                          <div className="flex">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`w-3 h-3 ${
+                                  i < Math.round(product.average_rating || 0)
+                                    ? "fill-yellow-400 text-yellow-400"
+                                    : "text-gray-300"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <span className="text-[10px] text-muted-foreground pt-0.5">
+                            ({product.review_count})
+                          </span>
+                        </div>
+                      )}
                   </CardContent>
                   <CardFooter className="p-4 pt-0">
                     <div className="flex items-baseline gap-2">

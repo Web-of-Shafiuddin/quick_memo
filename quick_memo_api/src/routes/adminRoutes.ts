@@ -7,7 +7,10 @@ import {
   deleteUser,
   setUserSubscription,
   cancelUserSubscription,
-  getDashboardStats
+  getDashboardStats,
+  getReports,
+  getReviews,
+  deleteReview,
 } from "../controllers/adminController.js";
 
 const router = Router();
@@ -16,16 +19,21 @@ const router = Router();
 router.use(adminAuthMiddleware);
 
 // Dashboard
-router.get('/dashboard/stats', getDashboardStats);
+router.get("/dashboard/stats", getDashboardStats);
 
 // User management
-router.get('/users', getAllUsers);
-router.get('/users/:id', getUserDetails);
-router.put('/users/:id', updateUser);
-router.delete('/users/:id', deleteUser);
+router.get("/users", getAllUsers);
+router.get("/users/:id", getUserDetails);
+router.put("/users/:id", updateUser);
+router.delete("/users/:id", deleteUser);
 
 // User subscription management
-router.post('/users/:id/subscription', setUserSubscription);
-router.delete('/users/:id/subscription', cancelUserSubscription);
+router.post("/users/:id/subscription", setUserSubscription);
+router.delete("/users/:id/subscription", cancelUserSubscription);
+
+// Moderation
+router.get("/reports", getReports);
+router.get("/reviews", getReviews);
+router.delete("/reviews/:id", deleteReview);
 
 export default router;

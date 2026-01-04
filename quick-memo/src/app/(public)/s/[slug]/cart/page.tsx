@@ -21,6 +21,8 @@ import {
   MapPin,
   User,
   CheckCircle2,
+  ShieldAlert,
+  Info,
 } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/lib/api";
@@ -116,9 +118,10 @@ export default function CartPage() {
         window.dispatchEvent(new Event("cart-updated"));
         toast.success("Order placed successfully!");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Order failed:", error);
-      toast.error(error.response?.data?.error || "Failed to place order");
+      const err = error as { response?: { data?: { error?: string } } };
+      toast.error(err.response?.data?.error || "Failed to place order");
     } finally {
       setLoading(false);
     }
@@ -180,6 +183,7 @@ export default function CartPage() {
             >
               <div className="w-24 h-24 bg-gray-100 shrink-0">
                 {item.image ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
                   <img
                     src={item.image}
                     alt={item.name}
@@ -329,6 +333,38 @@ export default function CartPage() {
             </Button>
           </CardFooter>
         </Card>
+
+        {/* Trust Disclaimers */}
+        <div className="mt-8 space-y-4">
+          <div className="p-4 bg-orange-50 border border-orange-100 rounded-lg flex gap-3">
+            <ShieldAlert className="w-5 h-5 text-orange-600 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <h4 className="text-sm font-bold text-orange-900">
+                Ezymemo Safeguard Notice
+              </h4>
+              <p className="text-xs text-orange-800 leading-relaxed">
+                Ezymemo is a software platform provider. This shop is
+                independently operated by the merchant. Please verify the
+                seller&apos;s social proof and reviews before making any advance
+                payments.
+              </p>
+            </div>
+          </div>
+
+          <div className="p-4 bg-blue-50 border border-blue-100 rounded-lg flex gap-3">
+            <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <h4 className="text-sm font-bold text-blue-900">
+                Safe Shopping Tip
+              </h4>
+              <p className="text-xs text-blue-800 leading-relaxed">
+                Always check the seller&apos;s Facebook page reviews and
+                transaction history. Genuine businesses usually have a
+                transparent history and active customer engagement.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

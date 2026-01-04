@@ -2,18 +2,25 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ShoppingCart, Store } from "lucide-react";
+import { ShoppingCart, Store, ShieldCheck, Flag, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useParams } from "next/navigation";
 import api from "@/lib/api"; // Using our api lib, but need to ensure it handles public routes without auth error if possible.
+import { ReportShopModal } from "@/components/ReportShopModal";
 // Actually, our api lib might strip cookies or headers?
 // Public routes don't strictly require auth token. Axios instance usually sends if present.
 // We'll create a simple fetcher if needed, but existing api instance is fine.
 
 interface ShopProfile {
+  user_id: number;
   shop_name: string;
   shop_logo_url: string | null;
+  is_verified: boolean;
+  has_badge: boolean;
+  average_rating: number;
+  review_count: number;
+  is_active: boolean;
 }
 
 export default function PublicShopLayout({
@@ -44,7 +51,7 @@ export default function PublicShopLayout({
     const updateCartCount = () => {
       const cart = JSON.parse(localStorage.getItem("shop_cart") || "[]");
       const count = cart.reduce(
-        (sum: number, item: any) => sum + item.quantity,
+        (sum: number, item: { quantity: number }) => sum + item.quantity,
         0
       );
       setCartCount(count);
@@ -77,6 +84,23 @@ export default function PublicShopLayout({
               </div>
             )}
             <span>{shop?.shop_name || "Loading..."}</span>
+            {shop?.has_badge && (
+              <ShieldCheck
+                className="w-5 h-5 text-green-500"
+                aria-label="Verified by Ezymemo"
+              />
+            )}
+            {shop && shop.average_rating > 0 && (
+              <div className="flex items-center gap-1 text-sm bg-yellow-50 px-2 py-0.5 rounded-full border border-yellow-200">
+                <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                <span className="font-semibold">
+                  {Number(shop.average_rating).toFixed(1)}
+                </span>
+                <span className="text-muted-foreground">
+                  ({shop.review_count})
+                </span>
+              </div>
+            )}
           </Link>
 
           <Button variant="ghost" size="icon" className="relative" asChild>
@@ -103,10 +127,29 @@ export default function PublicShopLayout({
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
           <p>
             © {new Date().getFullYear()} {shop?.shop_name || "Shop"}. Powered by
-            QuickMemo.
+            EzyMemo.
           </p>
+          <div className="mt-4 flex items-center justify-center gap-6">
+            <Link
+              href={`/s/${slug}/reviews`}
+              className="hover:text-primary transition-colors flex items-center gap-1"
+            >
+              <Star className="w-4 h-4" />
+              Store Reviews
+            </Link>
+            <button
+              onClick={() =>
+                window.dispatchEvent(new CustomEvent("open-report-modal"))
+              }
+              className="hover:text-destructive transition-colors flex items-center gap-1"
+            >
+              <Flag className="w-4 h-4" />
+              Report this Shop
+            </button>
+          </div>
         </div>
       </footer>
+      <ReportShopModal slug={slug} />
     </div>
   );
 }

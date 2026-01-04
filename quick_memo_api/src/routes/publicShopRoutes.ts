@@ -4,6 +4,9 @@ import {
   getShopProducts,
   getShopProductBySku,
   createPublicOrder,
+  reportShop,
+  submitReview,
+  getShopReviews,
 } from "../controllers/publicShopController.js";
 
 const router = express.Router();
@@ -12,6 +15,9 @@ const router = express.Router();
 router.get("/:slug", getShopBySlug);
 router.get("/:slug/products", getShopProducts);
 router.get("/:slug/products/:sku", getShopProductBySku);
+router.get("/:slug/reviews", getShopReviews);
 router.post("/:slug/orders", createPublicOrder);
+router.post("/:slug/report", reportShop);
+router.post("/:slug/review", submitReview);
 
 export default router;

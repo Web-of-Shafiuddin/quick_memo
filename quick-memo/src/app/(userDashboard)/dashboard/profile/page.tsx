@@ -25,6 +25,12 @@ import {
   ExternalLink,
   Copy,
   RefreshCw,
+  Facebook,
+  Instagram,
+  Send,
+  Plus,
+  Trash2,
+  ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -48,6 +54,9 @@ const ProfilePage = () => {
     shop_address: "",
     shop_logo_url: "",
     shop_slug: "",
+    shop_description: "",
+    nid_license_url: "",
+    social_links: [] as { platform: string; url: string }[],
   });
 
   useEffect(() => {
@@ -65,6 +74,9 @@ const ProfilePage = () => {
         shop_email: user.shop_email || "",
         shop_address: user.shop_address || "",
         shop_logo_url: user.shop_logo_url || "",
+        shop_description: user.shop_description || "",
+        nid_license_url: user.nid_license_url || "",
+        social_links: Array.isArray(user.social_links) ? user.social_links : [],
       });
 
       // Then fetch fresh data from API
@@ -91,6 +103,11 @@ const ProfilePage = () => {
         shop_email: userData.shop_email || "",
         shop_address: userData.shop_address || "",
         shop_logo_url: userData.shop_logo_url || "",
+        shop_description: userData.shop_description || "",
+        nid_license_url: userData.nid_license_url || "",
+        social_links: Array.isArray(userData.social_links)
+          ? userData.social_links
+          : [],
       });
     } catch (error: any) {
       console.error("Error fetching profile:", error);
@@ -148,6 +165,41 @@ const ProfilePage = () => {
     const url = `${window.location.origin}/s/${formData.shop_slug}`;
     navigator.clipboard.writeText(url);
     toast.success("Shop link copied!");
+  };
+
+  const addSocialLink = () => {
+    setFormData({
+      ...formData,
+      social_links: [
+        ...formData.social_links,
+        { platform: "facebook", url: "" },
+      ],
+    });
+  };
+
+  const removeSocialLink = (index: number) => {
+    const newLinks = [...formData.social_links];
+    newLinks.splice(index, 1);
+    setFormData({ ...formData, social_links: newLinks });
+  };
+
+  const updateSocialLink = (index: number, field: string, value: string) => {
+    const newLinks = [...formData.social_links];
+    newLinks[index] = { ...newLinks[index], [field]: value };
+    setFormData({ ...formData, social_links: newLinks });
+  };
+
+  const getSocialIcon = (platform: string) => {
+    switch (platform.toLowerCase()) {
+      case "facebook":
+        return <Facebook className="h-4 w-4" />;
+      case "instagram":
+        return <Instagram className="h-4 w-4" />;
+      case "telegram":
+        return <Send className="h-4 w-4" />;
+      default:
+        return <ExternalLink className="h-4 w-4" />;
+    }
   };
 
   return (
@@ -374,6 +426,126 @@ const ProfilePage = () => {
                   label="Shop Logo"
                   disabled={loading}
                 />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Trust & Verification */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-primary font-bold">
+              <ShieldCheck className="w-5 h-5" />
+              Trust & Verification
+            </CardTitle>
+            <CardDescription>
+              Build trust with your customers by providing verification details
+              and social links. Verified shops get a &quot;Green Badge&quot; and
+              better visibility.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Shop Description */}
+            <div className="space-y-2">
+              <Label htmlFor="shop_description">Shop Description</Label>
+              <Textarea
+                id="shop_description"
+                name="shop_description"
+                value={formData.shop_description}
+                onChange={handleChange}
+                placeholder="Tell customers what makes your shop special..."
+                rows={4}
+              />
+              <p className="text-sm text-muted-foreground">
+                This description will appear on your public shop landing page.
+              </p>
+            </div>
+
+            {/* NID/Trade License */}
+            <div className="space-y-2">
+              <Label>NID or Trade License (Verification)</Label>
+              <ImageUpload
+                value={formData.nid_license_url}
+                onChange={(url) =>
+                  setFormData({ ...formData, nid_license_url: url })
+                }
+                type="logo"
+                label="Upload NID/Trade License"
+                disabled={loading}
+              />
+              <p className="text-sm text-muted-foreground">
+                Upload a clear photo of your NID or Trade License. This is not
+                shared publicly but helps us verify your business.
+              </p>
+            </div>
+
+            {/* Social Links */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label>Business Social Links</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addSocialLink}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Social Link
+                </Button>
+              </div>
+
+              <div className="space-y-3">
+                {formData.social_links.map((link, index) => (
+                  <div
+                    key={index}
+                    className="flex gap-3 items-start animate-in slide-in-from-top-1"
+                  >
+                    <div className="w-1/3">
+                      <select
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        value={link.platform}
+                        onChange={(e) =>
+                          updateSocialLink(index, "platform", e.target.value)
+                        }
+                      >
+                        <option value="facebook">Facebook</option>
+                        <option value="instagram">Instagram</option>
+                        <option value="telegram">Telegram</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                    <div className="flex-1 relative">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                        {getSocialIcon(link.platform)}
+                      </div>
+                      <Input
+                        placeholder="https://..."
+                        className="pl-10"
+                        value={link.url}
+                        onChange={(e) =>
+                          updateSocialLink(index, "url", e.target.value)
+                        }
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeSocialLink(index)}
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+
+                {formData.social_links.length === 0 && (
+                  <div className="text-center py-6 border-2 border-dashed rounded-lg bg-muted/30">
+                    <p className="text-sm text-muted-foreground">
+                      No social links added yet.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </CardContent>

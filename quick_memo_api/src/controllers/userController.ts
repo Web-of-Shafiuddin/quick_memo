@@ -4,7 +4,7 @@ import pool from "../config/database.js";
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
     const result = await pool.query(`
-            SELECT user_id, email, name, mobile, shop_name, shop_owner_name, shop_mobile, shop_email, shop_address, shop_logo_url, shop_slug, created_at, updated_at
+            SELECT user_id, email, name, mobile, shop_name, shop_owner_name, shop_mobile, shop_email, shop_address, shop_logo_url, shop_slug, nid_license_url, social_links, shop_description, is_verified, has_badge, is_active, created_at, updated_at
             FROM users
         `);
 
@@ -20,7 +20,7 @@ export const getUserById = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     const userResult = await pool.query(
-      "SELECT user_id, name, email, mobile, preferred_currency, shop_name, shop_owner_name, shop_mobile, shop_email, shop_address, shop_logo_url, shop_slug, created_at, updated_at FROM users WHERE user_id = $1",
+      "SELECT user_id, name, email, mobile, preferred_currency, shop_name, shop_owner_name, shop_mobile, shop_email, shop_address, shop_logo_url, shop_slug, nid_license_url, social_links, shop_description, is_verified, has_badge, is_active, created_at, updated_at FROM users WHERE user_id = $1",
       [id]
     );
 
@@ -52,6 +52,9 @@ export const updateUser = async (req: Request, res: Response) => {
       shop_address,
       shop_logo_url,
       shop_slug,
+      nid_license_url,
+      social_links,
+      shop_description,
     } = req.body;
 
     const updates: string[] = [];
@@ -101,6 +104,18 @@ export const updateUser = async (req: Request, res: Response) => {
     if (shop_slug !== undefined) {
       updates.push(`shop_slug = $${paramIndex++}`);
       values.push(shop_slug);
+    }
+    if (nid_license_url !== undefined) {
+      updates.push(`nid_license_url = $${paramIndex++}`);
+      values.push(nid_license_url);
+    }
+    if (social_links !== undefined) {
+      updates.push(`social_links = $${paramIndex++}`);
+      values.push(JSON.stringify(social_links));
+    }
+    if (shop_description !== undefined) {
+      updates.push(`shop_description = $${paramIndex++}`);
+      values.push(shop_description);
     }
 
     if (updates.length > 0) {

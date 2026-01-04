@@ -7,7 +7,9 @@ export const getShopBySlug = async (req: Request, res: Response) => {
     const { slug } = req.params;
 
     const result = await pool.query(
-      `SELECT user_id, name, shop_name, shop_owner_name, shop_mobile, shop_email, shop_address, shop_logo_url
+      `SELECT user_id, name, shop_name, shop_owner_name, shop_mobile, shop_email, shop_address, shop_logo_url, shop_description, social_links, is_verified, has_badge, is_active,
+              (SELECT COALESCE(AVG(rating), 0) FROM shop_reviews WHERE shop_id = users.user_id AND product_id IS NULL) as average_rating,
+              (SELECT COUNT(*) FROM shop_reviews WHERE shop_id = users.user_id AND product_id IS NULL) as review_count
        FROM users
        WHERE shop_slug = $1`,
       [slug]
@@ -74,7 +76,9 @@ export const getShopProducts = async (req: Request, res: Response) => {
     // Data query
     let query = `
       SELECT p.*, c.name as category_name,
-             (SELECT COUNT(*) FROM products v WHERE v.parent_product_id = p.product_id) as variant_count
+             (SELECT COUNT(*) FROM products v WHERE v.parent_product_id = p.product_id) as variant_count,
+             (SELECT COALESCE(AVG(rating), 0) FROM shop_reviews sr WHERE sr.product_id = p.product_id) as average_rating,
+             (SELECT COUNT(*) FROM shop_reviews sr WHERE sr.product_id = p.product_id) as review_count
       ${baseQuery}
     `;
 
@@ -121,7 +125,9 @@ export const getShopProductBySku = async (req: Request, res: Response) => {
     const userId = user.rows[0].user_id;
 
     const result = await pool.query(
-      `SELECT p.*, c.name as category_name
+      `SELECT p.*, c.name as category_name,
+              (SELECT COALESCE(AVG(rating), 0) FROM shop_reviews sr WHERE sr.product_id = p.product_id) as average_rating,
+              (SELECT COUNT(*) FROM shop_reviews sr WHERE sr.product_id = p.product_id) as review_count
              FROM products p
              LEFT JOIN categories c ON p.category_id = c.category_id
              WHERE p.sku = $1 AND p.user_id = $2`,
@@ -165,6 +171,12 @@ export const getShopProductBySku = async (req: Request, res: Response) => {
       })
     );
 
+    // Get product reviews
+    const reviewsResult = await pool.query(
+      "SELECT * FROM shop_reviews WHERE product_id = $1 ORDER BY created_at DESC",
+      [product.product_id]
+    );
+
     res.json({
       success: true,
       data: {
@@ -172,6 +184,7 @@ export const getShopProductBySku = async (req: Request, res: Response) => {
         attributes: attributesResult.rows,
         variants: variantsWithAttributes,
         gallery_images: galleryResult.rows,
+        reviews: reviewsResult.rows,
       },
     });
   } catch (error) {
@@ -315,5 +328,146 @@ export const createPublicOrder = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error creating public order:", error);
     res.status(500).json({ success: false, error: (error as Error).message });
+  }
+};
+
+// Report a shop
+export const reportShop = async (req: Request, res: Response) => {
+  try {
+    const { slug } = req.params;
+    const { customer_name, customer_mobile, customer_email, reason } = req.body;
+
+    const user = await pool.query(
+      "SELECT user_id FROM users WHERE shop_slug = $1",
+      [slug]
+    );
+    if (user.rows.length === 0) {
+      return res.status(404).json({ success: false, error: "Shop not found" });
+    }
+    const shopId = user.rows[0].user_id;
+
+    await pool.query(
+      "INSERT INTO shop_reports (shop_id, customer_name, customer_mobile, customer_email, reason) VALUES ($1, $2, $3, $4, $5)",
+      [shopId, customer_name, customer_mobile, customer_email, reason]
+    );
+
+    // Automation: If shop gets 3 or more reports, investigate - for now let's just count
+    const reportsCount = await pool.query(
+      "SELECT COUNT(*) FROM shop_reports WHERE shop_id = $1",
+      [shopId]
+    );
+    if (parseInt(reportsCount.rows[0].count) >= 3) {
+      // Auto-suspend or flag? User mentioned: "automatically pause their shop link until you investigate"
+      await pool.query(
+        "UPDATE users SET is_active = FALSE WHERE user_id = $1",
+        [shopId]
+      );
+    }
+
+    res
+      .status(201)
+      .json({ success: true, message: "Report submitted successfully" });
+  } catch (error) {
+    console.error("Error reporting shop:", error);
+    res.status(500).json({ success: false, error: "Failed to report shop" });
+  }
+};
+
+// Submit a review (Shop or Product)
+export const submitReview = async (req: Request, res: Response) => {
+  try {
+    const { slug } = req.params;
+    const { transaction_id, product_id, rating, comment } = req.body;
+
+    // Verify order is DELIVERED
+    const orderCheck = await pool.query(
+      "SELECT order_status, user_id FROM order_headers WHERE transaction_id = $1",
+      [transaction_id]
+    );
+
+    if (orderCheck.rows.length === 0) {
+      return res.status(404).json({ success: false, error: "Order not found" });
+    }
+
+    if (orderCheck.rows[0].order_status !== "DELIVERED") {
+      return res.status(400).json({
+        success: false,
+        error: "Reviews are only allowed for delivered orders",
+      });
+    }
+
+    const shopId = orderCheck.rows[0].user_id;
+
+    // If product_id is provided, verify it belongs to this order
+    if (product_id) {
+      const itemCheck = await pool.query(
+        "SELECT order_item_id FROM order_items WHERE transaction_id = $1 AND product_id = $2",
+        [transaction_id, product_id]
+      );
+      if (itemCheck.rows.length === 0) {
+        return res
+          .status(400)
+          .json({ success: false, error: "Product not found in this order" });
+      }
+    }
+
+    await pool.query(
+      "INSERT INTO shop_reviews (shop_id, transaction_id, product_id, rating, comment) VALUES ($1, $2, $3, $4, $5)",
+      [shopId, transaction_id, product_id || null, rating, comment]
+    );
+
+    res
+      .status(201)
+      .json({ success: true, message: "Review submitted successfully" });
+  } catch (error: any) {
+    console.error("Error submitting review:", error);
+    if (error.code === "23505") {
+      return res.status(409).json({
+        success: false,
+        error: "You have already reviewed this item/shop for this order",
+      });
+    }
+    res.status(500).json({ success: false, error: "Failed to submit review" });
+  }
+};
+
+// Get reviews (Shop level if product_id is null)
+export const getShopReviews = async (req: Request, res: Response) => {
+  try {
+    const { slug } = req.params;
+    const { product_id } = req.query;
+
+    const user = await pool.query(
+      "SELECT user_id FROM users WHERE shop_slug = $1",
+      [slug]
+    );
+    if (user.rows.length === 0) {
+      return res.status(404).json({ success: false, error: "Shop not found" });
+    }
+    const shopId = user.rows[0].user_id;
+
+    let query = `
+      SELECT r.*, oh.order_date, c.name as customer_name
+      FROM shop_reviews r
+      JOIN order_headers oh ON r.transaction_id = oh.transaction_id
+      JOIN customers c ON oh.customer_id = c.customer_id
+      WHERE r.shop_id = $1
+    `;
+    const params = [shopId];
+
+    if (product_id) {
+      query += " AND r.product_id = $2";
+      params.push(product_id as any);
+    } else {
+      query += " AND r.product_id IS NULL";
+    }
+
+    query += " ORDER BY r.created_at DESC";
+
+    const result = await pool.query(query, params);
+    res.json({ success: true, data: result.rows });
+  } catch (error) {
+    console.error("Error fetching reviews:", error);
+    res.status(500).json({ success: false, error: "Failed to fetch reviews" });
   }
 };
