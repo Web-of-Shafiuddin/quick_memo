@@ -79,8 +79,12 @@ export const orderService = {
     start_date?: string;
     end_date?: string;
     order_source?: string;
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: string;
   }) => {
-    const response = await api.get<{ success: boolean; data: Order[] }>(
+    const response = await api.get<{ success: boolean; data: Order[]; pagination?: { total: number; page: number; limit: number; totalPages: number } }>(
       "/orders",
       { params }
     );

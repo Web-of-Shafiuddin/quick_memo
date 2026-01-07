@@ -111,10 +111,20 @@ export const productService = {
     status?: string;
     search?: string;
     include_variants?: boolean;
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: string;
   }) => {
     const response = await api.get<{
       success: boolean;
       data: ProductFromAPI[];
+      pagination?: {
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+      };
     }>("/products", { params });
     return {
       ...response.data,

@@ -28,8 +28,14 @@ export interface UpdateCustomerInput {
 }
 
 export const customerService = {
-  getAll: async (params?: { search?: string }) => {
-    const response = await api.get<{ success: boolean; data: Customer[] }>(
+  getAll: async (params?: {
+    search?: string;
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: string;
+  }) => {
+    const response = await api.get<{ success: boolean; data: Customer[]; pagination?: { total: number; page: number; limit: number; totalPages: number } }>(
       "/customers",
       { params }
     );

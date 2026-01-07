@@ -4,27 +4,64 @@ import pool from '../config/database.js';
 export const getAllCustomers = async (req: Request, res: Response) => {
   try {
     const userId = req.userId;
-    const { search } = req.query;
+    const { search, page = 1, limit = 10, sortBy = "created_at", sortOrder = "DESC" } = req.query;
 
-    let query = `
-      SELECT c.*,
-      COUNT(DISTINCT oh.transaction_id)::int as order_count,
-      COALESCE(SUM(oh.total_amount), 0)::numeric as total_spent
+    const pageNum = parseInt(page as string) || 1;
+    let limitNum = parseInt(limit as string) || 10;
+    if (limitNum > 100) limitNum = 100;
+    const offset = (pageNum - 1) * limitNum;
+
+    const allowedSortFields = ["name", "email", "created_at", "order_count", "total_spent"];
+    const sortField = allowedSortFields.includes(sortBy as string) ? sortBy as string : "created_at";
+    const sortDirection = (sortOrder as string).toUpperCase() === "ASC" ? "ASC" : "DESC";
+
+    let baseQuery = `
       FROM customers c
       LEFT JOIN order_headers oh ON c.customer_id = oh.customer_id
       WHERE c.user_id = $1
     `;
     const params: any[] = [userId];
+    let paramIndex = 2;
 
     if (search) {
-      query += ` AND (c.name ILIKE $2 OR c.email ILIKE $2 OR c.mobile ILIKE $2)`;
+      baseQuery += ` AND (c.name ILIKE $${paramIndex} OR c.email ILIKE $${paramIndex} OR c.mobile ILIKE $${paramIndex})`;
       params.push(`%${search}%`);
+      paramIndex++;
     }
 
-    query += ' GROUP BY c.customer_id ORDER BY c.created_at DESC';
+    const countResult = await pool.query(`SELECT COUNT(DISTINCT c.customer_id) ${baseQuery}`, params);
+    const totalCount = parseInt(countResult.rows[0].count);
+
+    let query = `
+      SELECT c.*,
+      COUNT(DISTINCT oh.transaction_id)::int as order_count,
+      COALESCE(SUM(oh.total_amount), 0)::numeric as total_spent
+      ${baseQuery}
+      GROUP BY c.customer_id
+    `;
+
+    if (sortField === "order_count") {
+      query += ` ORDER BY order_count ${sortDirection}`;
+    } else if (sortField === "total_spent") {
+      query += ` ORDER BY total_spent ${sortDirection}`;
+    } else {
+      query += ` ORDER BY c.${sortField} ${sortDirection}`;
+    }
+
+    query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+    params.push(limitNum, offset);
 
     const result = await pool.query(query, params);
-    res.json({ success: true, data: result.rows });
+    res.json({
+      success: true,
+      data: result.rows,
+      pagination: {
+        total: totalCount,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(totalCount / limitNum)
+      }
+    });
   } catch (error) {
     console.error('Error fetching customers:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch customers' });

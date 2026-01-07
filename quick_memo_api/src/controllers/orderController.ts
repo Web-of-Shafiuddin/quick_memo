@@ -4,16 +4,18 @@ import pool from '../config/database.js';
 export const getAllOrders = async (req: Request, res: Response) => {
   try {
     const userId = req.userId;
-    const { status, customer_id, start_date, end_date, order_source } = req.query;
+    const { status, customer_id, start_date, end_date, order_source, page = 1, limit = 10, sortBy = "order_date", sortOrder = "DESC" } = req.query;
 
-    let query = `
-      SELECT
-        oh.*,
-        c.name as customer_name,
-        c.email as customer_email,
-        c.mobile as customer_mobile,
-        c.address as customer_address,
-        pm.name as payment_method_name
+    const pageNum = parseInt(page as string) || 1;
+    let limitNum = parseInt(limit as string) || 10;
+    if (limitNum > 100) limitNum = 100;
+    const offset = (pageNum - 1) * limitNum;
+
+    const allowedSortFields = ["order_date", "total_amount", "order_status", "created_at", "customer_name"];
+    const sortField = allowedSortFields.includes(sortBy as string) ? sortBy as string : "order_date";
+    const sortDirection = (sortOrder as string).toUpperCase() === "ASC" ? "ASC" : "DESC";
+
+    let baseQuery = `
       FROM order_headers oh
       LEFT JOIN customers c ON oh.customer_id = c.customer_id
       LEFT JOIN payment_methods pm ON oh.payment_method_id = pm.payment_method_id
@@ -23,39 +25,69 @@ export const getAllOrders = async (req: Request, res: Response) => {
     let paramIndex = 2;
 
     if (status) {
-      query += ` AND oh.order_status = $${paramIndex}`;
+      baseQuery += ` AND oh.order_status = $${paramIndex}`;
       params.push(status);
       paramIndex++;
     }
 
     if (customer_id) {
-      query += ` AND oh.customer_id = $${paramIndex}`;
+      baseQuery += ` AND oh.customer_id = $${paramIndex}`;
       params.push(customer_id);
       paramIndex++;
     }
 
     if (start_date) {
-      query += ` AND oh.order_date >= $${paramIndex}`;
+      baseQuery += ` AND oh.order_date >= $${paramIndex}`;
       params.push(start_date);
       paramIndex++;
     }
 
     if (end_date) {
-      query += ` AND oh.order_date <= $${paramIndex}`;
+      baseQuery += ` AND oh.order_date <= $${paramIndex}`;
       params.push(end_date);
       paramIndex++;
     }
 
     if (order_source) {
-      query += ` AND oh.order_source = $${paramIndex}`;
+      baseQuery += ` AND oh.order_source = $${paramIndex}`;
       params.push(order_source);
       paramIndex++;
     }
 
-    query += ' ORDER BY oh.order_date DESC';
+    const countResult = await pool.query(`SELECT COUNT(*) ${baseQuery}`, params);
+    const totalCount = parseInt(countResult.rows[0].count);
+
+    let query = `
+      SELECT
+        oh.*,
+        c.name as customer_name,
+        c.email as customer_email,
+        c.mobile as customer_mobile,
+        c.address as customer_address,
+        pm.name as payment_method_name
+      ${baseQuery}
+    `;
+
+    if (sortField === "customer_name") {
+      query += ` ORDER BY c.name ${sortDirection}`;
+    } else {
+      query += ` ORDER BY oh.${sortField} ${sortDirection}`;
+    }
+
+    query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+    params.push(limitNum, offset);
 
     const result = await pool.query(query, params);
-    res.json({ success: true, data: result.rows });
+    res.json({
+      success: true,
+      data: result.rows,
+      pagination: {
+        total: totalCount,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(totalCount / limitNum)
+      }
+    });
   } catch (error) {
     console.error('Error fetching orders:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch orders' });

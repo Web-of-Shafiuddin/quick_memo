@@ -4,45 +4,73 @@ import pool from "../config/database.js";
 export const getAllProducts = async (req: Request, res: Response) => {
   try {
     const userId = req.userId;
-    const { category_id, status, search, include_variants } = req.query;
+    const { category_id, status, search, include_variants, page = 1, limit = 10, sortBy = "created_at", sortOrder = "DESC" } = req.query;
 
-    let query = `
-      SELECT p.*, c.name as category_name,
-             (SELECT COUNT(*) FROM products v WHERE v.parent_product_id = p.product_id) as variant_count
+    const pageNum = parseInt(page as string) || 1;
+    let limitNum = parseInt(limit as string) || 10;
+    if (limitNum > 100) limitNum = 100;
+    const offset = (pageNum - 1) * limitNum;
+
+    const allowedSortFields = ["name", "price", "stock", "created_at", "status", "sku"];
+    const sortField = allowedSortFields.includes(sortBy as string) ? sortBy as string : "created_at";
+    const sortDirection = (sortOrder as string).toUpperCase() === "ASC" ? "ASC" : "DESC";
+
+    let baseQuery = `
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.category_id
       WHERE p.user_id = $1
     `;
 
     if (include_variants !== "true") {
-      query += ` AND p.parent_product_id IS NULL`;
+      baseQuery += ` AND p.parent_product_id IS NULL`;
     }
 
     const params: any[] = [userId];
     let paramIndex = 2;
 
     if (category_id) {
-      query += ` AND p.category_id = $${paramIndex}`;
+      baseQuery += ` AND p.category_id = $${paramIndex}`;
       params.push(category_id);
       paramIndex++;
     }
 
     if (status) {
-      query += ` AND p.status = $${paramIndex}`;
+      baseQuery += ` AND p.status = $${paramIndex}`;
       params.push(status);
       paramIndex++;
     }
 
     if (search) {
-      query += ` AND (p.name ILIKE $${paramIndex} OR p.sku ILIKE $${paramIndex})`;
+      baseQuery += ` AND (p.name ILIKE $${paramIndex} OR p.sku ILIKE $${paramIndex})`;
       params.push(`%${search}%`);
       paramIndex++;
     }
 
-    query += " ORDER BY p.created_at DESC";
+    const countResult = await pool.query(`SELECT COUNT(*) ${baseQuery}`, params);
+    const totalCount = parseInt(countResult.rows[0].count);
+
+    let query = `
+      SELECT p.*, c.name as category_name,
+             (SELECT COUNT(*) FROM products v WHERE v.parent_product_id = p.product_id) as variant_count
+      ${baseQuery}
+    `;
+
+    query += ` ORDER BY p.${sortField} ${sortDirection}`;
+
+    query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+    params.push(limitNum, offset);
 
     const result = await pool.query(query, params);
-    res.json({ success: true, data: result.rows });
+    res.json({
+      success: true,
+      data: result.rows,
+      pagination: {
+        total: totalCount,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(totalCount / limitNum)
+      }
+    });
   } catch (error) {
     console.error("Error fetching products:", error);
     res.status(500).json({ success: false, error: "Failed to fetch products" });

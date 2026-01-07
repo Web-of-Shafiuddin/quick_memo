@@ -19,9 +19,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { orderService, Order } from "@/services/orderService";
 import { userService } from "@/services/userService";
-import { Plus, Eye, Edit, Printer } from "lucide-react";
+import { Plus, Eye, Edit, Printer, ChevronLeft, ChevronRight } from "lucide-react";
 import OrderMemo from "@/components/order-memo";
 import useAuthStore from "@/store/authStore";
 import { useShallow } from "zustand/react/shallow";
@@ -35,8 +36,14 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+
+interface PaginationState {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
 
 // Helper function to get badge variant based on status
 const getStatusBadgeVariant = (status: Order['order_status']) => {
@@ -66,6 +73,11 @@ const OrdersPage = () => {
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
+  const [pagination, setPagination] = useState<PaginationState | null>(null);
+  const [sortBy, setSortBy] = useState("order_date");
+  const [sortOrder, setSortOrder] = useState<"ASC" | "DESC">("DESC");
   const [filterStatus, setFilterStatus] = useState<string>("");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
@@ -100,12 +112,21 @@ const OrdersPage = () => {
     }
   };
 
-  const fetchOrders = async (status?: string) => {
+  const fetchOrders = async (currentPage: number = page) => {
     try {
       setLoading(true);
-      const params = status ? { status } : undefined;
+      const params: any = {
+        page: currentPage,
+        limit,
+        sortBy,
+        sortOrder,
+      };
+      if (filterStatus && filterStatus !== "all") {
+        params.status = filterStatus;
+      }
       const response = await orderService.getAll(params);
       setOrders(response.data);
+      setPagination(response.pagination || null);
     } catch (error: any) {
       console.error('Error fetching orders:', error);
       alert(error.response?.data?.error || 'Failed to fetch orders');
@@ -116,11 +137,26 @@ const OrdersPage = () => {
 
   const handleStatusFilter = (status: string) => {
     setFilterStatus(status);
-    if (status === "all") {
-      fetchOrders();
-    } else {
-      fetchOrders(status);
-    }
+    setPage(1);
+    fetchOrders(1);
+  };
+
+  const handleSortChange = (value: string) => {
+    setSortBy(value);
+    setPage(1);
+    fetchOrders(1);
+  };
+
+  const handleSortOrderChange = (value: string) => {
+    setSortOrder(value as "ASC" | "DESC");
+    setPage(1);
+    fetchOrders(1);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    fetchOrders(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleViewDetails = async (orderId: number) => {
@@ -162,7 +198,7 @@ const OrdersPage = () => {
       await orderService.update(editingOrder.transaction_id, editFormData);
       alert('Order updated successfully');
       setIsEditDialogOpen(false);
-      fetchOrders(filterStatus === "all" ? undefined : filterStatus);
+      fetchOrders(page);
     } catch (error: any) {
       console.error('Error updating order:', error);
       alert(error.response?.data?.error || 'Failed to update order');
@@ -188,8 +224,8 @@ const OrdersPage = () => {
         </Link>
       </div>
 
-      {/* Filter by status */}
-      <div className="flex gap-2 mb-6">
+      {/* Filter by status and sorting */}
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
         <Select value={filterStatus || "all"} onValueChange={handleStatusFilter}>
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Filter by status" />
@@ -204,6 +240,28 @@ const OrdersPage = () => {
             <SelectItem value="CANCELLED">Cancelled</SelectItem>
           </SelectContent>
         </Select>
+        <div className="flex gap-2">
+          <Select value={sortBy} onValueChange={handleSortChange}>
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="Sort By" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="order_date">Date</SelectItem>
+              <SelectItem value="total_amount">Total</SelectItem>
+              <SelectItem value="order_status">Status</SelectItem>
+              <SelectItem value="customer_name">Customer</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={sortOrder} onValueChange={handleSortOrderChange}>
+            <SelectTrigger className="w-[120px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="DESC">Desc</SelectItem>
+              <SelectItem value="ASC">Asc</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <Table>
@@ -289,6 +347,34 @@ const OrdersPage = () => {
           )}
         </TableBody>
       </Table>
+
+      {pagination && pagination.totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4">
+          <div className="text-sm text-muted-foreground">
+            Page {pagination.page} of {pagination.totalPages}
+          </div>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={page === 1}
+              onClick={() => handlePageChange(page - 1)}
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Previous
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={page === pagination.totalPages}
+              onClick={() => handlePageChange(page + 1)}
+            >
+              Next
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Order Details Dialog */}
       <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>

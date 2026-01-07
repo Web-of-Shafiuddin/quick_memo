@@ -14,6 +14,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -23,13 +30,25 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { customerService, Customer } from "@/services/customerService";
-import { Plus, Pencil, Trash2, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { useCurrency } from "@/hooks/useCurrency";
+
+interface PaginationState {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
 
 const CustomersPage = () => {
   const { format: formatPrice } = useCurrency();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
+  const [pagination, setPagination] = useState<PaginationState | null>(null);
+  const [sortBy, setSortBy] = useState("created_at");
+  const [sortOrder, setSortOrder] = useState<"ASC" | "DESC">("DESC");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -45,11 +64,19 @@ const CustomersPage = () => {
     fetchCustomers();
   }, []);
 
-  const fetchCustomers = async (search?: string) => {
+  const fetchCustomers = async (currentPage: number = page) => {
     try {
       setLoading(true);
-      const response = await customerService.getAll({ search });
+      const params: any = {
+        page: currentPage,
+        limit,
+        sortBy,
+        sortOrder,
+      };
+      if (searchTerm) params.search = searchTerm;
+      const response = await customerService.getAll(params);
       setCustomers(response.data);
+      setPagination(response.pagination || null);
     } catch (error: any) {
       console.error('Error fetching customers:', error);
       alert(error.response?.data?.error || 'Failed to fetch customers');
@@ -59,7 +86,26 @@ const CustomersPage = () => {
   };
 
   const handleSearch = () => {
-    fetchCustomers(searchTerm);
+    setPage(1);
+    fetchCustomers(1);
+  };
+
+  const handleSortChange = (value: string) => {
+    setSortBy(value);
+    setPage(1);
+    fetchCustomers(1);
+  };
+
+  const handleSortOrderChange = (value: string) => {
+    setSortOrder(value as "ASC" | "DESC");
+    setPage(1);
+    fetchCustomers(1);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    fetchCustomers(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleOpenDialog = (customer?: Customer) => {
@@ -213,30 +259,52 @@ const CustomersPage = () => {
         </Dialog>
       </div>
 
-      {/* Search Bar */}
-      <div className="flex gap-2 mb-6">
-        <Input
-          placeholder="Search customers by name, email, or mobile..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-          className="max-w-sm"
-        />
-        <Button onClick={handleSearch} variant="outline">
-          <Search className="h-4 w-4 mr-2" />
-          Search
-        </Button>
-        {searchTerm && (
-          <Button
-            onClick={() => {
-              setSearchTerm("");
-              fetchCustomers();
-            }}
-            variant="ghost"
-          >
-            Clear
+      {/* Search Bar and Sorting */}
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <div className="flex-1 flex gap-2">
+          <Input
+            placeholder="Search customers by name, email, or mobile..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            className="max-w-sm"
+          />
+          <Button onClick={handleSearch} variant="outline">
+            <Search className="h-4 w-4 mr-2" />
+            Search
           </Button>
-        )}
+          {searchTerm && (
+            <Button
+              onClick={() => { setSearchTerm(""); setPage(1); fetchCustomers(1); }}
+              variant="ghost"
+            >
+              Clear
+            </Button>
+          )}
+        </div>
+        <div className="flex gap-2">
+          <Select value={sortBy} onValueChange={handleSortChange}>
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="Sort By" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="created_at">Date</SelectItem>
+              <SelectItem value="name">Name</SelectItem>
+              <SelectItem value="email">Email</SelectItem>
+              <SelectItem value="order_count">Orders</SelectItem>
+              <SelectItem value="total_spent">Total Spent</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={sortOrder} onValueChange={handleSortOrderChange}>
+            <SelectTrigger className="w-[120px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="DESC">Desc</SelectItem>
+              <SelectItem value="ASC">Asc</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <Table>
@@ -293,6 +361,34 @@ const CustomersPage = () => {
           )}
         </TableBody>
       </Table>
+
+      {pagination && pagination.totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4">
+          <div className="text-sm text-muted-foreground">
+            Page {pagination.page} of {pagination.totalPages}
+          </div>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={page === 1}
+              onClick={() => handlePageChange(page - 1)}
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Previous
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={page === pagination.totalPages}
+              onClick={() => handlePageChange(page + 1)}
+            >
+              Next
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
