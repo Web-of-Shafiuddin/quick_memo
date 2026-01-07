@@ -1,17 +1,16 @@
 "use client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Calendar,
   CreditCard,
   Crown,
   FileText,
   Home,
   LogOut,
-  Palette,
-  Save,
-  Tag,
+  Menu,
+  Package,
+  ShoppingCart,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -21,6 +20,9 @@ import { useShallow } from "zustand/react/shallow";
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import NotificationBell from "@/components/NotificationBell";
+import { MobileMenu } from "@/components/mobile/MobileMenu";
+import { BottomNav } from "@/components/mobile/BottomNav";
+import { QuickActionsMenu } from "@/components/mobile/QuickActionsMenu";
 
 interface Subscription {
   subscription_id: number;
@@ -44,6 +46,7 @@ export default function ProtectedUserDashboardlayout({
     }))
   );
   const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     if (isLoading === false && !user) {
@@ -88,167 +91,127 @@ export default function ProtectedUserDashboardlayout({
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Mobile Menu */}
+      <MobileMenu
+        open={mobileMenuOpen}
+        onOpenChange={setMobileMenuOpen}
+        title="Menu"
+        sections={[
+          {
+            title: "Quick Actions",
+            items: [
+              { href: "/categories", label: "Categories", icon: FileText },
+              { href: "/attributes", label: "Attributes", icon: () => <div className="w-4 h-4" /> },
+              { href: "/products", label: "Products", icon: Package },
+              { href: "/customers", label: "Customers", icon: Users },
+              { href: "/orders", label: "Orders", icon: ShoppingCart },
+              { href: "/invoices", label: "Invoices", icon: FileText },
+            ],
+          },
+          {
+            title: "Settings",
+            items: [
+              { href: "/dashboard/profile", label: "Profile Settings", icon: () => <div className="w-4 h-4" /> },
+              { href: "/subscription", label: "Subscription", icon: Crown },
+              { href: "/payment-methods", label: "Payment Methods", icon: CreditCard },
+            ],
+          },
+        ]}
+        items={[
+          { href: "/", label: "Home", icon: Home },
+        ]}
+      />
+
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <header className="bg-white shadow-sm border-b sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden"
+                onClick={() => setMobileMenuOpen(true)}
+              >
+                <Menu className="w-5 h-5" />
+              </Button>
               <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
                 <FileText className="w-5 h-5 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
-                <p className="text-sm text-gray-600">
+                <h1 className="text-lg sm:text-xl font-bold text-gray-900">Dashboard</h1>
+                <p className="text-xs sm:text-sm text-gray-600">
                   Welcome back, {user.name}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               {subscription &&
                 subscription.status === "ACTIVE" &&
                 subscription.plan_name !== "Free" && (
-                  <Badge className="bg-green-100 text-green-800">
+                  <Badge className="bg-green-100 text-green-800 text-xs sm:text-sm">
                     <Crown className="w-3 h-3 mr-1" />
-                    {subscription.plan_name} Active
+                    <span className="hidden sm:inline">{subscription.plan_name}</span>
+                    <span className="sm:hidden">Pro</span>
                   </Badge>
                 )}
               {subscription && subscription.status === "GRACE_PERIOD" && (
                 <Link href="/subscription">
-                  <Badge className="bg-orange-100 text-orange-800 cursor-pointer hover:bg-orange-200">
-                    Grace Period - Renew Now
+                  <Badge className="bg-orange-100 text-orange-800 cursor-pointer hover:bg-orange-200 text-xs">
+                    Grace Period
                   </Badge>
                 </Link>
               )}
               {subscription && subscription.status === "EXPIRED" && (
                 <Link href="/subscription">
-                  <Badge className="bg-red-100 text-red-800 cursor-pointer hover:bg-red-200">
-                    Expired - Renew Now
+                  <Badge className="bg-red-100 text-red-800 cursor-pointer hover:bg-red-200 text-xs">
+                    Expired
                   </Badge>
                 </Link>
               )}
               {subscription &&
                 subscription.status === "ACTIVE" &&
                 subscription.plan_name === "Free" && (
-                  <Badge className="bg-gray-100 text-gray-800">Free Plan</Badge>
+                  <Badge className="bg-gray-100 text-gray-800 text-xs">Free</Badge>
                 )}
               {!subscription && (
                 <Link href="/subscription">
-                  <Badge className="bg-blue-100 text-blue-800 cursor-pointer hover:bg-blue-200">
+                  <Badge className="bg-blue-100 text-blue-800 cursor-pointer hover:bg-blue-200 text-xs">
                     <Crown className="w-3 h-3 mr-1" />
                     Subscribe
                   </Badge>
                 </Link>
               )}
               <NotificationBell />
-              <Link href="/">
-                <Button variant="outline" size="sm">
-                  <Home className="w-4 h-4 mr-2" />
-                  Home
+              <div className="hidden md:flex items-center gap-2">
+                <Link href="/">
+                  <Button variant="outline" size="sm">
+                    <Home className="w-4 h-4 mr-2" />
+                    Home
+                  </Button>
+                </Link>
+                <Button variant="outline" size="sm" onClick={handleLogout}>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
                 </Button>
-              </Link>
-              <Button variant="outline" onClick={handleLogout}>
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
-              </Button>
+              </div>
             </div>
           </div>
         </div>
       </header>
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-20 md:pb-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Stats Cards */}
+          {/* Quick Actions - Always visible on mobile via bottom nav, on desktop via sidebar */}
           <div className="lg:col-span-1 space-y-6">
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Link href="/categories">
-                  <Button variant="outline" className="w-full justify-start">
-                    <FileText className="w-4 h-4 mr-2" />
-                    Categories
-                  </Button>
-                </Link>
-                <Link href="/attributes">
-                  <Button variant="outline" className="w-full justify-start">
-                    <Tag className="w-4 h-4 mr-2" />
-                    Attributes
-                  </Button>
-                </Link>
-                <Link href="/products">
-                  <Button variant="outline" className="w-full justify-start">
-                    <FileText className="w-4 h-4 mr-2" />
-                    Products
-                  </Button>
-                </Link>
-                <Link href="/customers">
-                  <Button variant="outline" className="w-full justify-start">
-                    <FileText className="w-4 h-4 mr-2" />
-                    Customers
-                  </Button>
-                </Link>
-                <Link href="/orders">
-                  <Button variant="outline" className="w-full justify-start">
-                    <FileText className="w-4 h-4 mr-2" />
-                    Orders
-                  </Button>
-                </Link>
-                <Link href="/invoices">
-                  <Button variant="outline" className="w-full justify-start">
-                    <FileText className="w-4 h-4 mr-2" />
-                    Invoices
-                  </Button>
-                </Link>
-                <Link href="/dashboard/profile">
-                  <Button variant="outline" className="w-full justify-start">
-                    <FileText className="w-4 h-4 mr-2" />
-                    Profile Settings
-                  </Button>
-                </Link>
-                <Link href="/subscription">
-                  <Button variant="outline" className="w-full justify-start">
-                    <Crown className="w-4 h-4 mr-2" />
-                    Subscription
-                  </Button>
-                </Link>
-                <Link href="/payment-methods">
-                  <Button variant="outline" className="w-full justify-start">
-                    <CreditCard className="w-4 h-4 mr-2" />
-                    Payment Methods
-                  </Button>
-                </Link>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start"
-                  disabled
-                >
-                  <Palette className="w-4 h-4 mr-2" />
-                  Themes & Colors
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start"
-                  disabled
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  Memo Presets
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start"
-                  disabled
-                >
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Order History
-                </Button>
-              </CardContent>
-            </Card>
+            <QuickActionsMenu />
           </div>
           <div className="lg:col-span-2">{children}</div>
         </div>
       </main>
+
+      {/* Bottom Navigation - Mobile Only */}
+      <BottomNav />
     </div>
   );
 }
