@@ -1,6 +1,7 @@
 "use client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useShallow } from "zustand/react/shallow";
 import {
   CreditCard,
   Crown,
@@ -9,6 +10,7 @@ import {
   LogOut,
   Menu,
   Package,
+  PanelLeft,
   ShoppingCart,
   Users,
 } from "lucide-react";
@@ -16,8 +18,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import useAuthStore from "@/store/authStore";
-import { useShallow } from "zustand/react/shallow";
-import { useEffect, useState } from "react";
+import { Activity, useEffect, useState } from "react";
 import api from "@/lib/api";
 import NotificationBell from "@/components/NotificationBell";
 import { MobileMenu } from "@/components/mobile/MobileMenu";
@@ -47,6 +48,17 @@ export default function ProtectedUserDashboardlayout({
   );
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('sidebarOpen');
+      return saved ? JSON.parse(saved) : true;
+    }
+    return true;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('sidebarOpen', JSON.stringify(sidebarOpen));
+  }, [sidebarOpen]);
 
   useEffect(() => {
     if (isLoading === false && !user) {
@@ -130,7 +142,7 @@ export default function ProtectedUserDashboardlayout({
               <Button
                 variant="ghost"
                 size="icon"
-                className="md:hidden"
+                className="lg:hidden"
                 onClick={() => setMobileMenuOpen(true)}
               >
                 <Menu className="w-5 h-5" />
@@ -183,6 +195,15 @@ export default function ProtectedUserDashboardlayout({
                 </Link>
               )}
               <NotificationBell />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="hidden lg:flex"
+                title={sidebarOpen ? "Hide Sidebar" : "Show Sidebar"}
+              >
+                <PanelLeft className={`w-5 h-5 transition-transform duration-300 ${sidebarOpen ? '' : 'rotate-180'}`} />
+              </Button>
               <div className="hidden md:flex items-center gap-2">
                 <Link href="/">
                   <Button variant="outline" size="sm">
@@ -202,11 +223,14 @@ export default function ProtectedUserDashboardlayout({
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-20 md:pb-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Quick Actions - Always visible on mobile via bottom nav, on desktop via sidebar */}
-          <div className="lg:col-span-1 space-y-6">
+          {/* Quick Actions - Hidden on mobile, conditionally visible on desktop */}
+          <Activity mode={sidebarOpen ? "visible" : "hidden"}>
             <QuickActionsMenu />
+          </Activity>
+          {/* Main Content - Full width on mobile, variable on desktop */}
+          <div className={`${sidebarOpen ? 'lg:col-span-2' : 'lg:col-span-3'}`}>
+            {children}
           </div>
-          <div className="lg:col-span-2">{children}</div>
         </div>
       </main>
 

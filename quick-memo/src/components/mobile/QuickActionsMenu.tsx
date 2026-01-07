@@ -47,7 +47,6 @@ const settingsActions = [
 // ] satisfies QuickActionItem[];
 
 export function QuickActionsMenu() {
-  const [isOpen, setIsOpen] = useState(false);
 
   const ActionItem = ({ href, label, icon: Icon, disabled }: QuickActionItem) => {
     const buttonContent = (
@@ -85,28 +84,19 @@ export function QuickActionsMenu() {
   // );
 
   return (
-    <Card>
+    <Card className="hidden lg:block" >
       <CardHeader
         className="cursor-pointer select-none"
-        onClick={() => setIsOpen(!isOpen)}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <LayoutGrid className="w-5 h-5 text-muted-foreground" />
             <CardTitle className="text-lg">Quick Actions</CardTitle>
           </div>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            {isOpen ? (
-              <ChevronDown className="w-4 h-4" />
-            ) : (
-              <ChevronRight className="w-4 h-4" />
-            )}
-          </Button>
         </div>
       </CardHeader>
 
-      {isOpen && (
-        <CardContent className="space-y-4">
+      <CardContent className="space-y-4">
           <div className="space-y-3">
             {quickActions.map((action, index) => (
               <ActionItem key={index} {...action} />
@@ -131,7 +121,6 @@ export function QuickActionsMenu() {
             ))}
           </div> */}
         </CardContent>
-      )}
     </Card>
   );
 }
