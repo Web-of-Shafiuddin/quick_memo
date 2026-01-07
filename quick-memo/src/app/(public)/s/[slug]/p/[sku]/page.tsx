@@ -162,8 +162,6 @@ export default function ProductDetailPage() {
     if (slug && sku) fetchProduct();
   }, [slug, sku, router]);
 
-  console.log("active image: ", activeImage);
-
   // Update image when variant changes or manually selected
   useEffect(() => {
     // 1. Try to match based on currentVariant (full match)
@@ -482,7 +480,7 @@ export default function ProductDetailPage() {
         </div>
 
         {product.description && (
-          <div className="col-span-2 prose prose-sm text-gray-600 max-w-none mt-6">
+          <div className="col-span-1 md:col-span-2 prose prose-sm text-gray-600 max-w-none mt-6">
             <h3 className="font-semibold text-gray-900 mb-1">Description</h3>
             <p className="whitespace-pre-line">{product.description}</p>
           </div>
