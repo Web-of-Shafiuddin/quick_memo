@@ -53,12 +53,12 @@ export function QuickActionsMenu() {
       <Button
         variant="outline"
         className={cn(
-          "w-full justify-start",
+          "w-full justify-start my-1",
           disabled && "opacity-50 cursor-not-allowed"
         )}
         disabled={disabled}
       >
-        <Icon className="w-4 h-4 mr-2 flex-shrink-0" />
+        <Icon className="w-4 h-4 mr-2 shrink-0" />
         <span className="truncate">{label}</span>
       </Button>
     );
@@ -78,7 +78,7 @@ export function QuickActionsMenu() {
   //     className="w-full justify-start opacity-50 cursor-not-allowed"
   //     disabled
   //   >
-  //     <Icon className="w-4 h-4 mr-2 flex-shrink-0" />
+  //     <Icon className="w-4 h-4 mr-2 shrink-0" />
   //     <span className="truncate">{label}</span>
   //   </Button>
   // );
