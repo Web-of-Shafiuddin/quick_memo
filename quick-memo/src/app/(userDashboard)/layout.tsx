@@ -205,7 +205,7 @@ export default function ProtectedUserDashboardlayout({
                 <PanelLeft className={`w-5 h-5 transition-transform duration-300 ${sidebarOpen ? '' : 'rotate-180'}`} />
               </Button>
               <div className="hidden md:flex items-center gap-2">
-                <Link href="/">
+                <Link href="/dashboard">
                   <Button variant="outline" size="sm">
                     <Home className="w-4 h-4 mr-2" />
                     Home
