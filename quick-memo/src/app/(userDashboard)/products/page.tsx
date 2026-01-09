@@ -24,6 +24,7 @@ import { productService, Product } from "@/services/productService";
 import { useCurrency } from "@/hooks/useCurrency";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 interface PaginationState {
   total: number;
@@ -41,12 +42,12 @@ const ProductsPage = () => {
   const [sortBy, setSortBy] = useState("created_at");
   const [sortOrder, setSortOrder] = useState<"ASC" | "DESC">("DESC");
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState<string>("");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
   const { format: formatPrice } = useCurrency();
 
   useEffect(() => {
     fetchProducts(1);
-  }, []);
+  }, [filterStatus, sortOrder, sortBy]);
 
   const fetchProducts = async (currentPage: number = page) => {
     try {
@@ -58,7 +59,9 @@ const ProductsPage = () => {
         sortOrder,
       };
       if (searchTerm) params.search = searchTerm;
-      if (filterStatus) params.status = filterStatus;
+      if (filterStatus !== "all") {
+        params.status = filterStatus;
+      }
       const response = await productService.getAll(params);
       setProducts(response.data);
       setPagination(response.pagination || null);
@@ -68,7 +71,7 @@ const ProductsPage = () => {
         error instanceof Error
           ? (error as any).response?.data?.error
           : "Failed to fetch products";
-      alert(message || "Failed to fetch products");
+      toast(message || "Failed to fetch products");
     } finally {
       setLoading(false);
     }
@@ -79,22 +82,25 @@ const ProductsPage = () => {
     fetchProducts(1);
   };
 
+  const handleClearSearch = () => {
+    setSearchTerm("");
+    fetchProducts(1);
+  };
+
   const handleSortChange = (value: string) => {
     setSortBy(value);
-    setPage(1);
-    fetchProducts(1);
   };
 
   const handleSortOrderChange = (value: string) => {
     setSortOrder(value as "ASC" | "DESC");
-    setPage(1);
-    fetchProducts(1);
   };
 
   const handleStatusFilter = (status: string) => {
-    setFilterStatus(status);
-    setPage(1);
-    fetchProducts(1);
+    if (status === "all") {
+      setFilterStatus("");
+    } else {
+      setFilterStatus(status);
+    }
   };
 
   const handlePageChange = (newPage: number) => {
@@ -166,12 +172,17 @@ const ProductsPage = () => {
             placeholder="Search products..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             className="max-w-sm"
           />
-          <Button onClick={handleSearch} variant="outline">Search</Button>
+          <Button onClick={handleSearch} variant="outline">
+            Search
+          </Button>
           {searchTerm && (
-            <Button onClick={() => { setSearchTerm(""); setPage(1); fetchProducts(1); }} variant="ghost">
+            <Button
+              onClick={handleClearSearch}
+              variant="ghost"
+            >
               Clear
             </Button>
           )}
@@ -182,7 +193,7 @@ const ProductsPage = () => {
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Status</SelectItem>
+              <SelectItem value="all">All Status</SelectItem>
               <SelectItem value="ACTIVE">Active</SelectItem>
               <SelectItem value="INACTIVE">Inactive</SelectItem>
               <SelectItem value="DISCONTINUED">Discontinued</SelectItem>

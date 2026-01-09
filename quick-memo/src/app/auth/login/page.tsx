@@ -155,9 +155,6 @@ export default function LoginPage() {
                                             {showPassword ? <Eye className="w-4 h-4" /> : <EyeClosed className="w-4 h-4" />}
                                         </Button>
                                     </div>
-                                    <div className="text-xs text-gray-500 bg-blue-50 p-3 rounded">
-                                        💡 Demo Mode: Enter any email and password to login
-                                    </div>
                                     <Button
                                         type="submit"
                                         className="w-full"
