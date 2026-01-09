@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { productService, Product } from "@/services/productService";
+import { productService, Product, ProductListParams } from "@/services/productService";
 import { useCurrency } from "@/hooks/useCurrency";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -42,26 +42,25 @@ const ProductsPage = () => {
   const [sortBy, setSortBy] = useState("created_at");
   const [sortOrder, setSortOrder] = useState<"ASC" | "DESC">("DESC");
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const { format: formatPrice } = useCurrency();
 
   useEffect(() => {
-    fetchProducts(1);
-  }, [filterStatus, sortOrder, sortBy]);
+    fetchProducts();
+  }, [page, filterStatus, sortOrder, sortBy, searchQuery]);
 
-  const fetchProducts = async (currentPage: number = page) => {
+  const fetchProducts = async () => {
     try {
       setLoading(true);
-      const params: any = {
-        page: currentPage,
+      const params: ProductListParams = {
+        page,
         limit,
         sortBy,
         sortOrder,
+        ...(searchQuery && { search: searchQuery }),
+        ...(filterStatus !== "all" && { status: filterStatus }),
       };
-      if (searchTerm) params.search = searchTerm;
-      if (filterStatus !== "all") {
-        params.status = filterStatus;
-      }
       const response = await productService.getAll(params);
       setProducts(response.data);
       setPagination(response.pagination || null);
@@ -78,21 +77,24 @@ const ProductsPage = () => {
   };
 
   const handleSearch = () => {
+    setSearchQuery(searchTerm);
     setPage(1);
-    fetchProducts(1);
   };
 
   const handleClearSearch = () => {
     setSearchTerm("");
-    fetchProducts(1);
+    setSearchQuery("");
+    setPage(1);
   };
 
   const handleSortChange = (value: string) => {
     setSortBy(value);
+    setPage(1);
   };
 
   const handleSortOrderChange = (value: string) => {
     setSortOrder(value as "ASC" | "DESC");
+    setPage(1);
   };
 
   const handleStatusFilter = (status: string) => {
@@ -101,11 +103,11 @@ const ProductsPage = () => {
     } else {
       setFilterStatus(status);
     }
+    setPage(1);
   };
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
-    fetchProducts(newPage);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 

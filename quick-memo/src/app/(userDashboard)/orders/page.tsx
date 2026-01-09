@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { orderService, Order } from "@/services/orderService";
+import { orderService, Order, OrderListParams } from "@/services/orderService";
 import { userService } from "@/services/userService";
 import { Plus, Eye, Edit, Printer, ChevronLeft, ChevronRight } from "lucide-react";
 import OrderMemo from "@/components/order-memo";
@@ -96,11 +96,14 @@ const OrdersPage = () => {
   });
 
   useEffect(() => {
-    fetchOrders();
     if (user?.user_id) {
       fetchUserProfile();
     }
   }, [user]);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [page, filterStatus, sortBy, sortOrder]);
 
   const fetchUserProfile = async () => {
     if (!user?.user_id) return;
@@ -112,18 +115,16 @@ const OrdersPage = () => {
     }
   };
 
-  const fetchOrders = async (currentPage: number = page) => {
+  const fetchOrders = async () => {
     try {
       setLoading(true);
-      const params: any = {
-        page: currentPage,
+      const params: OrderListParams = {
+        page,
         limit,
         sortBy,
         sortOrder,
+        ...(filterStatus && filterStatus !== "all" && { status: filterStatus }),
       };
-      if (filterStatus && filterStatus !== "all") {
-        params.status = filterStatus;
-      }
       const response = await orderService.getAll(params);
       setOrders(response.data);
       setPagination(response.pagination || null);
@@ -138,24 +139,20 @@ const OrdersPage = () => {
   const handleStatusFilter = (status: string) => {
     setFilterStatus(status);
     setPage(1);
-    fetchOrders(1);
   };
 
   const handleSortChange = (value: string) => {
     setSortBy(value);
     setPage(1);
-    fetchOrders(1);
   };
 
   const handleSortOrderChange = (value: string) => {
     setSortOrder(value as "ASC" | "DESC");
     setPage(1);
-    fetchOrders(1);
   };
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
-    fetchOrders(newPage);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -198,7 +195,7 @@ const OrdersPage = () => {
       await orderService.update(editingOrder.transaction_id, editFormData);
       alert('Order updated successfully');
       setIsEditDialogOpen(false);
-      fetchOrders(page);
+      fetchOrders();
     } catch (error: any) {
       console.error('Error updating order:', error);
       alert(error.response?.data?.error || 'Failed to update order');

@@ -27,14 +27,16 @@ export interface UpdateCustomerInput {
   address?: string | null;
 }
 
+export type CustomerListParams = {
+  search?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: string;
+};
+
 export const customerService = {
-  getAll: async (params?: {
-    search?: string;
-    page?: number;
-    limit?: number;
-    sortBy?: string;
-    sortOrder?: string;
-  }) => {
+  getAll: async (params?: CustomerListParams) => {
     const response = await api.get<{ success: boolean; data: Customer[]; pagination?: { total: number; page: number; limit: number; totalPages: number } }>(
       "/customers",
       { params }

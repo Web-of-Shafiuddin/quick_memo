@@ -105,17 +105,19 @@ const transformProduct = (product: ProductFromAPI): Product => ({
   variants: product.variants?.map(transformProduct),
 });
 
+export type ProductListParams = {
+  category_id?: number;
+  status?: string;
+  search?: string;
+  include_variants?: boolean;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: string;
+};
+
 export const productService = {
-  getAll: async (params?: {
-    category_id?: number;
-    status?: string;
-    search?: string;
-    include_variants?: boolean;
-    page?: number;
-    limit?: number;
-    sortBy?: string;
-    sortOrder?: string;
-  }) => {
+  getAll: async (params?: ProductListParams) => {
     const response = await api.get<{
       success: boolean;
       data: ProductFromAPI[];

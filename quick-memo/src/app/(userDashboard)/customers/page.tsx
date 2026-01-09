@@ -29,7 +29,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { customerService, Customer } from "@/services/customerService";
+import { customerService, Customer, CustomerListParams } from "@/services/customerService";
 import { Plus, Pencil, Trash2, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { useCurrency } from "@/hooks/useCurrency";
 
@@ -52,6 +52,7 @@ const CustomersPage = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -62,18 +63,18 @@ const CustomersPage = () => {
 
   useEffect(() => {
     fetchCustomers();
-  }, []);
+  }, [page, searchQuery, sortBy, sortOrder]);
 
-  const fetchCustomers = async (currentPage: number = page) => {
+  const fetchCustomers = async () => {
     try {
       setLoading(true);
-      const params: any = {
-        page: currentPage,
+      const params: CustomerListParams = {
+        page,
         limit,
         sortBy,
         sortOrder,
+        ...(searchQuery && { search: searchQuery }),
       };
-      if (searchTerm) params.search = searchTerm;
       const response = await customerService.getAll(params);
       setCustomers(response.data);
       setPagination(response.pagination || null);
@@ -86,25 +87,28 @@ const CustomersPage = () => {
   };
 
   const handleSearch = () => {
+    setSearchQuery(searchTerm);
     setPage(1);
-    fetchCustomers(1);
+  };
+
+  const handleClearSearch = () => {
+    setSearchTerm("");
+    setSearchQuery("");
+    setPage(1);
   };
 
   const handleSortChange = (value: string) => {
     setSortBy(value);
     setPage(1);
-    fetchCustomers(1);
   };
 
   const handleSortOrderChange = (value: string) => {
     setSortOrder(value as "ASC" | "DESC");
     setPage(1);
-    fetchCustomers(1);
   };
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
-    fetchCustomers(newPage);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -275,7 +279,7 @@ const CustomersPage = () => {
           </Button>
           {searchTerm && (
             <Button
-              onClick={() => { setSearchTerm(""); setPage(1); fetchCustomers(1); }}
+              onClick={handleClearSearch}
               variant="ghost"
             >
               Clear

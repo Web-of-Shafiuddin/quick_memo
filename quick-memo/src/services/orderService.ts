@@ -72,18 +72,20 @@ export interface OrderStats {
   cancelled_orders: number;
 }
 
+export type OrderListParams = {
+  status?: string;
+  customer_id?: number;
+  start_date?: string;
+  end_date?: string;
+  order_source?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: string;
+};
+
 export const orderService = {
-  getAll: async (params?: {
-    status?: string;
-    customer_id?: number;
-    start_date?: string;
-    end_date?: string;
-    order_source?: string;
-    page?: number;
-    limit?: number;
-    sortBy?: string;
-    sortOrder?: string;
-  }) => {
+  getAll: async (params?: OrderListParams) => {
     const response = await api.get<{ success: boolean; data: Order[]; pagination?: { total: number; page: number; limit: number; totalPages: number } }>(
       "/orders",
       { params }
