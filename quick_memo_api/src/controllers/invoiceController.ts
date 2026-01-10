@@ -5,7 +5,10 @@ import pool from '../config/database.js';
 export const getAllInvoices = async (req: Request, res: Response) => {
   try {
     const userId = req.userId;
-    const { status, customer_id, start_date, end_date } = req.query;
+    const { status, customer_id, start_date, end_date, page = '1', limit = '10' } = req.query;
+    const pageNum = parseInt(page as string) || 1;
+    const limitNum = parseInt(limit as string) || 10;
+    const offset = (pageNum - 1) * limitNum;
 
     let query = `
       SELECT
@@ -49,10 +52,27 @@ export const getAllInvoices = async (req: Request, res: Response) => {
       paramIndex++;
     }
 
+    // Get total count for pagination
+    const countQuery = query.replace(/SELECT[\s\S]*?FROM/, 'SELECT COUNT(*) FROM').replace(/ORDER BY[\s\S]*$/, '');
+    const countResult = await pool.query(countQuery, params);
+    const total = parseInt(countResult.rows[0].count);
+    const totalPages = Math.ceil(total / limitNum);
+
     query += ' ORDER BY i.created_at DESC';
+    query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+    params.push(limitNum, offset);
 
     const result = await pool.query(query, params);
-    res.json({ success: true, data: result.rows });
+    res.json({
+      success: true,
+      data: result.rows,
+      pagination: {
+        total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages,
+      },
+    });
   } catch (error) {
     console.error('Error fetching invoices:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch invoices' });

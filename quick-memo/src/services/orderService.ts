@@ -35,6 +35,9 @@ export interface Order {
   created_at: string;
   updated_at: string;
   items?: OrderItem[];
+  invoice_id?: number;
+  invoice_number?: string;
+  invoice_status?: string;
 }
 
 export interface CreateOrderItemInput {

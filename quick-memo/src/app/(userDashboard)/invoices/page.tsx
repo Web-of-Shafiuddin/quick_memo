@@ -8,13 +8,16 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
+    FileText,
+    Search,
+    Eye,
+    CheckCircle,
+    Clock,
+    AlertCircle,
+    XCircle,
+    ChevronLeft,
+    ChevronRight,
+} from 'lucide-react';
 import {
     Table,
     TableBody,
@@ -23,21 +26,34 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import {
-    FileText,
-    Search,
-    Eye,
-    Download,
-    CheckCircle,
-    Clock,
-    AlertCircle,
-    XCircle,
-    Plus,
-    Printer,
-} from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api';
 import { useCurrency } from '@/hooks/useCurrency';
+import { userService } from '@/services/userService';
+import { User } from '@/types/User';
+import useAuthStore from '@/store/authStore';
+import { useShallow } from 'zustand/react/shallow';
+import { InvoiceDialog } from '@/components/invoice-dialog';
+
+interface InvoiceStats {
+    total_invoices: number;
+    due_invoices: number;
+    paid_invoices: number;
+    overdue_invoices: number;
+    void_invoices: number;
+    partial_invoices: number;
+    total_due: number;
+    total_paid: number;
+    total_overdue: number;
+    total_balance_remaining: number;
+}
+
+interface PaginationState {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+}
 
 interface Invoice {
     invoice_id: number;
@@ -59,53 +75,6 @@ interface Invoice {
     created_at: string;
 }
 
-interface InvoiceStats {
-    total_invoices: number;
-    due_invoices: number;
-    paid_invoices: number;
-    overdue_invoices: number;
-    void_invoices: number;
-    partial_invoices: number;
-    total_due: number;
-    total_paid: number;
-    total_overdue: number;
-    total_balance_remaining: number;
-}
-
-interface InvoiceItem {
-    order_item_id: number;
-    name_snapshot: string;
-    quantity: number;
-    unit_price: number;
-    item_discount: number;
-    subtotal: number;
-    product_sku: string;
-}
-
-interface InvoiceDetail extends Invoice {
-    items: InvoiceItem[];
-    shipping_amount: number;
-    tax_amount: number;
-    payment_method_name: string;
-    balance_remaining: number;
-}
-
-interface PaymentRecord {
-    payment_id: number;
-    invoice_id: number;
-    amount_paid: number;
-    payment_date: string;
-    payment_method: string | null;
-    reference_number: string | null;
-    notes: string | null;
-}
-
-interface PaymentMethod {
-    payment_method_id: number;
-    name: string;
-    is_active: boolean;
-}
-
 export default function InvoicesPage() {
     const { format: formatCurrency } = useCurrency();
     const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -113,34 +82,43 @@ export default function InvoicesPage() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
-    const [selectedInvoice, setSelectedInvoice] = useState<InvoiceDetail | null>(null);
+    const [selectedInvoiceId, setSelectedInvoiceId] = useState<number | null>(null);
     const [viewDialog, setViewDialog] = useState(false);
-    const [statusDialog, setStatusDialog] = useState(false);
-    const [newStatus, setNewStatus] = useState('');
-    const [processing, setProcessing] = useState(false);
-    const [paymentDialog, setPaymentDialog] = useState(false);
-    const [payments, setPayments] = useState<PaymentRecord[]>([]);
-    const [paymentAmount, setPaymentAmount] = useState('');
-    const [paymentMethod, setPaymentMethod] = useState('');
-    const [paymentReference, setPaymentReference] = useState('');
-    const [paymentNotes, setPaymentNotes] = useState('');
-    const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+    const [userProfile, setUserProfile] = useState<User | null>(null);
+    const [page, setPage] = useState(1);
+    const [limit] = useState(10);
+    const [pagination, setPagination] = useState<PaginationState | null>(null);
+
+    const { user } = useAuthStore(
+        useShallow((state) => ({
+            user: state.user,
+        }))
+    );
+
+    useEffect(() => {
+        if (user?.user_id) {
+            fetchUserProfile();
+        }
+    }, [user]);
 
     useEffect(() => {
         fetchInvoices();
         fetchStats();
-        fetchPaymentMethods();
-    }, [statusFilter]);
+    }, [statusFilter, page]);
 
     const fetchInvoices = async () => {
         try {
             setLoading(true);
-            let url = '/invoices';
+            const params: { status?: string; page: number; limit: number } = {
+                page,
+                limit,
+            };
             if (statusFilter && statusFilter !== 'all') {
-                url += `?status=${statusFilter}`;
+                params.status = statusFilter;
             }
-            const response = await api.get(url);
+            const response = await api.get('/invoices', { params });
             setInvoices(response.data.data || []);
+            setPagination(response.data.pagination || null);
         } catch (error) {
             console.error('Error fetching invoices:', error);
             toast.error('Failed to fetch invoices');
@@ -158,115 +136,27 @@ export default function InvoicesPage() {
         }
     };
 
-    const fetchPaymentMethods = async () => {
+    const fetchUserProfile = async () => {
+        if (!user?.user_id) return;
         try {
-            const response = await api.get('/payment-methods');
-            setPaymentMethods(response.data.data || []);
+            const response = await userService.getById(user.user_id.toString());
+            setUserProfile(response.data);
         } catch (error) {
-            console.error('Error fetching payment methods:', error);
+            console.error('Error fetching user profile:', error);
         }
     };
 
-    const fetchInvoiceDetails = async (invoiceId: number) => {
-        try {
-            const response = await api.get(`/invoices/${invoiceId}`);
-            setSelectedInvoice(response.data.data);
-            fetchPayments(invoiceId);
-            setViewDialog(true);
-        } catch (error) {
-            console.error('Error fetching invoice details:', error);
-            toast.error('Failed to fetch invoice details');
-        }
+    const handlePageChange = (newPage: number) => {
+        setPage(newPage);
     };
 
-    const handleStatusUpdate = async () => {
-        if (!selectedInvoice || !newStatus) return;
-
-        try {
-            setProcessing(true);
-            await api.patch(`/invoices/${selectedInvoice.invoice_id}/status`, {
-                status: newStatus,
-            });
-            toast.success('Invoice status updated');
-            setStatusDialog(false);
-            fetchInvoices();
-            fetchStats();
-        } catch (error: any) {
-            console.error('Error updating invoice status:', error);
-            toast.error(error.response?.data?.error || 'Failed to update status');
-        } finally {
-            setProcessing(false);
-        }
-    };
-
-    const fetchPayments = async (invoiceId: number) => {
-        try {
-            const response = await api.get(`/payments/invoice/${invoiceId}`);
-            setPayments(response.data.data || []);
-        } catch (error) {
-            console.error('Error fetching payments:', error);
-        }
-    };
-
-    const openPaymentDialog = (invoice: InvoiceDetail) => {
-        setSelectedInvoice(invoice);
-        setPaymentAmount('');
-        setPaymentMethod('');
-        setPaymentReference('');
-        setPaymentNotes('');
-        setPaymentDialog(true);
-    };
-
-    const handleRecordPayment = async () => {
-        if (!selectedInvoice || !paymentAmount || parseFloat(paymentAmount) <= 0) {
-            toast.error('Please enter a valid payment amount');
-            return;
-        }
-
-        try {
-            setProcessing(true);
-            await api.post('/payments', {
-                invoice_id: selectedInvoice.invoice_id,
-                amount_paid: parseFloat(paymentAmount),
-                payment_method: paymentMethod || null,
-                reference_number: paymentReference || null,
-                notes: paymentNotes || null,
-            });
-            toast.success('Payment recorded successfully');
-            setPaymentDialog(false);
-            fetchInvoices();
-            fetchStats();
-            fetchInvoiceDetails(selectedInvoice.invoice_id);
-        } catch (error: any) {
-            console.error('Error recording payment:', error);
-            toast.error(error.response?.data?.error || 'Failed to record payment');
-        } finally {
-            setProcessing(false);
-        }
-    };
-
-    const handleDeletePayment = async (paymentId: number) => {
-        if (!confirm('Are you sure you want to delete this payment?')) return;
-
-        try {
-            await api.delete(`/payments/${paymentId}`);
-            toast.success('Payment deleted successfully');
-            if (selectedInvoice) {
-                fetchPayments(selectedInvoice.invoice_id);
-                fetchInvoiceDetails(selectedInvoice.invoice_id);
-            }
-            fetchInvoices();
-            fetchStats();
-        } catch (error: any) {
-            console.error('Error deleting payment:', error);
-            toast.error(error.response?.data?.error || 'Failed to delete payment');
-        }
-    };
-
-    const openStatusDialog = (invoice: Invoice) => {
-        setSelectedInvoice(invoice as InvoiceDetail);
-        setNewStatus(invoice.status);
-        setStatusDialog(true);
+    const formatDate = (dateString: string | null) => {
+        if (!dateString) return '-';
+        return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
     };
 
     const getStatusBadge = (status: string) => {
@@ -286,24 +176,15 @@ export default function InvoicesPage() {
         }
     };
 
-    const formatDate = (dateString: string | null) => {
-        if (!dateString) return '-';
-        return new Date(dateString).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-        });
+    const openInvoiceDialog = (invoice: Invoice) => {
+        setSelectedInvoiceId(invoice.invoice_id);
+        setViewDialog(true);
     };
 
     const filteredInvoices = invoices.filter(invoice =>
         invoice.invoice_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
         invoice.customer_name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
-
-    const printInvoice = () => {
-        if (!selectedInvoice) return;
-        window.print();
-    };
 
     return (
         <div className="space-y-6">
@@ -441,16 +322,9 @@ export default function InvoicesPage() {
                                                     <Button
                                                         size="sm"
                                                         variant="ghost"
-                                                        onClick={() => fetchInvoiceDetails(invoice.invoice_id)}
+                                                        onClick={() => openInvoiceDialog(invoice)}
                                                     >
                                                         <Eye className="w-4 h-4" />
-                                                    </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="ghost"
-                                                        onClick={() => openStatusDialog(invoice)}
-                                                    >
-                                                        <CheckCircle className="w-4 h-4" />
                                                     </Button>
                                                 </div>
                                             </TableCell>
@@ -463,297 +337,44 @@ export default function InvoicesPage() {
                 </CardContent>
             </Card>
 
-            {/* View Invoice Dialog */}
-            <Dialog open={viewDialog} onOpenChange={setViewDialog}>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle className="flex items-center justify-between">
-                            <span>Invoice {selectedInvoice?.invoice_number}</span>
-                            {selectedInvoice && getStatusBadge(selectedInvoice.status)}
-                        </DialogTitle>
-                    </DialogHeader>
-                    {selectedInvoice && (
-                        <div className="space-y-6" id="invoice-print">
-                            {/* Summary Cards */}
-                            <div className="grid grid-cols-3 gap-4 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Total Amount</p>
-                                    <p className="text-lg font-bold">{formatCurrency(selectedInvoice.total_amount)}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Paid Amount</p>
-                                    <p className="text-lg font-bold text-green-600">{formatCurrency(selectedInvoice.amount_paid || 0)}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Balance Remaining</p>
-                                    <p className={`text-lg font-bold ${selectedInvoice.balance_remaining > 0 ? 'text-orange-600' : 'text-green-600'}`}>
-                                        {formatCurrency(selectedInvoice.balance_remaining)}
-                                    </p>
-                                </div>
-                            </div>
-
-                            {/* Customer Info */}
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <h4 className="font-semibold mb-2">Bill To:</h4>
-                                    <p className="font-medium">{selectedInvoice.customer_name}</p>
-                                    {selectedInvoice.customer_email && (
-                                        <p className="text-sm text-muted-foreground">{selectedInvoice.customer_email}</p>
-                                    )}
-                                    {selectedInvoice.customer_mobile && (
-                                        <p className="text-sm text-muted-foreground">{selectedInvoice.customer_mobile}</p>
-                                    )}
-                                    {selectedInvoice.customer_address && (
-                                        <p className="text-sm text-muted-foreground">{selectedInvoice.customer_address}</p>
-                                    )}
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-sm">
-                                        <span className="text-muted-foreground">Issue Date: </span>
-                                        {formatDate(selectedInvoice.issue_date)}
-                                    </p>
-                                    <p className="text-sm">
-                                        <span className="text-muted-foreground">Due Date: </span>
-                                        {formatDate(selectedInvoice.due_date)}
-                                    </p>
-                                    <p className="text-sm">
-                                        <span className="text-muted-foreground">Order #: </span>
-                                        {selectedInvoice.transaction_id}
-                                    </p>
-                                </div>
-                            </div>
-
-                            {/* Items Table */}
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Item</TableHead>
-                                        <TableHead className="text-right">Qty</TableHead>
-                                        <TableHead className="text-right">Price</TableHead>
-                                        <TableHead className="text-right">Discount</TableHead>
-                                        <TableHead className="text-right">Subtotal</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {selectedInvoice.items?.map((item) => (
-                                        <TableRow key={item.order_item_id}>
-                                            <TableCell>
-                                                <div>
-                                                    <div className="font-medium">{item.name_snapshot}</div>
-                                                    <div className="text-sm text-muted-foreground">
-                                                        SKU: {item.product_sku}
-                                                    </div>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="text-right">{item.quantity}</TableCell>
-                                            <TableCell className="text-right">{formatCurrency(item.unit_price)}</TableCell>
-                                            <TableCell className="text-right">
-                                                {item.item_discount > 0 ? `-${formatCurrency(item.item_discount)}` : '-'}
-                                            </TableCell>
-                                            <TableCell className="text-right font-medium">
-                                                {formatCurrency(item.subtotal)}
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-
-                            {/* Totals */}
-                            <div className="flex justify-end">
-                                <div className="w-64 space-y-2">
-                                    {selectedInvoice.shipping_amount > 0 && (
-                                        <div className="flex justify-between text-sm">
-                                            <span>Shipping:</span>
-                                            <span>{formatCurrency(selectedInvoice.shipping_amount)}</span>
-                                        </div>
-                                    )}
-                                    {selectedInvoice.tax_amount > 0 && (
-                                        <div className="flex justify-between text-sm">
-                                            <span>Tax:</span>
-                                            <span>{formatCurrency(selectedInvoice.tax_amount)}</span>
-                                        </div>
-                                    )}
-                                    <div className="flex justify-between font-bold text-lg border-t pt-2">
-                                        <span>Total:</span>
-                                        <span>{formatCurrency(selectedInvoice.total_amount)}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Notes */}
-                            {selectedInvoice.notes && (
-                                <div className="border-t pt-4">
-                                    <h4 className="font-semibold mb-2">Notes:</h4>
-                                    <p className="text-sm text-muted-foreground">{selectedInvoice.notes}</p>
-                                </div>
-                            )}
-
-                            {/* Payment History */}
-                            <div className="border-t pt-4">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h4 className="font-semibold">Payment History</h4>
-                                    {selectedInvoice.status !== 'PAID' && selectedInvoice.status !== 'VOID' && (
-                                        <Button size="sm" onClick={() => openPaymentDialog(selectedInvoice)}>
-                                            <Plus className="w-4 h-4 mr-2" />
-                                            Record Payment
-                                        </Button>
-                                    )}
-                                </div>
-                                {payments.length > 0 ? (
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>Date</TableHead>
-                                                <TableHead>Amount</TableHead>
-                                                <TableHead>Method</TableHead>
-                                                <TableHead>Reference</TableHead>
-                                                <TableHead>Notes</TableHead>
-                                                <TableHead>Actions</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {payments.map((payment) => (
-                                                <TableRow key={payment.payment_id}>
-                                                    <TableCell>
-                                                        {new Date(payment.payment_date).toLocaleDateString()}
-                                                    </TableCell>
-                                                    <TableCell className="font-medium text-green-600">
-                                                        {formatCurrency(payment.amount_paid)}
-                                                    </TableCell>
-                                                    <TableCell>{payment.payment_method || '-'}</TableCell>
-                                                    <TableCell>{payment.reference_number || '-'}</TableCell>
-                                                    <TableCell className="max-w-xs truncate">{payment.notes || '-'}</TableCell>
-                                                    <TableCell>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="ghost"
-                                                            onClick={() => handleDeletePayment(payment.payment_id)}
-                                                        >
-                                                            <XCircle className="w-4 h-4 text-red-600" />
-                                                        </Button>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                ) : (
-                                    <p className="text-sm text-muted-foreground text-center py-4">No payments recorded yet</p>
-                                )}
-                            </div>
-                        </div>
-                    )}
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setViewDialog(false)}>
-                            Close
-                        </Button>
-                        <Button onClick={printInvoice}>
-                            <Printer className="w-4 h-4 mr-2" />
-                            Print
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-
-            {/* Update Status Dialog */}
-            <Dialog open={statusDialog} onOpenChange={setStatusDialog}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Update Invoice Status</DialogTitle>
-                        <DialogDescription>
-                            Change the status of invoice {selectedInvoice?.invoice_number}
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4 py-4">
-                        <Select value={newStatus} onValueChange={setNewStatus}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="DUE">Due</SelectItem>
-                                <SelectItem value="PAID">Paid</SelectItem>
-                                <SelectItem value="OVERDUE">Overdue</SelectItem>
-                                <SelectItem value="PARTIAL">Partial Payment</SelectItem>
-                                <SelectItem value="VOID">Void</SelectItem>
-                            </SelectContent>
-                        </Select>
+            {/* Pagination */}
+            {pagination && pagination.totalPages > 1 && (
+                <div className="flex items-center justify-between">
+                    <div className="text-sm text-muted-foreground">
+                        Showing {Math.min((page - 1) * limit + 1, pagination.total)} to {Math.min(page * limit, pagination.total)} of {pagination.total} invoices
                     </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setStatusDialog(false)}>
-                            Cancel
+                    <div className="flex gap-2">
+                        <Button
+                            variant="outline"
+                            onClick={() => handlePageChange(page - 1)}
+                            disabled={page === 1}
+                        >
+                            <ChevronLeft className="h-4 w-4 mr-2" />
+                            Previous
                         </Button>
-                        <Button onClick={handleStatusUpdate} disabled={processing}>
-                            {processing ? 'Updating...' : 'Update Status'}
+                        <span className="flex items-center px-4">
+                            Page {page} of {pagination.totalPages}
+                        </span>
+                        <Button
+                            variant="outline"
+                            onClick={() => handlePageChange(page + 1)}
+                            disabled={page === pagination.totalPages}
+                        >
+                            Next
+                            <ChevronRight className="h-4 w-4 ml-2" />
                         </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-
-            {/* Record Payment Dialog */}
-            <Dialog open={paymentDialog} onOpenChange={setPaymentDialog}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Record Payment</DialogTitle>
-                        <DialogDescription>
-                            Record a payment for invoice {selectedInvoice?.invoice_number}
-                            <br />
-                            <span className="text-orange-600">Balance remaining: {selectedInvoice ? formatCurrency(selectedInvoice.balance_remaining) : '-'}</span>
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Payment Amount</label>
-                            <Input
-                                type="number"
-                                step="0.01"
-                                min="0.01"
-                                placeholder="Enter amount"
-                                value={paymentAmount}
-                                onChange={(e) => setPaymentAmount(e.target.value)}
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Payment Method</label>
-                            <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select payment method" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {paymentMethods.map((pm) => (
-                                        <SelectItem key={pm.payment_method_id} value={pm.name}>
-                                            {pm.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Reference Number</label>
-                            <Input
-                                placeholder="e.g., Transaction ID, Cheque number"
-                                value={paymentReference}
-                                onChange={(e) => setPaymentReference(e.target.value)}
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Notes</label>
-                            <textarea
-                                className="w-full min-h-[80px] p-2 border rounded-md"
-                                placeholder="Additional notes..."
-                                value={paymentNotes}
-                                onChange={(e) => setPaymentNotes(e.target.value)}
-                            />
-                        </div>
                     </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setPaymentDialog(false)}>
-                            Cancel
-                        </Button>
-                        <Button onClick={handleRecordPayment} disabled={processing}>
-                            {processing ? 'Recording...' : 'Record Payment'}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+                </div>
+            )}
+
+            {/* Invoice Dialog */}
+            <InvoiceDialog
+                open={viewDialog}
+                onOpenChange={setViewDialog}
+                invoiceId={selectedInvoiceId || 0}
+                userProfile={userProfile}
+                user={user}
+            />
         </div>
     );
 }

@@ -19,6 +19,7 @@ export const getAllOrders = async (req: Request, res: Response) => {
       FROM order_headers oh
       LEFT JOIN customers c ON oh.customer_id = c.customer_id
       LEFT JOIN payment_methods pm ON oh.payment_method_id = pm.payment_method_id
+      LEFT JOIN invoices i ON oh.transaction_id = i.transaction_id
       WHERE oh.user_id = $1
     `;
     const params: any[] = [userId];
@@ -64,7 +65,10 @@ export const getAllOrders = async (req: Request, res: Response) => {
         c.email as customer_email,
         c.mobile as customer_mobile,
         c.address as customer_address,
-        pm.name as payment_method_name
+        pm.name as payment_method_name,
+        i.invoice_id,
+        i.invoice_number,
+        i.status as invoice_status
       ${baseQuery}
     `;
 

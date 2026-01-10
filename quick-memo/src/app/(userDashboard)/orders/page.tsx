@@ -22,8 +22,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { orderService, Order, OrderListParams } from "@/services/orderService";
 import { userService } from "@/services/userService";
-import { Plus, Eye, Edit, Printer, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Eye, Edit, Printer, ChevronLeft, ChevronRight, FileText } from "lucide-react";
 import OrderMemo from "@/components/order-memo";
+import { InvoiceDialog } from "@/components/invoice-dialog";
 import useAuthStore from "@/store/authStore";
 import { useShallow } from "zustand/react/shallow";
 import { User } from "@/types/User";
@@ -83,6 +84,8 @@ const OrdersPage = () => {
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [isMemoDialogOpen, setIsMemoDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false);
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState<number | null>(null);
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [userProfile, setUserProfile] = useState<User | null>(null);
   const [editFormData, setEditFormData] = useState<{
@@ -266,6 +269,7 @@ const OrdersPage = () => {
         <TableHeader>
           <TableRow>
             <TableHead>Order ID</TableHead>
+            <TableHead>Invoice #</TableHead>
             <TableHead>Customer</TableHead>
             <TableHead>Mobile</TableHead>
             <TableHead>Email</TableHead>
@@ -281,7 +285,7 @@ const OrdersPage = () => {
         <TableBody>
           {orders.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={11} className="text-center text-muted-foreground">
+              <TableCell colSpan={12} className="text-center text-muted-foreground">
                 No orders found. Create your first order to get started.
               </TableCell>
             </TableRow>
@@ -289,6 +293,13 @@ const OrdersPage = () => {
             orders.map((order) => (
               <TableRow key={order.transaction_id}>
                 <TableCell className="font-medium">#{order.transaction_id}</TableCell>
+                <TableCell className="font-mono text-sm">
+                  {order.invoice_number ? (
+                    <span className="font-medium">{order.invoice_number}</span>
+                  ) : (
+                    <span className="text-muted-foreground">-</span>
+                  )}
+                </TableCell>
                 <TableCell>{order.customer_name || '-'}</TableCell>
                 <TableCell>{order.customer_mobile || '-'}</TableCell>
                 <TableCell>{order.customer_email || '-'}</TableCell>
@@ -312,6 +323,23 @@ const OrdersPage = () => {
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
+                    {order.invoice_number && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (order.invoice_id) {
+                            setSelectedInvoiceId(order.invoice_id);
+                            setInvoiceDialogOpen(true);
+                          } else {
+                            toast.error('Invoice not yet created for this order');
+                          }
+                        }}
+                        title="View Invoice"
+                      >
+                        <FileText className="h-4 w-4" />
+                      </Button>
+                    )}
                     <Button
                       variant="outline"
                       size="sm"
@@ -572,6 +600,14 @@ const OrdersPage = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      <InvoiceDialog
+        open={invoiceDialogOpen}
+        onOpenChange={setInvoiceDialogOpen}
+        invoiceId={selectedInvoiceId || 0}
+        userProfile={userProfile}
+        user={user}
+      />
     </div>
   );
 };
