@@ -10,6 +10,7 @@ export const getAllInvoices = async (req: Request, res: Response) => {
     let query = `
       SELECT
         i.*,
+        i.total_amount - COALESCE(i.amount_paid, 0) as balance_remaining,
         c.name as customer_name,
         c.email as customer_email,
         c.mobile as customer_mobile,
@@ -68,6 +69,7 @@ export const getInvoiceById = async (req: Request, res: Response) => {
     const invoiceResult = await pool.query(
       `SELECT
         i.*,
+        i.total_amount - COALESCE(i.amount_paid, 0) as balance_remaining,
         c.name as customer_name,
         c.email as customer_email,
         c.mobile as customer_mobile,
@@ -194,8 +196,8 @@ export const createInvoice = async (req: Request, res: Response) => {
     // Create invoice
     const result = await pool.query(
       `INSERT INTO invoices
-       (invoice_number, transaction_id, user_id, customer_id, issue_date, due_date, total_amount, status, notes)
-       VALUES ($1, $2, $3, $4, CURRENT_DATE, $5, $6, 'DUE', $7)
+       (invoice_number, transaction_id, user_id, customer_id, issue_date, due_date, total_amount, status, notes, amount_paid)
+       VALUES ($1, $2, $3, $4, CURRENT_DATE, $5, $6, 'DUE', $7, 0)
        RETURNING *`,
       [
         invoiceNumber,
@@ -363,9 +365,11 @@ export const getInvoiceStats = async (req: Request, res: Response) => {
         COUNT(CASE WHEN status = 'PAID' THEN 1 END)::int as paid_invoices,
         COUNT(CASE WHEN status = 'OVERDUE' THEN 1 END)::int as overdue_invoices,
         COUNT(CASE WHEN status = 'VOID' THEN 1 END)::int as void_invoices,
+        COUNT(CASE WHEN status = 'PARTIAL' THEN 1 END)::int as partial_invoices,
         COALESCE(SUM(CASE WHEN status = 'DUE' THEN total_amount ELSE 0 END), 0)::numeric as total_due,
         COALESCE(SUM(CASE WHEN status = 'PAID' THEN total_amount ELSE 0 END), 0)::numeric as total_paid,
-        COALESCE(SUM(CASE WHEN status = 'OVERDUE' THEN total_amount ELSE 0 END), 0)::numeric as total_overdue
+        COALESCE(SUM(CASE WHEN status = 'OVERDUE' THEN total_amount ELSE 0 END), 0)::numeric as total_overdue,
+        COALESCE(SUM(total_amount - COALESCE(amount_paid, 0)), 0)::numeric as total_balance_remaining
        FROM invoices
        WHERE user_id = $1`,
       [userId]
@@ -412,8 +416,8 @@ export const autoGenerateInvoice = async (transactionId: number, userId: number)
     // Create invoice
     const result = await pool.query(
       `INSERT INTO invoices
-       (invoice_number, transaction_id, user_id, customer_id, issue_date, due_date, total_amount, status)
-       VALUES ($1, $2, $3, $4, CURRENT_DATE, $5, $6, 'DUE')
+       (invoice_number, transaction_id, user_id, customer_id, issue_date, due_date, total_amount, status, amount_paid)
+       VALUES ($1, $2, $3, $4, CURRENT_DATE, $5, $6, 'DUE', 0)
        RETURNING *`,
       [
         invoiceNumber,

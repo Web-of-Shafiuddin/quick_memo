@@ -51,6 +51,7 @@ interface Invoice {
     issue_date: string;
     due_date: string | null;
     total_amount: number;
+    amount_paid: number;
     status: string;
     notes: string | null;
     order_status: string;
@@ -64,9 +65,11 @@ interface InvoiceStats {
     paid_invoices: number;
     overdue_invoices: number;
     void_invoices: number;
+    partial_invoices: number;
     total_due: number;
     total_paid: number;
     total_overdue: number;
+    total_balance_remaining: number;
 }
 
 interface InvoiceItem {
@@ -84,6 +87,23 @@ interface InvoiceDetail extends Invoice {
     shipping_amount: number;
     tax_amount: number;
     payment_method_name: string;
+    balance_remaining: number;
+}
+
+interface PaymentRecord {
+    payment_id: number;
+    invoice_id: number;
+    amount_paid: number;
+    payment_date: string;
+    payment_method: string | null;
+    reference_number: string | null;
+    notes: string | null;
+}
+
+interface PaymentMethod {
+    payment_method_id: number;
+    name: string;
+    is_active: boolean;
 }
 
 export default function InvoicesPage() {
@@ -98,10 +118,18 @@ export default function InvoicesPage() {
     const [statusDialog, setStatusDialog] = useState(false);
     const [newStatus, setNewStatus] = useState('');
     const [processing, setProcessing] = useState(false);
+    const [paymentDialog, setPaymentDialog] = useState(false);
+    const [payments, setPayments] = useState<PaymentRecord[]>([]);
+    const [paymentAmount, setPaymentAmount] = useState('');
+    const [paymentMethod, setPaymentMethod] = useState('');
+    const [paymentReference, setPaymentReference] = useState('');
+    const [paymentNotes, setPaymentNotes] = useState('');
+    const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
 
     useEffect(() => {
         fetchInvoices();
         fetchStats();
+        fetchPaymentMethods();
     }, [statusFilter]);
 
     const fetchInvoices = async () => {
@@ -130,10 +158,20 @@ export default function InvoicesPage() {
         }
     };
 
+    const fetchPaymentMethods = async () => {
+        try {
+            const response = await api.get('/payment-methods');
+            setPaymentMethods(response.data.data || []);
+        } catch (error) {
+            console.error('Error fetching payment methods:', error);
+        }
+    };
+
     const fetchInvoiceDetails = async (invoiceId: number) => {
         try {
             const response = await api.get(`/invoices/${invoiceId}`);
             setSelectedInvoice(response.data.data);
+            fetchPayments(invoiceId);
             setViewDialog(true);
         } catch (error) {
             console.error('Error fetching invoice details:', error);
@@ -161,6 +199,70 @@ export default function InvoicesPage() {
         }
     };
 
+    const fetchPayments = async (invoiceId: number) => {
+        try {
+            const response = await api.get(`/payments/invoice/${invoiceId}`);
+            setPayments(response.data.data || []);
+        } catch (error) {
+            console.error('Error fetching payments:', error);
+        }
+    };
+
+    const openPaymentDialog = (invoice: InvoiceDetail) => {
+        setSelectedInvoice(invoice);
+        setPaymentAmount('');
+        setPaymentMethod('');
+        setPaymentReference('');
+        setPaymentNotes('');
+        setPaymentDialog(true);
+    };
+
+    const handleRecordPayment = async () => {
+        if (!selectedInvoice || !paymentAmount || parseFloat(paymentAmount) <= 0) {
+            toast.error('Please enter a valid payment amount');
+            return;
+        }
+
+        try {
+            setProcessing(true);
+            await api.post('/payments', {
+                invoice_id: selectedInvoice.invoice_id,
+                amount_paid: parseFloat(paymentAmount),
+                payment_method: paymentMethod || null,
+                reference_number: paymentReference || null,
+                notes: paymentNotes || null,
+            });
+            toast.success('Payment recorded successfully');
+            setPaymentDialog(false);
+            fetchInvoices();
+            fetchStats();
+            fetchInvoiceDetails(selectedInvoice.invoice_id);
+        } catch (error: any) {
+            console.error('Error recording payment:', error);
+            toast.error(error.response?.data?.error || 'Failed to record payment');
+        } finally {
+            setProcessing(false);
+        }
+    };
+
+    const handleDeletePayment = async (paymentId: number) => {
+        if (!confirm('Are you sure you want to delete this payment?')) return;
+
+        try {
+            await api.delete(`/payments/${paymentId}`);
+            toast.success('Payment deleted successfully');
+            if (selectedInvoice) {
+                fetchPayments(selectedInvoice.invoice_id);
+                fetchInvoiceDetails(selectedInvoice.invoice_id);
+            }
+            fetchInvoices();
+            fetchStats();
+        } catch (error: any) {
+            console.error('Error deleting payment:', error);
+            toast.error(error.response?.data?.error || 'Failed to delete payment');
+        }
+    };
+
     const openStatusDialog = (invoice: Invoice) => {
         setSelectedInvoice(invoice as InvoiceDetail);
         setNewStatus(invoice.status);
@@ -178,7 +280,7 @@ export default function InvoicesPage() {
             case 'VOID':
                 return <Badge className="bg-gray-100 text-gray-800"><XCircle className="w-3 h-3 mr-1" />Void</Badge>;
             case 'PARTIAL':
-                return <Badge className="bg-blue-100 text-blue-800">Partial</Badge>;
+                return <Badge className="bg-blue-100 text-blue-800"><Clock className="w-3 h-3 mr-1" />Partial</Badge>;
             default:
                 return <Badge>{status}</Badge>;
         }
@@ -300,6 +402,8 @@ export default function InvoicesPage() {
                                         <TableHead>Issue Date</TableHead>
                                         <TableHead>Due Date</TableHead>
                                         <TableHead>Amount</TableHead>
+                                        <TableHead>Paid</TableHead>
+                                        <TableHead>Balance</TableHead>
                                         <TableHead>Status</TableHead>
                                         <TableHead>Actions</TableHead>
                                     </TableRow>
@@ -324,6 +428,12 @@ export default function InvoicesPage() {
                                             <TableCell>{formatDate(invoice.due_date)}</TableCell>
                                             <TableCell className="font-medium">
                                                 {formatCurrency(invoice.total_amount)}
+                                            </TableCell>
+                                            <TableCell className="text-green-600">
+                                                {formatCurrency(invoice.amount_paid || 0)}
+                                            </TableCell>
+                                            <TableCell className={invoice.amount_paid >= invoice.total_amount ? 'text-green-600' : 'text-orange-600'}>
+                                                {formatCurrency(invoice.total_amount - (invoice.amount_paid || 0))}
                                             </TableCell>
                                             <TableCell>{getStatusBadge(invoice.status)}</TableCell>
                                             <TableCell>
@@ -355,7 +465,7 @@ export default function InvoicesPage() {
 
             {/* View Invoice Dialog */}
             <Dialog open={viewDialog} onOpenChange={setViewDialog}>
-                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle className="flex items-center justify-between">
                             <span>Invoice {selectedInvoice?.invoice_number}</span>
@@ -364,6 +474,24 @@ export default function InvoicesPage() {
                     </DialogHeader>
                     {selectedInvoice && (
                         <div className="space-y-6" id="invoice-print">
+                            {/* Summary Cards */}
+                            <div className="grid grid-cols-3 gap-4 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Total Amount</p>
+                                    <p className="text-lg font-bold">{formatCurrency(selectedInvoice.total_amount)}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Paid Amount</p>
+                                    <p className="text-lg font-bold text-green-600">{formatCurrency(selectedInvoice.amount_paid || 0)}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Balance Remaining</p>
+                                    <p className={`text-lg font-bold ${selectedInvoice.balance_remaining > 0 ? 'text-orange-600' : 'text-green-600'}`}>
+                                        {formatCurrency(selectedInvoice.balance_remaining)}
+                                    </p>
+                                </div>
+                            </div>
+
                             {/* Customer Info */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -459,6 +587,59 @@ export default function InvoicesPage() {
                                     <p className="text-sm text-muted-foreground">{selectedInvoice.notes}</p>
                                 </div>
                             )}
+
+                            {/* Payment History */}
+                            <div className="border-t pt-4">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h4 className="font-semibold">Payment History</h4>
+                                    {selectedInvoice.status !== 'PAID' && selectedInvoice.status !== 'VOID' && (
+                                        <Button size="sm" onClick={() => openPaymentDialog(selectedInvoice)}>
+                                            <Plus className="w-4 h-4 mr-2" />
+                                            Record Payment
+                                        </Button>
+                                    )}
+                                </div>
+                                {payments.length > 0 ? (
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Date</TableHead>
+                                                <TableHead>Amount</TableHead>
+                                                <TableHead>Method</TableHead>
+                                                <TableHead>Reference</TableHead>
+                                                <TableHead>Notes</TableHead>
+                                                <TableHead>Actions</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {payments.map((payment) => (
+                                                <TableRow key={payment.payment_id}>
+                                                    <TableCell>
+                                                        {new Date(payment.payment_date).toLocaleDateString()}
+                                                    </TableCell>
+                                                    <TableCell className="font-medium text-green-600">
+                                                        {formatCurrency(payment.amount_paid)}
+                                                    </TableCell>
+                                                    <TableCell>{payment.payment_method || '-'}</TableCell>
+                                                    <TableCell>{payment.reference_number || '-'}</TableCell>
+                                                    <TableCell className="max-w-xs truncate">{payment.notes || '-'}</TableCell>
+                                                    <TableCell>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="ghost"
+                                                            onClick={() => handleDeletePayment(payment.payment_id)}
+                                                        >
+                                                            <XCircle className="w-4 h-4 text-red-600" />
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground text-center py-4">No payments recorded yet</p>
+                                )}
+                            </div>
                         </div>
                     )}
                     <DialogFooter>
@@ -502,6 +683,73 @@ export default function InvoicesPage() {
                         </Button>
                         <Button onClick={handleStatusUpdate} disabled={processing}>
                             {processing ? 'Updating...' : 'Update Status'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Record Payment Dialog */}
+            <Dialog open={paymentDialog} onOpenChange={setPaymentDialog}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Record Payment</DialogTitle>
+                        <DialogDescription>
+                            Record a payment for invoice {selectedInvoice?.invoice_number}
+                            <br />
+                            <span className="text-orange-600">Balance remaining: {selectedInvoice ? formatCurrency(selectedInvoice.balance_remaining) : '-'}</span>
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Payment Amount</label>
+                            <Input
+                                type="number"
+                                step="0.01"
+                                min="0.01"
+                                placeholder="Enter amount"
+                                value={paymentAmount}
+                                onChange={(e) => setPaymentAmount(e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Payment Method</label>
+                            <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select payment method" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {paymentMethods.map((pm) => (
+                                        <SelectItem key={pm.payment_method_id} value={pm.name}>
+                                            {pm.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Reference Number</label>
+                            <Input
+                                placeholder="e.g., Transaction ID, Cheque number"
+                                value={paymentReference}
+                                onChange={(e) => setPaymentReference(e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Notes</label>
+                            <textarea
+                                className="w-full min-h-[80px] p-2 border rounded-md"
+                                placeholder="Additional notes..."
+                                value={paymentNotes}
+                                onChange={(e) => setPaymentNotes(e.target.value)}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setPaymentDialog(false)}>
+                            Cancel
+                        </Button>
+                        <Button onClick={handleRecordPayment} disabled={processing}>
+                            {processing ? 'Recording...' : 'Record Payment'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

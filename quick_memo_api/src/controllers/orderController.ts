@@ -244,6 +244,22 @@ export const createOrder = async (req: Request, res: Response) => {
 
     await client.query('COMMIT');
 
+    // Auto-create invoice
+    const year = new Date().getFullYear();
+    const countResult = await pool.query(
+      `SELECT COUNT(*) FROM invoices WHERE user_id = $1 AND EXTRACT(YEAR FROM created_at) = $2`,
+      [userId, year]
+    );
+    const invoiceCount = parseInt(countResult.rows[0].count) + 1;
+    const invoiceNumber = `INV-${year}-${invoiceCount.toString().padStart(5, '0')}`;
+
+    await pool.query(
+      `INSERT INTO invoices
+       (invoice_number, transaction_id, user_id, customer_id, issue_date, due_date, total_amount, status, amount_paid)
+       VALUES ($1, $2, $3, $4, CURRENT_DATE, CURRENT_DATE + INTERVAL '30 days', $5, 'DUE', 0)`,
+      [invoiceNumber, transactionId, userId, customer_id, totalAmount]
+    );
+
     // Fetch the complete order with items
     const completeOrder = await pool.query(
       `SELECT
