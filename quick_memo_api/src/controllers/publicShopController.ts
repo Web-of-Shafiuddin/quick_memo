@@ -195,7 +195,7 @@ export const getShopProductBySku = async (req: Request, res: Response) => {
 export const createPublicOrder = async (req: Request, res: Response) => {
   try {
     const { slug } = req.params;
-    const { customer_name, customer_mobile, customer_address, items } =
+    const { customer_name, customer_email, customer_mobile, customer_address, items } =
       req.body;
 
     // 1. Get Shop Owner User ID
@@ -219,8 +219,8 @@ export const createPublicOrder = async (req: Request, res: Response) => {
       customerId = existingCustomer.rows[0].customer_id;
     } else {
       const newCustomer = await pool.query(
-        "INSERT INTO customers (user_id, name, mobile, address) VALUES ($1, $2, $3, $4) RETURNING customer_id",
-        [userId, customer_name, customer_mobile, customer_address]
+        "INSERT INTO customers (user_id, name, email, mobile, address) VALUES ($1, $2, $3, $4, $5) RETURNING customer_id",
+        [userId, customer_name, customer_email, customer_mobile, customer_address]
       );
       customerId = newCustomer.rows[0].customer_id;
     }

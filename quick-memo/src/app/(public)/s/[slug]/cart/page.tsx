@@ -23,6 +23,7 @@ import {
   CheckCircle2,
   ShieldAlert,
   Info,
+  Mail,
 } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/lib/api";
@@ -45,6 +46,7 @@ export default function CartPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [customer, setCustomer] = useState({
     name: "",
+    email: "",
     mobile: "",
     address: "",
   });
@@ -103,6 +105,7 @@ export default function CartPage() {
       const res = await api.post(`/shop/${slug}/orders`, {
         ...customer,
         customer_name: customer.name,
+        customer_email: customer.email,
         customer_mobile: customer.mobile,
         customer_address: customer.address,
         items: cart.map((item) => ({
@@ -285,6 +288,21 @@ export default function CartPage() {
                       setCustomer({ ...customer, name: e.target.value })
                     }
                     required
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    placeholder="john@example.com"
+                    className="pl-9"
+                    value={customer.email}
+                    onChange={(e) =>
+                      setCustomer({ ...customer, email: e.target.value })
+                    }
                   />
                 </div>
               </div>
