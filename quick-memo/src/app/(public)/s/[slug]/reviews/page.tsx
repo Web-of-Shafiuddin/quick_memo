@@ -90,9 +90,18 @@ export default function ReviewsPage() {
           <CardContent>
             <MessageSquare className="mx-auto h-12 w-12 text-muted-foreground opacity-20 mb-4" />
             <h3 className="text-lg font-medium">No reviews yet</h3>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-muted-foreground text-sm mb-4">
               Be the first to leave a review after your order is delivered!
             </p>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md mx-auto">
+              <p className="text-sm text-blue-900 font-medium mb-1">
+                ℹ️ Shop Review Requirements
+              </p>
+              <p className="text-sm text-blue-700">
+                You must have placed at least <strong>2 orders</strong> before writing a shop review.
+                This helps ensure you have a comprehensive understanding of our services.
+              </p>
+            </div>
           </CardContent>
         </Card>
       ) : (

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Star, CheckCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Star, CheckCircle, MessageSquare } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -33,6 +34,7 @@ export function ShopReviewDialog({
   shopName,
   onReviewSubmitted,
 }: ShopReviewDialogProps) {
+  const router = useRouter();
   const [rating, setRating] = useState<number>(0);
   const [comment, setComment] = useState<string>("");
   const [hoverRating, setHoverRating] = useState<number>(0);
@@ -40,6 +42,9 @@ export function ShopReviewDialog({
   const [submitted, setSubmitted] = useState(false);
   const [customerMobile, setCustomerMobile] = useState<string>("");
   const [transactionId, setTransactionId] = useState<number | null>(null);
+  const [eligible, setEligible] = useState<boolean | null>(null);
+  const [ordersNeeded, setOrdersNeeded] = useState<number>(2);
+  const [checkingEligibility, setCheckingEligibility] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,29 +93,49 @@ export function ShopReviewDialog({
     }
   };
 
+  const handleMobileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCustomerMobile(e.target.value);
+    setEligible(null);
+    setTransactionId(null);
+  };
+
   const handleMobileBlur = async () => {
     if (!customerMobile.trim() || customerMobile.length < 5) return;
 
+    setCheckingEligibility(true);
+    setEligible(null);
+
     try {
-      const res = await api.get(`/shop/${slug}/orders`, {
-        params: { customer_mobile: customerMobile.trim() },
+      const eligibilityRes = await api.get(`/shop/${slug}/check-review-eligibility`, {
+        params: { mobile_number: customerMobile.trim() },
       });
 
-      const deliveredOrders = res.data.data.filter(
-        (order: any) => order.order_status === "DELIVERED"
-      );
+      const eligibilityData = eligibilityRes.data;
+      setEligible(eligibilityData.can_review);
+      setOrdersNeeded(eligibilityData.orders_needed);
 
-      if (deliveredOrders.length === 0) {
-        toast.error("No delivered orders found for this mobile number");
+      if (!eligibilityData.can_review) {
+        toast.error(eligibilityData.message);
         setTransactionId(null);
       } else {
-        toast.success(`Found ${deliveredOrders.length} delivered order(s)`);
-        // Auto-select most recent order
-        setTransactionId(deliveredOrders[0].transaction_id);
+        toast.success(eligibilityData.message);
+        const ordersRes = await api.get(`/shop/${slug}/orders`, {
+          params: { customer_mobile: customerMobile.trim() },
+        });
+        const deliveredOrders = ordersRes.data.data.filter(
+          (order: any) => order.order_status === "DELIVERED"
+        );
+        if (deliveredOrders.length > 0) {
+          setTransactionId(deliveredOrders[0].transaction_id);
+        } else {
+          setTransactionId(null);
+        }
       }
     } catch (error) {
-      console.error("Error fetching orders:", error);
-      toast.error("Failed to fetch your orders");
+      console.error("Error checking eligibility:", error);
+      toast.error("Failed to check eligibility");
+    } finally {
+      setCheckingEligibility(false);
     }
   };
 
@@ -120,6 +145,8 @@ export function ShopReviewDialog({
     setComment("");
     setCustomerMobile("");
     setTransactionId(null);
+    setEligible(null);
+    setOrdersNeeded(2);
     onOpenChange(false);
   };
 
@@ -173,14 +200,38 @@ export function ShopReviewDialog({
                 type="tel"
                 placeholder="Enter your mobile number"
                 value={customerMobile}
-                onChange={(e) => setCustomerMobile(e.target.value)}
+                onChange={handleMobileChange}
                 onBlur={handleMobileBlur}
-                disabled={loading}
+                disabled={loading || checkingEligibility}
               />
               <p className="text-xs text-muted-foreground">
                 Enter mobile number used when placing your orders
               </p>
+              {checkingEligibility && (
+                <p className="text-xs text-muted-foreground">Checking eligibility...</p>
+              )}
             </div>
+
+            {/* Eligibility Check Result */}
+            {eligible === false && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <p className="text-sm text-amber-900 font-medium mb-2">
+                  You need {ordersNeeded} more order(s) to review this shop
+                </p>
+                <p className="text-sm text-amber-700 mb-3">
+                  Shop reviews require at least 2 delivered orders.
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => router.push(`/s/${slug}/reviews`)}
+                >
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  View Shop Reviews
+                </Button>
+              </div>
+            )}
 
             {/* Star Rating */}
             <div className="space-y-2">
@@ -244,7 +295,7 @@ export function ShopReviewDialog({
             </Button>
             <Button
               type="submit"
-              disabled={loading || !transactionId || rating === 0}
+              disabled={loading || !transactionId || rating === 0 || eligible !== true}
             >
               {loading ? "Submitting..." : "Submit Review"}
             </Button>

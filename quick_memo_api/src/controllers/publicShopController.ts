@@ -550,46 +550,28 @@ export const checkShopReviewEligibility = async (req: Request, res: Response) =>
       });
     }
 
-    // Find customer and count delivered orders
     const result = await pool.query(
-      `WITH customer_info AS (
-        SELECT customer_id FROM customers
-        WHERE user_id = (SELECT user_id FROM users WHERE shop_slug = $1)
-          AND mobile = $2
-      )
-      SELECT 
-        c.customer_id,
-        COUNT(*) FILTER (
-          WHERE oh.order_status = 'DELIVERED'
-        ) as delivered_order_count,
-        2 - COUNT(*) FILTER (
-          WHERE oh.order_status = 'DELIVERED'
-        ) as orders_needed
-      FROM order_headers oh
-      JOIN customer_info c ON oh.customer_id = c.customer_id
-      WHERE oh.user_id = (SELECT user_id FROM users WHERE shop_slug = $1)`,
+      `SELECT COUNT(*) as delivered_order_count
+       FROM order_headers oh
+       JOIN customers c ON oh.customer_id = c.customer_id
+       JOIN users u ON c.user_id = u.user_id
+       WHERE u.shop_slug = $1
+         AND c.mobile = $2
+         AND oh.order_status = 'DELIVERED'`,
       [slug, mobile_number]
     );
 
-    if (result.rows.length === 0) {
-      return res.json({
-        can_review: false,
-        order_count: 0,
-        orders_needed: 2,
-        message: "Customer not found"
-      });
-    }
-
-    const { delivered_order_count, orders_needed } = result.rows[0];
+    const delivered_order_count = parseInt(result.rows[0]?.delivered_order_count || "0", 10);
+    const orders_needed = Math.max(0, 2 - delivered_order_count);
     const canReview = delivered_order_count >= 2;
 
     return res.json({
-      can_review,
+      can_review: canReview,
       order_count: delivered_order_count,
       orders_needed: orders_needed,
       message: canReview
         ? "You are eligible to write a shop review"
-        : `You need ${orders_needed - delivered_order_count} more order(s) to review this shop (minimum 2 required)`
+        : `You need ${orders_needed} more order(s) to review this shop (minimum 2 required)`
     });
   } catch (error) {
     console.error("Error checking shop review eligibility:", error);

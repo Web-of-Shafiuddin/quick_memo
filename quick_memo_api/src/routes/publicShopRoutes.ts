@@ -9,6 +9,7 @@ import {
   getShopReviews,
   getCustomerOrders,
   verifyProductOrder,
+  checkShopReviewEligibility,
 } from "../controllers/publicShopController.js";
 
 const router = express.Router();
