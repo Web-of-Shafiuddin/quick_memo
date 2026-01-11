@@ -595,7 +595,7 @@ export default function SubscriptionPage() {
                   our payment account
                 </li>
                 <li>
-                  bKash/Nagad/Rocket:{" "}
+                  bKash/Nagad:{" "}
                   <span className="font-mono font-bold">01799-979-556</span>
                 </li>
                 <li>Copy the Transaction ID from your payment confirmation</li>
@@ -608,7 +608,7 @@ export default function SubscriptionPage() {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    {" "}+8801908163131 WhatsApp or Dial
+                    {" "}+8801908163131 WhatsApp <img width="48" height="48" src="https://img.icons8.com/color/48/whatsapp--v4.png" alt="whatsapp--v4"/>
                   </a>
                 </li>
               </ol>

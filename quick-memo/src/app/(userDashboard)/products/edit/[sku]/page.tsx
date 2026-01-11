@@ -47,6 +47,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface VariantFormData {
   name: string;
@@ -60,6 +61,7 @@ export default function EditProductPage() {
   const router = useRouter();
   const params = useParams();
   const id = params.sku as string;
+  const { currency } = useCurrency();
   const [product, setProduct] = useState<Product | null>(null);
   const [variants, setVariants] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -724,7 +726,7 @@ export default function EditProductPage() {
                           ))}
                         </div>
                       </TableCell>
-                      <TableCell>${v.price.toFixed(2)}</TableCell>
+                      <TableCell>{currency + v.price.toFixed(2)}</TableCell>
                       <TableCell>{v.stock}</TableCell>
                       <TableCell>
                         <Badge
