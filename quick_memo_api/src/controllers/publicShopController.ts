@@ -171,10 +171,11 @@ export const getShopProductBySku = async (req: Request, res: Response) => {
       })
     );
 
-    // Get product reviews
+    // Get product reviews (use parent product ID for variants)
+    const reviewProductId = product.parent_product_id || product.product_id;
     const reviewsResult = await pool.query(
       "SELECT * FROM shop_reviews WHERE product_id = $1 ORDER BY created_at DESC",
-      [product.product_id]
+      [reviewProductId]
     );
 
     res.json({
@@ -398,12 +399,31 @@ export const submitReview = async (req: Request, res: Response) => {
 
     const shopId = orderCheck.rows[0].user_id;
 
-    // If product_id is provided, verify it belongs to this order
+    // Resolve to parent product ID
+    let reviewProductId = product_id;
     if (product_id) {
-      const itemCheck = await pool.query(
-        "SELECT order_item_id FROM order_items WHERE transaction_id = $1 AND product_id = $2",
-        [transaction_id, product_id]
+      const parentCheck = await pool.query(
+        "SELECT parent_product_id FROM products WHERE product_id = $1",
+        [product_id]
       );
+
+      if (parentCheck.rows.length > 0 && parentCheck.rows[0].parent_product_id) {
+        // If product is a variant, use parent_id instead
+        reviewProductId = parentCheck.rows[0].parent_product_id;
+      }
+    }
+
+    // Verify order contains parent product OR any variant
+    if (reviewProductId) {
+      const itemCheck = await pool.query(
+        `SELECT order_item_id
+         FROM order_items oi
+         JOIN products p ON oi.product_id = p.product_id
+         WHERE oi.transaction_id = $1
+           AND (oi.product_id = $2 OR p.parent_product_id = $2)`,
+        [transaction_id, reviewProductId]
+      );
+
       if (itemCheck.rows.length === 0) {
         return res
           .status(400)
@@ -413,7 +433,7 @@ export const submitReview = async (req: Request, res: Response) => {
 
     await pool.query(
       "INSERT INTO shop_reviews (shop_id, transaction_id, product_id, rating, comment) VALUES ($1, $2, $3, $4, $5)",
-      [shopId, transaction_id, product_id || null, rating, comment]
+      [shopId, transaction_id, reviewProductId || null, rating, comment]
     );
 
     res
@@ -428,6 +448,77 @@ export const submitReview = async (req: Request, res: Response) => {
       });
     }
     res.status(500).json({ success: false, error: "Failed to submit review" });
+  }
+};
+
+// Verify if customer has ordered a product (parent or any variant)
+export const verifyProductOrder = async (req: Request, res: Response) => {
+  try {
+    const { slug } = req.params;
+    const { mobile_number, product_id } = req.body;
+
+    if (!mobile_number || !product_id) {
+      return res.status(400).json({
+        success: false,
+        error: "mobile_number and product_id are required",
+      });
+    }
+
+    // Get shop ID
+    const shop = await pool.query(
+      "SELECT user_id FROM users WHERE shop_slug = $1",
+      [slug]
+    );
+    if (shop.rows.length === 0) {
+      return res.status(404).json({ success: false, error: "Shop not found" });
+    }
+    const shopId = shop.rows[0].user_id;
+
+    // Find customer and most recent delivered order containing the product
+    const result = await pool.query(
+      `WITH customer_info AS (
+        SELECT customer_id, name
+        FROM customers
+        WHERE user_id = $1 AND mobile = $2
+      )
+      SELECT 
+        oh.transaction_id,
+        oh.order_date,
+        c.name as customer_name,
+        p.name as product_name
+      FROM order_headers oh
+      JOIN customer_info c ON oh.customer_id = c.customer_id
+      JOIN order_items oi ON oh.transaction_id = oi.transaction_id
+      JOIN products p ON oi.product_id = p.product_id
+      WHERE oh.order_status = 'DELIVERED'
+        AND (
+          -- Ordered parent product directly OR ordered any variant
+          oi.product_id = $3 OR p.parent_product_id = $3
+        )
+      ORDER BY oh.order_date DESC
+      LIMIT 1`,
+      [shopId, mobile_number, product_id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.json({
+        success: true,
+        has_ordered: false,
+      });
+    }
+
+    const order = result.rows[0];
+    res.json({
+      success: true,
+      has_ordered: true,
+      transaction_id: order.transaction_id,
+      customer_name: order.customer_name,
+      order_date: order.order_date,
+      product_name: order.product_name,
+    });
+  } catch (error) {
+    console.error("Error verifying product order:", error);
+    res.status(500).json({ success: false, error: "Failed to verify order" });
   }
 };
 
@@ -469,5 +560,55 @@ export const getShopReviews = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error fetching reviews:", error);
     res.status(500).json({ success: false, error: "Failed to fetch reviews" });
+  }
+};
+
+// Get customer orders (for review system)
+export const getCustomerOrders = async (req: Request, res: Response) => {
+  try {
+    const { slug } = req.params;
+    const { customer_mobile } = req.query;
+
+    if (!customer_mobile) {
+      return res.status(400).json({
+        success: false,
+        error: "customer_mobile is required",
+      });
+    }
+
+    const user = await pool.query(
+      "SELECT user_id FROM users WHERE shop_slug = $1",
+      [slug]
+    );
+    if (user.rows.length === 0) {
+      return res.status(404).json({ success: false, error: "Shop not found" });
+    }
+    const userId = user.rows[0].user_id;
+
+    const result = await pool.query(
+      `SELECT oh.transaction_id, oh.order_date, oh.order_status, oh.total_amount,
+              c.name as customer_name, c.mobile as customer_mobile,
+              array_agg(
+                json_build_object(
+                  'product_id', oi.product_id,
+                  'name_snapshot', oi.name_snapshot,
+                  'quantity', oi.quantity,
+                  'unit_price', oi.unit_price,
+                  'subtotal', oi.subtotal
+                ) ORDER BY oi.order_item_id
+              ) as items
+       FROM order_headers oh
+       JOIN customers c ON oh.customer_id = c.customer_id
+       LEFT JOIN order_items oi ON oh.transaction_id = oi.transaction_id
+       WHERE oh.user_id = $1 AND c.mobile = $2
+       GROUP BY oh.transaction_id, oh.order_date, oh.order_status, oh.total_amount, c.name, c.mobile
+       ORDER BY oh.order_date DESC`,
+      [userId, customer_mobile]
+    );
+
+    res.json({ success: true, data: result.rows });
+  } catch (error) {
+    console.error("Error fetching customer orders:", error);
+    res.status(500).json({ success: false, error: "Failed to fetch orders" });
   }
 };
