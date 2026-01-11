@@ -101,7 +101,7 @@ export default function AdminDashboardPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold text-white">
-                                ৳{loading ? '--' : stats?.total_revenue || 0}
+                                ${loading ? '--' : stats?.total_revenue || 0}
                             </div>
                             <p className="text-xs text-slate-500">From subscriptions</p>
                         </CardContent>

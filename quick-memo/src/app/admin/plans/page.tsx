@@ -256,12 +256,12 @@ export default function AdminPlansPage() {
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="text-sm">
-                                                        <div className="text-white">৳{plan.monthly_price}/mo</div>
+                                                        <div className="text-white">${plan.monthly_price}/mo</div>
                                                         {plan.half_yearly_price && (
-                                                            <div className="text-slate-400">৳{plan.half_yearly_price}/6mo</div>
+                                                            <div className="text-slate-400">${plan.half_yearly_price}/6mo</div>
                                                         )}
                                                         {plan.yearly_price && (
-                                                            <div className="text-slate-400">৳{plan.yearly_price}/yr</div>
+                                                            <div className="text-slate-400">${plan.yearly_price}/yr</div>
                                                         )}
                                                     </div>
                                                 </TableCell>
@@ -352,7 +352,7 @@ export default function AdminPlansPage() {
 
                         <div className="grid grid-cols-3 gap-4">
                             <div className="space-y-2">
-                                <Label className="text-slate-300">Monthly Price (৳)</Label>
+                                <Label className="text-slate-300">Monthly Price ($)</Label>
                                 <Input
                                     type="number"
                                     value={formData.monthly_price}
@@ -361,7 +361,7 @@ export default function AdminPlansPage() {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-slate-300">6-Month Price (৳)</Label>
+                                <Label className="text-slate-300">6-Month Price ($)</Label>
                                 <Input
                                     type="number"
                                     value={formData.half_yearly_price}
@@ -370,7 +370,7 @@ export default function AdminPlansPage() {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-slate-300">Yearly Price (৳)</Label>
+                                <Label className="text-slate-300">Yearly Price ($)</Label>
                                 <Input
                                     type="number"
                                     value={formData.yearly_price}

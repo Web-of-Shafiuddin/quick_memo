@@ -685,7 +685,7 @@ export default function AdminUsersPage() {
                                     <SelectContent>
                                         {plans.filter(p => p.monthly_price > 0).map((plan) => (
                                             <SelectItem key={plan.plan_id} value={plan.plan_id.toString()}>
-                                                {plan.name} - ৳{plan.monthly_price}/mo
+                                                {plan.name} - ${plan.monthly_price}/mo
                                             </SelectItem>
                                         ))}
                                     </SelectContent>

@@ -149,7 +149,7 @@ export default function HomePage() {
   const stats = [
     { value: '5,000+', label: 'Active Businesses' },
     { value: '1M+', label: 'Invoices Generated' },
-    { value: '৳50Cr+', label: 'Transactions Processed' },
+    { value: '$50M', label: 'Transactions Processed' },
     { value: '4.8/5', label: 'User Rating' },
   ];
 
@@ -532,7 +532,7 @@ export default function HomePage() {
                           <Package className="w-12 h-12 text-blue-600" />
                         </div>
                         <div className="font-medium text-gray-900">Kurti Collection</div>
-                        <div className="text-sm text-green-600 font-medium">৳850</div>
+                        <div className="text-sm text-green-600 font-medium">$850</div>
                         <div className="text-xs text-gray-500 mt-1">In Stock: 45</div>
                       </div>
                       <div className="bg-gray-50 rounded-lg p-4 cursor-pointer hover:shadow-md transition-shadow">
@@ -540,7 +540,7 @@ export default function HomePage() {
                           <Package className="w-12 h-12 text-green-600" />
                         </div>
                         <div className="font-medium text-gray-900">Saree Set</div>
-                        <div className="text-sm text-green-600 font-medium">৳1,200</div>
+                        <div className="text-sm text-green-600 font-medium">$1,200</div>
                         <div className="text-xs text-gray-500 mt-1">In Stock: 28</div>
                       </div>
                     </div>
@@ -551,21 +551,21 @@ export default function HomePage() {
                           <Package className="w-8 h-8 text-orange-600" />
                         </div>
                         <div className="text-sm font-medium">Jewelry</div>
-                        <div className="text-xs text-green-600">৳350+</div>
+                        <div className="text-xs text-green-600">$350+</div>
                       </div>
                       <div className="bg-gray-50 rounded-lg p-3 text-center cursor-pointer hover:shadow-md transition-shadow">
                         <div className="w-full h-20 bg-gradient-to-br from-pink-100 to-purple-100 rounded mb-2 flex items-center justify-center">
                           <Package className="w-8 h-8 text-pink-600" />
                         </div>
                         <div className="text-sm font-medium">Accessories</div>
-                        <div className="text-xs text-green-600">৳200+</div>
+                        <div className="text-xs text-green-600">$200+</div>
                       </div>
                       <div className="bg-gray-50 rounded-lg p-3 text-center cursor-pointer hover:shadow-md transition-shadow">
                         <div className="w-full h-20 bg-gradient-to-br from-cyan-100 to-blue-100 rounded mb-2 flex items-center justify-center">
                           <Package className="w-8 h-8 text-cyan-600" />
                         </div>
                         <div className="text-sm font-medium">Shoes</div>
-                        <div className="text-xs text-green-600">৳850+</div>
+                        <div className="text-xs text-green-600">$850+</div>
                       </div>
                     </div>
                   </div>
@@ -578,7 +578,7 @@ export default function HomePage() {
                       </div>
                       <div className="text-right">
                         <div className="text-sm text-gray-500">Revenue</div>
-                        <div className="text-2xl font-bold text-gray-900">৳18,450</div>
+                        <div className="text-2xl font-bold text-gray-900">$18,450</div>
                       </div>
                     </div>
                   </div>

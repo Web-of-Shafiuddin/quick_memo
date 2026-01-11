@@ -224,7 +224,7 @@ export default function AdminSubscriptionsPage() {
                                 <TrendingUp className="h-4 w-4 text-blue-500" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold text-white">৳{stats.total_revenue}</div>
+                                <div className="text-2xl font-bold text-white">${stats.total_revenue}</div>
                             </CardContent>
                         </Card>
                     </div>
@@ -298,7 +298,7 @@ export default function AdminSubscriptionsPage() {
                                                         TxID: {request.transaction_id}
                                                     </span>
                                                     <span className="text-green-400 font-semibold">
-                                                        ৳{request.amount}
+                                                        ${request.amount}
                                                     </span>
                                                 </div>
                                                 {request.phone_number && (
