@@ -23,6 +23,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import api from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
+import { ProductReviewDialog } from "@/components/ProductReviewDialog";
 
 interface Attribute {
   attribute_name: string;
@@ -70,6 +71,7 @@ export default function ProductDetailPage() {
     Record<string, string>
   >({});
   const [activeImage, setActiveImage] = useState<string | null>(null);
+  const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
 
   // Helper to extract all available attributes from variants
   const getProductOptions = (variants: Product[]) => {
@@ -250,6 +252,16 @@ export default function ProductDetailPage() {
   const buyNow = () => {
     addToCart();
     router.push(`/s/${slug}/cart`);
+  };
+
+  const handleReviewSubmitted = async () => {
+    if (!slug || !sku) return;
+    try {
+      const res = await api.get(`/shop/${slug}/products/${sku}`);
+      setProduct(res.data.data);
+    } catch (error) {
+      console.error("Error refreshing product:", error);
+    }
   };
 
   if (loading)
@@ -489,9 +501,21 @@ export default function ProductDetailPage() {
 
       {/* Customer Reviews Section */}
       <div className="mt-16 pt-12 border-t">
-        <div className="flex items-center gap-2 mb-8">
-          <MessageSquare className="w-6 h-6 text-primary" />
-          <h2 className="text-2xl font-bold text-gray-900">Customer Reviews</h2>
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-2">
+            <MessageSquare className="w-6 h-6 text-primary" />
+            <h2 className="text-2xl font-bold text-gray-900">Customer Reviews</h2>
+          </div>
+          {product && (
+            <Button
+              variant="outline"
+              onClick={() => setReviewDialogOpen(true)}
+              className="flex items-center gap-2"
+            >
+              <Star className="w-4 h-4" />
+              Write a Review
+            </Button>
+          )}
         </div>
 
         {product.reviews && product.reviews.length > 0 ? (
@@ -539,6 +563,20 @@ export default function ProductDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Product Review Dialog */}
+      {product && (
+        <ProductReviewDialog
+          open={reviewDialogOpen}
+          onOpenChange={setReviewDialogOpen}
+          slug={slug}
+          product={{
+            product_id: product.product_id,
+            name: product.name,
+          }}
+          onReviewSubmitted={handleReviewSubmitted}
+        />
+      )}
     </div>
   );
 }
