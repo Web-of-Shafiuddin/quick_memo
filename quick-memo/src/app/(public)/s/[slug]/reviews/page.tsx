@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Star, ArrowLeft, MessageSquare } from "lucide-react";
 import api from "@/lib/api";
 import { format } from "date-fns";
+import { ShopReviewDialog } from "@/components/ShopReviewDialog";
 
 interface Review {
   review_id: number;
@@ -23,8 +24,19 @@ export default function ReviewsPage() {
   const router = useRouter();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
+  const [shopName, setShopName] = useState<string>("");
+  const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
 
   useEffect(() => {
+    const fetchShopInfo = async () => {
+      try {
+        const shopRes = await api.get(`/shop/${slug}`);
+        setShopName(shopRes.data.data.shop_name);
+      } catch (error) {
+        console.error("Error fetching shop info:", error);
+      }
+    };
+
     const fetchReviews = async () => {
       try {
         const res = await api.get(`/shop/${slug}/reviews`);
@@ -35,16 +47,38 @@ export default function ReviewsPage() {
         setLoading(false);
       }
     };
+
+    fetchShopInfo();
     fetchReviews();
   }, [slug]);
 
+  const handleReviewSubmitted = async () => {
+    if (!slug) return;
+    try {
+      const res = await api.get(`/shop/${slug}/reviews`);
+      setReviews(res.data.data);
+    } catch (error) {
+      console.error("Error refreshing reviews:", error);
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="h-5 w-5" />
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-3xl font-bold">Store Reviews</h1>
+        </div>
+        <Button
+          variant="outline"
+          onClick={() => setReviewDialogOpen(true)}
+          className="flex items-center gap-2"
+        >
+          <Star className="w-4 h-4" />
+          Write Shop Review
         </Button>
-        <h1 className="text-3xl font-bold">Store Reviews</h1>
       </div>
 
       {loading ? (
@@ -104,6 +138,17 @@ export default function ReviewsPage() {
             </Card>
           ))}
         </div>
+      )}
+
+      {/* Shop Review Dialog */}
+      {shopName && (
+        <ShopReviewDialog
+          open={reviewDialogOpen}
+          onOpenChange={setReviewDialogOpen}
+          slug={slug}
+          shopName={shopName}
+          onReviewSubmitted={handleReviewSubmitted}
+        />
       )}
     </div>
   );

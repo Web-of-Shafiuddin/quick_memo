@@ -382,7 +382,7 @@ export const submitReview = async (req: Request, res: Response) => {
 
     // Verify order is DELIVERED
     const orderCheck = await pool.query(
-      "SELECT order_status, user_id FROM order_headers WHERE transaction_id = $1",
+      "SELECT order_status, user_id, customer_id FROM order_headers WHERE transaction_id = $1",
       [transaction_id]
     );
 
@@ -398,6 +398,21 @@ export const submitReview = async (req: Request, res: Response) => {
     }
 
     const shopId = orderCheck.rows[0].user_id;
+
+    // If submitting shop review (product_id is null), check customer has at least 2 orders
+    if (!product_id) {
+      const orderCountCheck = await pool.query(
+        "SELECT COUNT(*) as order_count FROM order_headers WHERE customer_id = $1",
+        [orderCheck.rows[0].customer_id]
+      );
+
+      if (orderCountCheck.rows[0].order_count < 2) {
+        return res.status(400).json({
+          success: false,
+          error: "Shop reviews require a minimum of 2 orders. Please complete at least one more order before reviewing the entire shop.",
+        });
+      }
+    }
 
     // Resolve to parent product ID
     let reviewProductId = product_id;
