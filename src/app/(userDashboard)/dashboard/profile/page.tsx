@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CurrencySelector } from "@/components/CurrencySelector";
 import { ImageUpload } from "@/components/ImageUpload";
+import { MultipleImageUpload } from "@/components/MultipleImageUpload";
 import { userService } from "@/services/userService";
 import useAuthStore from "@/store/authStore";
 import { useShallow } from "zustand/react/shallow";
@@ -56,6 +57,7 @@ const ProfilePage = () => {
     shop_slug: "",
     shop_description: "",
     nid_license_url: "",
+    verification_images: [] as string[],
     social_links: [] as { platform: string; url: string }[],
   });
 
@@ -76,6 +78,7 @@ const ProfilePage = () => {
         shop_logo_url: user.shop_logo_url || "",
         shop_description: user.shop_description || "",
         nid_license_url: user.nid_license_url || "",
+        verification_images: Array.isArray(user.verification_images) ? user.verification_images : [],
         social_links: Array.isArray(user.social_links) ? user.social_links : [],
       });
 
@@ -105,6 +108,7 @@ const ProfilePage = () => {
         shop_logo_url: userData.shop_logo_url || "",
         shop_description: userData.shop_description || "",
         nid_license_url: userData.nid_license_url || "",
+        verification_images: Array.isArray(userData.verification_images) ? userData.verification_images : [],
         social_links: Array.isArray(userData.social_links)
           ? userData.social_links
           : [],
@@ -463,19 +467,17 @@ const ProfilePage = () => {
 
             {/* NID/Trade License */}
             <div className="space-y-2">
-              <Label>NID or Trade License (Verification)</Label>
-              <ImageUpload
-                value={formData.nid_license_url}
-                onChange={(url) =>
-                  setFormData({ ...formData, nid_license_url: url })
+              <MultipleImageUpload
+                value={formData.verification_images}
+                onChange={(urls) =>
+                  setFormData({ ...formData, verification_images: urls })
                 }
-                type="logo"
-                label="Upload NID/Trade License"
+                label="NID or Trade License (Verification)"
                 disabled={loading}
               />
               <p className="text-sm text-muted-foreground">
-                Upload a clear photo of your NID or Trade License. This is not
-                shared publicly but helps us verify your business.
+                Upload clear photos of your NID or Trade License. This is not
+                shared publicly but helps us verify your business. You can upload up to 5 images.
               </p>
             </div>
 

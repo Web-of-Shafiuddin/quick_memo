@@ -31,7 +31,7 @@ interface User {
   is_verified: boolean;
   has_badge: boolean;
   is_active: boolean;
-  nid_license_url: string | null;
+  verification_images: string[] | null;
 }
 
 export default function VerificationPage() {
@@ -113,14 +113,14 @@ export default function VerificationPage() {
                         {user.shop_name || "N/A"}
                       </TableCell>
                       <TableCell>
-                        {user.nid_license_url ? (
+                        {user.verification_images && user.verification_images.length > 0 ? (
                           <Button
                             variant="ghost"
                             size="sm"
                             className="text-blue-400 hover:text-blue-300"
                             onClick={() => setSelectedUser(user)}
                           >
-                            <Eye className="w-4 h-4 mr-1" /> View NID
+                            <Eye className="w-4 h-4 mr-1" /> View ({user.verification_images.length})
                           </Button>
                         ) : (
                           <span className="text-xs text-slate-500 italic">
@@ -209,17 +209,26 @@ export default function VerificationPage() {
       </div>
 
       <Dialog open={!!selectedUser} onOpenChange={() => setSelectedUser(null)}>
-        <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-3xl">
+        <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Document for {selectedUser?.name}</DialogTitle>
+            <DialogTitle>Verification Documents for {selectedUser?.name}</DialogTitle>
           </DialogHeader>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          {selectedUser?.nid_license_url && (
-            <img
-              src={selectedUser.nid_license_url}
-              alt="NID/License"
-              className="w-full h-auto rounded-lg shadow-lg"
-            />
+          {selectedUser?.verification_images && selectedUser.verification_images.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              {selectedUser.verification_images.map((url, index) => (
+                <div key={index} className="relative">
+                  <p className="text-sm text-slate-400 mb-2">Document {index + 1}</p>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={url}
+                    alt={`Document ${index + 1}`}
+                    className="w-full h-auto rounded-lg shadow-lg border border-slate-700"
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-slate-400 py-8">No verification documents uploaded</p>
           )}
         </DialogContent>
       </Dialog>

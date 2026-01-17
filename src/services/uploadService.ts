@@ -50,4 +50,22 @@ export const uploadService = {
   deleteImage: async (public_id: string): Promise<void> => {
     await api.delete('/upload', { data: { public_id } });
   },
+
+  // Upload verification images (NID/Trade License - multiple files)
+  uploadVerificationImages: async (files: File[]): Promise<UploadResponse[]> => {
+    const formData = new FormData();
+    files.forEach(file => formData.append('images', file));
+
+    const response = await api.post<{ success: boolean; data: UploadResponse[] }>(
+      '/upload/verification',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+
+    return response.data.data;
+  },
 };
