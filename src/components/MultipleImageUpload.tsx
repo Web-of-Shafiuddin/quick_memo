@@ -54,10 +54,17 @@ export const MultipleImageUpload = ({
     setUploading(true);
     try {
       const results = await uploadService.uploadVerificationImages(validFiles);
-      const newUrls = results.map((r) => r.url);
 
-      onChange([...value, ...newUrls]);
-      toast.success(`${newUrls.length} image(s) uploaded successfully`);
+      const response = results as any;
+
+      if (response.verification_images) {
+        onChange(response.verification_images);
+      } else {
+        const newUrls = results.map((r) => r.url);
+        onChange([...value, ...newUrls]);
+      }
+
+      toast.success(`${results.length} image(s) uploaded successfully`);
     } catch (error: any) {
       console.error("Upload error:", error);
       const errorMessage =

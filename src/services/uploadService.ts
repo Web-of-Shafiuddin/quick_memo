@@ -56,7 +56,7 @@ export const uploadService = {
     const formData = new FormData();
     files.forEach(file => formData.append('images', file));
 
-    const response = await api.post<{ success: boolean; data: UploadResponse[] }>(
+    const response = await api.post<{ success: boolean; data: UploadResponse[]; verification_images?: string[] }>(
       '/upload/verification',
       formData,
       {

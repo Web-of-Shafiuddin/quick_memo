@@ -30,6 +30,10 @@ export const userService = {
       shop_address?: string;
       shop_logo_url?: string;
       shop_slug?: string;
+      shop_description?: string | null;
+      nid_license_url?: string | null;
+      verification_images?: string[];
+      social_links?: any;
     }
   ) => {
     const response = await api.put<{ success: boolean; data: User }>(
