@@ -558,8 +558,8 @@ export default function Dashboard() {
                     <YAxis yAxisId="left" />
                     <YAxis yAxisId="right" orientation="right" />
                     <Tooltip
-                      formatter={(value: number, name: string) => [
-                        name === "revenue" ? formatPrice(value) : value,
+                      formatter={(value: number | undefined, name: string | undefined) => [
+                        name === "revenue" ? formatPrice(value ?? 0) : value ?? 0,
                         name === "revenue" ? "Revenue" : "Orders",
                       ]}
                       labelFormatter={formatDate}
@@ -628,7 +628,7 @@ export default function Dashboard() {
                         ))}
                       </Pie>
                       <Tooltip
-                        formatter={(value: number) => formatPrice(value)}
+                        formatter={(value: number | undefined) => formatPrice(value ?? 0)}
                       />
                     </RechartsPieChart>
                   </ResponsiveContainer>
@@ -653,8 +653,8 @@ export default function Dashboard() {
                         width={100}
                       />
                       <Tooltip
-                        formatter={(value: number, name: string) => [
-                          name === "total_revenue" ? formatPrice(value) : value,
+                        formatter={(value: number | undefined, name: string | undefined) => [
+                          name === "total_revenue" ? formatPrice(value ?? 0) : value ?? 0,
                           name === "total_revenue" ? "Revenue" : "Orders",
                         ]}
                       />
@@ -827,7 +827,7 @@ export default function Dashboard() {
                     <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip
-                      formatter={(value: number) => formatPrice(value)}
+                      formatter={(value: number | undefined) => formatPrice(value ?? 0)}
                     />
                     <Bar
                       dataKey="total_revenue"
@@ -946,7 +946,7 @@ export default function Dashboard() {
                     <XAxis type="number" />
                     <YAxis dataKey="name" type="category" width={120} />
                     <Tooltip
-                      formatter={(value: number) => formatPrice(value)}
+                      formatter={(value: number | undefined) => formatPrice(value ?? 0)}
                     />
                     <Bar
                       dataKey="total_spent"
@@ -977,8 +977,8 @@ export default function Dashboard() {
                     <YAxis yAxisId="left" />
                     <YAxis yAxisId="right" orientation="right" />
                     <Tooltip
-                      formatter={(value: number, name: string) => [
-                        name === "revenue" ? formatPrice(value) : value,
+                      formatter={(value: number | undefined, name: string | undefined) => [
+                        name === "revenue" ? formatPrice(value ?? 0) : value ?? 0,
                         name === "revenue" ? "Revenue" : "Orders",
                       ]}
                       labelFormatter={formatMonth}
