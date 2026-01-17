@@ -27,6 +27,7 @@ import {
   HeadphonesIcon,
   Layers,
 } from 'lucide-react';
+import Image from 'next/image';
 
 // Custom hook to check auth status without triggering re-renders in effects
 function useAuthStatus() {
@@ -170,9 +171,16 @@ export default function HomePage() {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2">
-              <div className="p-2 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg">
+              {/* <div className="p-2 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg">
                 <FileText className="w-5 h-5 text-white" />
-              </div>
+              </div> */}
+              <Image
+                src="/logo.webp"
+                alt="EzyMemo Logo"
+                width={24}
+                height={24}
+                className="rounded-lg"
+              />
               <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 EzyMemo
               </span>

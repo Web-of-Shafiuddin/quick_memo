@@ -9,11 +9,14 @@ import { useParams } from "next/navigation";
 import api from "@/lib/api";
 import { ReportShopModal } from "@/components/ReportShopModal";
 import { MobileMenu } from "@/components/mobile/MobileMenu";
+import Script from "next/script";
 
 interface ShopProfile {
   user_id: number;
   shop_name: string;
   shop_logo_url: string | null;
+  shop_address: string | null;
+  shop_description: string | null;
   is_verified: boolean;
   has_badge: boolean;
   average_rating: number;
@@ -64,6 +67,34 @@ export default function PublicShopLayout({
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
+      {/* Shop-specific JSON-LD */}
+      {shop && (
+        <Script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: shop.shop_name,
+              url: `https://ezymemo.com/s/${slug}`,
+              logo: shop.shop_logo_url || "https://ezymemo.com/logo.webp",
+              description: shop.shop_description || `Shop at EzyMemo - Complete sales management platform`,
+              foundingDate: "2024",
+              address: shop.shop_address ? {
+                "@type": "PostalAddress",
+                addressCountry: "BD",
+                streetAddress: shop.shop_address,
+              } : undefined,
+              contactPoint: {
+                "@type": "ContactPoint",
+                contactType: "customer service",
+                availableLanguage: ["English", "Bengali"],
+              },
+            }),
+          }}
+        />
+      )}
+
       {/* Mobile Menu */}
       <MobileMenu
         open={mobileMenuOpen}

@@ -51,9 +51,12 @@ export const metadata: Metadata = {
     telephone: false,
   },
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon-16x16.png",
-    apple: "/apple-touch-icon.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "any", type: "image/x-icon" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }
+    ],
   },
   manifest: "/site.webmanifest",
   openGraph: {
@@ -72,6 +75,12 @@ export const metadata: Metadata = {
         height: 630,
         alt: "EzyMemo - Sales Management Platform for Online Sellers",
       },
+      {
+        url: "/logo.webp",
+        width: 512,
+        height: 512,
+        alt: "EzyMemo Logo",
+      },
     ],
   },
   twitter: {
@@ -79,7 +88,7 @@ export const metadata: Metadata = {
     title: "EzyMemo - Sales Management Platform for Online Sellers",
     description:
       "Get orders from Facebook, Instagram, WhatsApp, and your live shop. Manage everything in one place. Track orders, customers, products. Grow your online business.",
-    images: ["/twitter-image.png"],
+    images: ["/logo.webp"],
     creator: "@ezymemo",
   },
   robots: {
@@ -142,7 +151,7 @@ const organizationJsonLd = {
   "@type": "Organization",
   name: "EzyMemo",
   url: "https://ezymemo.com",
-  logo: "https://ezymemo.com/logo.png",
+  logo: "https://ezymemo.com/logo.webp",
   description:
     "Complete sales management platform for online sellers in Bangladesh. Live shop website, order management, customer database, and sales tracking to grow your online business.",
   foundingDate: "2024",
