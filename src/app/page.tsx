@@ -171,15 +171,12 @@ export default function HomePage() {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2">
-              {/* <div className="p-2 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg">
-                <FileText className="w-5 h-5 text-white" />
-              </div> */}
               <Image
                 src="/logo.webp"
                 alt="EzyMemo Logo"
                 width={24}
                 height={24}
-                className="rounded-lg"
+                className="rounded-sm"
               />
               <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 EzyMemo
@@ -816,9 +813,13 @@ export default function HomePage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
             <div className="col-span-2 md:col-span-1">
               <Link href="/" className="flex items-center gap-2 mb-4">
-                <div className="p-2 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg">
-                  <FileText className="w-5 h-5 text-white" />
-                </div>
+               <Image
+                src="/logo.webp"
+                alt="EzyMemo Logo"
+                width={24}
+                height={24}
+                className="rounded-sm"
+              />
                 <span className="text-xl font-bold text-white">EzyMemo</span>
               </Link>
               <p className="text-sm">

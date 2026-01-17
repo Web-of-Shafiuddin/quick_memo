@@ -18,6 +18,7 @@ import {
     Sparkles
 } from 'lucide-react';
 import api from '@/lib/api';
+import Image from 'next/image';
 
 interface Plan {
     plan_id: number;
@@ -148,9 +149,13 @@ export default function PricingPage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                     <div className="flex items-center justify-between">
                         <Link href="/" className="flex items-center gap-3">
-                            <div className="p-2 bg-primary rounded-lg">
-                                <FileText className="w-6 h-6 text-primary-foreground" />
-                            </div>
+                            <Image
+                            src="/logo.webp"
+                            alt="EzyMemo Logo"
+                            width={24}
+                            height={24}
+                            className="rounded-sm"
+                          />
                             <div>
                                 <h1 className="text-2xl font-bold text-gray-900">EzyMemo</h1>
                                 <p className="text-sm text-gray-600">Pricing Plans</p>

@@ -24,6 +24,7 @@ import NotificationBell from "@/components/NotificationBell";
 import { MobileMenu } from "@/components/mobile/MobileMenu";
 import { BottomNav } from "@/components/mobile/BottomNav";
 import { QuickActionsMenu } from "@/components/mobile/QuickActionsMenu";
+import Image from "next/image";
 
 interface Subscription {
   subscription_id: number;
@@ -147,9 +148,13 @@ export default function ProtectedUserDashboardlayout({
               >
                 <Menu className="w-5 h-5" />
               </Button>
-              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                <FileText className="w-5 h-5 text-primary-foreground" />
-              </div>
+              <Image
+                src="/logo.webp"
+                alt="EzyMemo Logo"
+                width={24}
+                height={24}
+                className="rounded-sm"
+              />
               <div>
                 <h1 className="text-lg sm:text-xl font-bold text-gray-900">Dashboard</h1>
                 <p className="text-xs sm:text-sm text-gray-600">
