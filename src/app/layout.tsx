@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     telephone: false,
   },
   alternates: {
-    canonical: "https://ezymemo.com/sitemap.xml",
+    canonical: "https://ezymemo.com",
   },
   icons: {
     icon: [
