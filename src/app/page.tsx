@@ -26,6 +26,9 @@ import {
   Clock,
   HeadphonesIcon,
   Layers,
+  User,
+  Share2,
+  CheckCircle,
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -272,21 +275,22 @@ export default function HomePage() {
             {/* Badge */}
             <Badge className="mb-6 bg-blue-100 text-blue-700 hover:bg-blue-100 px-4 py-1.5">
               <Star className="w-3 h-3 mr-1 fill-current" />
-              Complete Sales Platform for Online Sellers
+              Ezy Memo - Complete Sales Platform for Online Sellers
             </Badge>
 
             {/* Main Heading - H1 for SEO */}
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
-              Manage Orders, Customers &{' '}
+              EzyMemo: The Easiest Order Memo Maker for{' '}
               <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Grow Your Sales
+                Facebook Sellers
               </span>
             </h1>
 
             {/* Subheading */}
             <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              Get orders from social media and your live public shop. Track everything in one place.
-              Manage customers, products, and memos. Grow your online business.
+              The easy memo platform for Facebook sellers. Get orders from social media and your live public shop.
+              Track everything in one place. Manage customers, products, and memos with ezymemo.
+              Grow your online business.
             </p>
 
             {/* CTA Buttons */}
@@ -414,6 +418,75 @@ export default function HomePage() {
                   {stat.value}
                 </div>
                 <div className="text-gray-600 mt-1">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section id="how-it-works" className="py-20 bg-gradient-to-br from-blue-50 to-purple-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <Badge className="mb-4 bg-blue-100 text-blue-700">How It Works</Badge>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Get Started in 5 Simple Steps
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Start managing your online sales with ezy memo in minutes. No technical skills required.
+              The easiest way to create order memos and manage your business.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+            {[
+              {
+                icon: Globe,
+                title: "Create Your Shop",
+                description: "Set up your online store with just a few clicks",
+                step: 1,
+              },
+              {
+                icon: User,
+                title: "Setup Profile",
+                description: "Customize your shop with your brand and details",
+                step: 2,
+              },
+              {
+                icon: Share2,
+                title: "Share Your Link",
+                description: "Post your shop link on Facebook and social media",
+                step: 3,
+              },
+              {
+                icon: ShoppingCart,
+                title: "Receive Orders",
+                description: "Get orders directly from your shop link",
+                step: 4,
+              },
+              {
+                icon: CheckCircle,
+                title: "Confirm & Grow",
+                description: "Confirm orders, share memos & invoices, grow your business",
+                step: 5,
+              },
+            ].map((item, index) => (
+              <div key={index} className="relative">
+                <div className="text-center">
+                  <div className="relative inline-block mb-4">
+                    <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto">
+                      <item.icon className="w-8 h-8 text-white" />
+                    </div>
+                    <div className="absolute -top-1 -right-1 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md border-2 border-blue-600">
+                      <span className="text-sm font-bold text-blue-600">{item.step}</span>
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.title}</h3>
+                  <p className="text-sm text-gray-600">{item.description}</p>
+                </div>
+                {index < 4 && (
+                  <div className="hidden md:block absolute top-8 right-0 w-full h-0.5 bg-gradient-to-r from-blue-300 to-purple-300 -z-10" style={{ width: '100%', left: '100%', transform: 'translateX(50%)' }}></div>
+                )}
               </div>
             ))}
           </div>
@@ -857,6 +930,11 @@ export default function HomePage() {
             <p className="text-sm">
               © {new Date().getFullYear()} EzyMemo. All rights reserved.
             </p>
+            <div className="flex flex-col md:flex-row items-center gap-4 text-sm">
+              <span>Trusted by 100+ F-Commerce Sellers</span>
+              <span className="hidden md:inline">•</span>
+              <span>Proudly made in Bangladesh 🇧🇩</span>
+            </div>
             <p className="text-sm">
               Made with ❤️ for Bangladeshi entrepreneurs
             </p>

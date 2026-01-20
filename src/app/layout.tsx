@@ -17,11 +17,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://ezymemo.com"),
   title: {
-    default: "EzyMemo - Sales Management Platform | Live Shop, Orders & Customer Database for Online Sellers",
+    default: "EzyMemo - Easy Memo & Order Management for F-Commerce",
     template: "%s | EzyMemo",
   },
   description:
-    "Complete sales platform for online sellers in Bangladesh. Get orders from Facebook, Instagram, WhatsApp, and your live shop. Manage everything in one dashboard. Track orders, customers, products. Grow your sales. Free to start!",
+    "EzyMemo is the best easy memo maker for Facebook and Instagram sellers in Bangladesh. Manage orders, track customers, and grow your F-Commerce business. Free to start!",
   keywords: [
     "online sales management platform",
     "live shop website",
@@ -153,8 +153,9 @@ const organizationJsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "EzyMemo",
+  alternateName: "Easy Memo",
   url: "https://ezymemo.com",
-  logo: "https://ezymemo.com/logo.webp",
+  logo: "https://ezymemo.com/logo-square.png",
   description:
     "Complete sales management platform for online sellers in Bangladesh. Live shop website, order management, customer database, and sales tracking to grow your online business.",
   foundingDate: "2024",
@@ -190,6 +191,7 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
         />
+        <meta name="facebook-domain-verification" content="wqrf5prnorqdpnsx2q3vjtfhq46lu9" />
         <meta name="msvalidate.01" content="CCA7EA71B32801698A86F1B47CFAC5DC" />
       </head>
       <body
