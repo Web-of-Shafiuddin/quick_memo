@@ -82,7 +82,7 @@ export default function HomePage() {
     {
       icon: Receipt,
       title: 'Professional Memos',
-      description: 'Generate professional cash memos and invoices in seconds. Send via WhatsApp or email. Build trust with clean, branded documents.',
+      description: 'Generate professional cash memos and invoices in seconds with ezy memo. Send via WhatsApp or email. Build trust with clean, branded documents.',
       color: 'bg-pink-500',
     },
     {
@@ -137,7 +137,7 @@ export default function HomePage() {
     {
       name: 'Karim Ahmed',
       role: 'F-Commerce Electronics Seller',
-      content: 'I was overwhelmed with orders from Facebook and Instagram. EzyMemo brought everything to one place. Product catalog makes order creation fast. Sales increased 35%!',
+      content: 'I was overwhelmed with orders from Facebook and Instagram. Ezymemo brought everything to one place. This ezy memo system made order management so easy. Sales increased 35%!',
       rating: 5,
       avatar: 'KA',
     },
@@ -499,11 +499,11 @@ export default function HomePage() {
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-purple-100 text-purple-700">Features</Badge>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Everything You Need to Run Your Online Business
+              Easy Memo: Everything You Need to Run Your Online Business
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Get orders from social media and your live shop. Manage everything in one place.
-              Build customer relationships. Grow your sales systematically.
+              Ezymemo makes it easy to get orders from social media and your live shop. Manage everything in one place.
+              Build customer relationships. Create professional order memos. Grow your sales systematically with our easy memo platform.
             </p>
           </div>
 
@@ -530,12 +530,12 @@ export default function HomePage() {
             <div>
               <Badge className="mb-4 bg-blue-100 text-blue-700">Live Shop Website</Badge>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-                Get Orders Directly from Your Live Shop
+                Ezy Memo: Get Orders Directly from Your Live Shop
               </h2>
               <p className="text-lg text-gray-600 mb-8">
-                Create a professional e-commerce storefront. Share your shop link on Facebook, Instagram, and WhatsApp.
+                Create a professional e-commerce storefront with ezymemo. Share your shop link on Facebook, Instagram, and WhatsApp.
                 Customers browse products, view details, and place orders directly on your live site.
-                All orders flow into your dashboard automatically.
+                All orders flow into your dashboard automatically. The easy memo solution for online sellers.
               </p>
 
               <div className="space-y-4 mb-8">
@@ -778,7 +778,7 @@ export default function HomePage() {
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-orange-100 text-orange-700">Testimonials</Badge>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Online Sellers Growing with EzyMemo
+              Online Sellers Growing with Ezy Memo
             </h2>
             <p className="text-lg text-gray-600">
               See how sellers manage orders, showcase products, and grow their sales
@@ -823,7 +823,7 @@ export default function HomePage() {
             {[
               {
                 q: 'What is EzyMemo?',
-                a: 'EzyMemo is a complete sales management platform for online sellers. Get orders from Facebook, Instagram, WhatsApp, and your live shop. Track everything in one dashboard. Manage products, customers, and professional memos.',
+                a: 'EzyMemo is the easy memo platform for online sellers. Get orders from Facebook, Instagram, WhatsApp, and your live shop. Track everything in one dashboard. Manage products, customers, and professional memos. Ezymemo simplifies your entire business.',
               },
               {
                 q: 'How does the live shop work?',
@@ -839,7 +839,7 @@ export default function HomePage() {
               },
               {
                 q: 'How does this help me get more sales?',
-                a: 'Your live shop makes your products discoverable to new customers. Professional showcase builds trust. Customer database helps you get repeat orders. Track and optimize your sales.',
+                a: 'Your live shop makes your products discoverable to new customers. Professional showcase builds trust. Customer database helps you get repeat orders. Track and optimize your sales. Ezymemo and easy memo help you grow.',
               },
             ].map((faq, index) => (
               <Card key={index} className="p-6">
@@ -855,11 +855,11 @@ export default function HomePage() {
       <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            Ready to Grow Your Online Business?
+            Ready to Grow Your Online Business with Ezy Memo?
           </h2>
           <p className="text-xl text-blue-100 mb-8">
-            Get orders from social media and your live shop. Manage everything in one place.
-            Build customer relationships. Track sales. Grow systematically with EzyMemo.
+            Get orders from social media and your live shop with ezymemo. Manage everything in one place.
+            Build customer relationships. Create easy memos. Track sales. Grow systematically with the easiest order management platform.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href={isAuthenticated ? '/dashboard' : '/auth/login'}>
@@ -896,7 +896,7 @@ export default function HomePage() {
                 <span className="text-xl font-bold text-white">EzyMemo</span>
               </Link>
               <p className="text-sm">
-                Bangladesh&apos;s leading e-commerce management platform for online sellers and small businesses.
+                Bangladesh&apos;s leading easy memo and e-commerce management platform for online sellers and small businesses. Ezymemo simplifies your business.
               </p>
             </div>
             <div>
