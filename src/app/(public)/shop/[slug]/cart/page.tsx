@@ -144,7 +144,7 @@ export default function CartPage() {
           </span>
           . We will contact you shortly.
         </p>
-        <Button onClick={() => router.push(`/s/${slug}`)} className="w-full">
+        <Button onClick={() => router.push(`/shop/${slug}`)} className="w-full">
           Continue Shopping
         </Button>
       </div>
@@ -161,7 +161,7 @@ export default function CartPage() {
         <p className="text-muted-foreground">
           Add some products to get started.
         </p>
-        <Button onClick={() => router.push(`/s/${slug}`)}>
+        <Button onClick={() => router.push(`/shop/${slug}`)}>
           Browse Products
         </Button>
       </div>

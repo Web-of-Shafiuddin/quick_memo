@@ -80,19 +80,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
         staticRoutes.push(
           {
-            url: `${baseUrl}/s/${shop.shop_slug}`,
+            url: `${baseUrl}/shop/${shop.shop_slug}`,
             lastModified: shopLastModified,
             changeFrequency: 'weekly',
             priority: shopPriority,
           },
           {
-            url: `${baseUrl}/s/${shop.shop_slug}/reviews`,
+            url: `${baseUrl}/shop/${shop.shop_slug}/reviews`,
             lastModified: shopLastModified,
             changeFrequency: 'weekly',
             priority: 0.7,
           },
           {
-            url: `${baseUrl}/s/${shop.shop_slug}/cart`,
+            url: `${baseUrl}/shop/${shop.shop_slug}/cart`,
             lastModified: shopLastModified,
             changeFrequency: 'weekly',
             priority: 0.5,
@@ -113,7 +113,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
               for (const product of products) {
                 const productLastModified = new Date(product.updated_at);
                 staticRoutes.push({
-                  url: `${baseUrl}/s/${shop.shop_slug}/p/${product.sku}`,
+                  url: `${baseUrl}/shop/${shop.shop_slug}/p/${product.sku}`,
                   lastModified: productLastModified,
                   changeFrequency: 'weekly',
                   priority: 0.8,

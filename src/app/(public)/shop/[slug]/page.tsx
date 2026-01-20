@@ -202,7 +202,7 @@ export default function ShopLandingPage() {
                   <span className="text-xs text-muted-foreground mt-1">
                     Based on {shopInfo.review_count} reviews
                   </span>
-                  <Link href={`/s/${slug}/reviews`} className="w-full">
+                  <Link href={`/shop/${slug}/reviews`} className="w-full">
                     <Button variant="outline" size="sm" className="mt-3 w-full">
                       <Star className="w-4 h-4 mr-2" />
                       Write Shop Review
@@ -240,7 +240,7 @@ export default function ShopLandingPage() {
             {products.map((product) => (
               <Link
                 key={product.product_id}
-                href={`/s/${slug}/p/${product.sku}`}
+                href={`/shop/${slug}/p/${product.sku}`}
               >
                 <Card className="h-full hover:shadow-md transition-shadow cursor-pointer overflow-hidden border-0 shadow-sm bg-white group">
                   <div className="aspect-square relative bg-gray-100 overflow-hidden">

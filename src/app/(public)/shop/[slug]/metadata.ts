@@ -32,7 +32,7 @@ export async function generateShopMetadata({
     const shopLogo = shopData.shop_logo_url;
 
     const logoUrl = shopLogo || "https://ezymemo.com/logo.webp";
-    const siteUrl = `https://ezymemo.com/s/${slug}`;
+    const siteUrl = `https://ezymemo.com/shop/${slug}`;
 
     const shopDescription = shopData.shop_description
       ? `${shopData.shop_description} - Shop at EzyMemo. Browse products, view reviews, and place orders directly.`
@@ -140,7 +140,7 @@ export async function generateShopMetadata({
       manifest: "/site.webmanifest",
       openGraph: {
         type: "website",
-        url: `https://ezymemo.com/s/${slug}`,
+        url: `https://ezymemo.com/shop/${slug}`,
         siteName: "EzyMemo",
         title: "Shop | EzyMemo",
         images: [

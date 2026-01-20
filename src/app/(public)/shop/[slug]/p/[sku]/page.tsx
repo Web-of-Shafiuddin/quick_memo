@@ -156,7 +156,7 @@ export default function ProductDetailPage() {
       } catch (error) {
         console.error("Error fetching product:", error);
         toast.error("Product not found");
-        router.push(`/s/${slug}`);
+        router.push(`/shop/${slug}`);
       } finally {
         setLoading(false);
       }
@@ -251,7 +251,7 @@ export default function ProductDetailPage() {
 
   const buyNow = () => {
     addToCart();
-    router.push(`/s/${slug}/cart`);
+    router.push(`/shop/${slug}/cart`);
   };
 
   const handleReviewSubmitted = async () => {

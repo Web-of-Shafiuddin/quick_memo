@@ -225,7 +225,7 @@ export function ShopReviewDialog({
                   variant="outline"
                   size="sm"
                   className="w-full"
-                  onClick={() => router.push(`/s/${slug}/reviews`)}
+                  onClick={() => router.push(`/shop/${slug}/reviews`)}
                 >
                   <MessageSquare className="w-4 h-4 mr-2" />
                   View Shop Reviews

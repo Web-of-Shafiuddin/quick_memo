@@ -166,7 +166,7 @@ const ProfilePage = () => {
       toast.error("No shop link to copy");
       return;
     }
-    const url = `${window.location.origin}/s/${formData.shop_slug}`;
+    const url = `${window.location.origin}/shop/${formData.shop_slug}`;
     navigator.clipboard.writeText(url);
     toast.success("Shop link copied!");
   };
@@ -323,7 +323,7 @@ const ProfilePage = () => {
                 <div className="flex gap-2">
                   <div className="flex-1 relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
-                      /s/
+                      /shop/
                     </span>
                     <Input
                       id="shop_slug"
@@ -362,7 +362,7 @@ const ProfilePage = () => {
                         title="Open Public Shop"
                       >
                         <a
-                          href={`/s/${formData.shop_slug}`}
+                          href={`/shop/${formData.shop_slug}`}
                           target="_blank"
                           rel="noopener noreferrer"
                         >
@@ -374,7 +374,7 @@ const ProfilePage = () => {
                 </div>
                 <p className="text-sm text-muted-foreground">
                   Your unique shop address:{" "}
-                  {typeof window !== "undefined" ? window.location.host : ""}/s/
+                  {typeof window !== "undefined" ? window.location.host : ""}/shop/
                   {formData.shop_slug || "..."}
                 </p>
               </div>

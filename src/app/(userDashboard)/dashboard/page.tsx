@@ -165,7 +165,7 @@ export default function Dashboard() {
   };
 
   const copyShopLink = () => {
-    const url = `${window.location.origin}/s/${user?.shop_slug}`;
+    const url = `${window.location.origin}/shop/${user?.shop_slug}`;
     navigator.clipboard.writeText(url);
     toast.success("Shop link copied!");
   };
@@ -310,7 +310,7 @@ export default function Dashboard() {
               <div className="flex items-center gap-2 w-full md:w-auto">
                 <div className="flex-1 relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
-                    /s/
+                    /shop/
                   </span>
                   <Input
                     value={slug}
@@ -337,7 +337,7 @@ export default function Dashboard() {
             ) : (
               <div className="flex items-center gap-2 bg-background p-2 rounded border w-full md:w-auto">
                 <span className="text-muted-foreground text-sm pl-2">
-                  {typeof window !== "undefined" ? window.location.host : ""}/s/
+                  {typeof window !== "undefined" ? window.location.host : ""}/shop/
                 </span>
                 <span className="font-medium text-blue-700">
                   {user?.shop_slug}
@@ -366,7 +366,7 @@ export default function Dashboard() {
                     asChild
                   >
                     <a
-                      href={`/s/${user?.shop_slug}`}
+                      href={`/shop/${user?.shop_slug}`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >

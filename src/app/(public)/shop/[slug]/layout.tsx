@@ -76,7 +76,7 @@ export default function PublicShopLayout({
               "@context": "https://schema.org",
               "@type": "Organization",
               name: shop.shop_name,
-              url: `https://ezymemo.com/s/${slug}`,
+              url: `https://ezymemo.com/shop/${slug}`,
               logo: shop.shop_logo_url || "https://ezymemo.com/logo.webp",
               description: shop.shop_description || `Shop at EzyMemo - Complete sales management platform`,
               foundingDate: "2024",
@@ -102,7 +102,7 @@ export default function PublicShopLayout({
         title="Shop Menu"
         items={[
           { href: "/", label: "Back to Home", icon: Home },
-          { href: `/s/${slug}/reviews`, label: "Store Reviews", icon: Star },
+          { href: `/shop/${slug}/reviews`, label: "Store Reviews", icon: Star },
         ]}
       />
 
@@ -110,7 +110,7 @@ export default function PublicShopLayout({
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-3">
           <Link
-            href={`/s/${slug}`}
+            href={`/shop/${slug}`}
             className="flex items-center gap-2 font-bold text-lg sm:text-xl min-w-0"
           >
             {shop?.shop_logo_url ? (
@@ -156,7 +156,7 @@ export default function PublicShopLayout({
             </Button>
 
             <Button variant="ghost" size="icon" className="relative" asChild>
-              <Link href={`/s/${slug}/cart`}>
+              <Link href={`/shop/${slug}/cart`}>
                 <ShoppingCart className="h-6 w-6" />
                 {cartCount > 0 && (
                   <Badge
