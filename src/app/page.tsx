@@ -273,10 +273,10 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-4xl mx-auto">
             {/* Badge */}
-            <Badge className="mb-6 bg-blue-100 text-blue-700 hover:bg-blue-100 px-4 py-1.5">
+            {/* <Badge className="mb-6 bg-blue-100 text-blue-700 hover:bg-blue-100 px-4 py-1.5">
               <Star className="w-3 h-3 mr-1 fill-current" />
               Ezy Memo - Complete Sales Platform for Online Sellers
-            </Badge>
+            </Badge> */}
 
             {/* Main Heading - H1 for SEO */}
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
@@ -484,9 +484,7 @@ export default function HomePage() {
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.title}</h3>
                   <p className="text-sm text-gray-600">{item.description}</p>
                 </div>
-                {index < 4 && (
-                  <div className="hidden md:block absolute top-8 right-0 w-full h-0.5 bg-gradient-to-r from-blue-300 to-purple-300 -z-10" style={{ width: '100%', left: '100%', transform: 'translateX(50%)' }}></div>
-                )}
+
               </div>
             ))}
           </div>
@@ -526,7 +524,7 @@ export default function HomePage() {
       {/* Public Shop Showcase Section */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
               <Badge className="mb-4 bg-blue-100 text-blue-700">Live Shop Website</Badge>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
