@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState, useSyncExternalStore, useCallback } from 'react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { useState, useSyncExternalStore, useCallback } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   FileText,
   Package,
@@ -29,19 +29,19 @@ import {
   User,
   Share2,
   CheckCircle,
-} from 'lucide-react';
-import Image from 'next/image';
+} from "lucide-react";
+import Image from "next/image";
 
 // Custom hook to check auth status without triggering re-renders in effects
 function useAuthStatus() {
   const subscribe = useCallback((callback: () => void) => {
-    window.addEventListener('storage', callback);
-    return () => window.removeEventListener('storage', callback);
+    window.addEventListener("storage", callback);
+    return () => window.removeEventListener("storage", callback);
   }, []);
 
   const getSnapshot = useCallback(() => {
-    if (typeof window === 'undefined') return false;
-    return !!localStorage.getItem('authToken');
+    if (typeof window === "undefined") return false;
+    return !!localStorage.getItem("authToken");
   }, []);
 
   const getServerSnapshot = useCallback(() => false, []);
@@ -56,114 +56,123 @@ export default function HomePage() {
   const features = [
     {
       icon: Globe,
-      title: 'Public Shop & Live Store',
-      description: 'Create a professional online storefront. Share your shop link on social media. Customers browse products and place orders directly from your live site.',
-      color: 'bg-blue-500',
+      title: "Public Shop & Live Store",
+      description:
+        "Create a professional online storefront. Share your shop link on social media. Customers browse products and place orders directly from your live site.",
+      color: "bg-blue-500",
       highlight: true,
     },
     {
       icon: ShoppingCart,
-      title: 'Manage All Orders',
-      description: 'Track orders from Facebook, Instagram, WhatsApp, and your public shop in one place. Update status, manage payments, and never miss an order.',
-      color: 'bg-green-500',
+      title: "Manage All Orders",
+      description:
+        "Track orders from Facebook, Instagram, WhatsApp, and your public shop in one place. Update status, manage payments, and never miss an order.",
+      color: "bg-green-500",
     },
     {
       icon: Users,
-      title: 'Customer Management',
-      description: 'Build your customer database. Track purchase history, preferences, and contact info. Send follow-ups and get repeat orders from loyal customers.',
-      color: 'bg-purple-500',
+      title: "Customer Management",
+      description:
+        "Build your customer database. Track purchase history, preferences, and contact info. Send follow-ups and get repeat orders from loyal customers.",
+      color: "bg-purple-500",
     },
     {
       icon: Package,
-      title: 'Product Catalog',
-      description: 'Organize products with images, variants, prices, and stock levels. Quick search and selection when creating orders. Auto-update inventory.',
-      color: 'bg-orange-500',
+      title: "Product Catalog",
+      description:
+        "Organize products with images, variants, prices, and stock levels. Quick search and selection when creating orders. Auto-update inventory.",
+      color: "bg-orange-500",
     },
     {
       icon: Receipt,
-      title: 'Professional Memos',
-      description: 'Generate professional cash memos and invoices in seconds with ezy memo. Send via WhatsApp or email. Build trust with clean, branded documents.',
-      color: 'bg-pink-500',
+      title: "Professional Memos",
+      description:
+        "Generate professional cash memos and invoices in seconds with ezy memo. Send via WhatsApp or email. Build trust with clean, branded documents.",
+      color: "bg-pink-500",
     },
     {
       icon: TrendingUp,
-      title: 'Grow Your Business',
-      description: 'Showcase products professionally. Get more orders from social media and your live shop. Track sales and optimize for growth.',
-      color: 'bg-cyan-500',
+      title: "Grow Your Business",
+      description:
+        "Showcase products professionally. Get more orders from social media and your live shop. Track sales and optimize for growth.",
+      color: "bg-cyan-500",
     },
   ];
 
   const benefits = [
     {
       icon: Globe,
-      title: 'Live Shop Website',
-      description: 'Customers browse & order directly from your site',
+      title: "Live Shop Website",
+      description: "Customers browse & order directly from your site",
     },
     {
       icon: Zap,
-      title: 'All Orders in One Place',
-      description: 'Facebook, Instagram, WhatsApp - track everything',
+      title: "All Orders in One Place",
+      description: "Facebook, Instagram, WhatsApp - track everything",
     },
     {
       icon: Users,
-      title: 'Customer Database',
-      description: 'Track history and get repeat orders',
+      title: "Customer Database",
+      description: "Track history and get repeat orders",
     },
     {
       icon: TrendingUp,
-      title: 'Increase Sales',
-      description: 'Professional showcase brings new customers',
+      title: "Increase Sales",
+      description: "Professional showcase brings new customers",
     },
     {
       icon: Receipt,
-      title: 'Professional Memos',
-      description: 'Build trust with clean, branded documents',
+      title: "Professional Memos",
+      description: "Build trust with clean, branded documents",
     },
     {
       icon: HeadphonesIcon,
-      title: '24/7 Support',
-      description: 'Dedicated support for Bangladeshi sellers',
+      title: "24/7 Support",
+      description: "Dedicated support for Bangladeshi sellers",
     },
   ];
 
   const testimonials = [
     {
-      name: 'Fatima Rahman',
-      role: 'Facebook Page Seller, Fashion House BD',
-      content: 'My public shop now gets 60% of my orders automatically. The order management system keeps everything organized. Professional memos helped build trust with wholesale clients.',
+      name: "Fatima Rahman",
+      role: "Facebook Page Seller, Fashion House BD",
+      content:
+        "My public shop now gets 60% of my orders automatically. The order management system keeps everything organized. Professional memos helped build trust with wholesale clients.",
       rating: 5,
-      avatar: 'FR',
+      avatar: "FR",
     },
     {
-      name: 'Karim Ahmed',
-      role: 'F-Commerce Electronics Seller',
-      content: 'I was overwhelmed with orders from Facebook and Instagram. Ezymemo brought everything to one place. This ezy memo system made order management so easy. Sales increased 35%!',
+      name: "Karim Ahmed",
+      role: "F-Commerce Electronics Seller",
+      content:
+        "I was overwhelmed with orders from Facebook and Instagram. Ezymemo brought everything to one place. This ezy memo system made order management so easy. Sales increased 35%!",
       rating: 5,
-      avatar: 'KA',
+      avatar: "KA",
     },
     {
-      name: 'Nusrat Jahan',
-      role: 'Handicrafts & Gifts Business',
-      content: 'Managing customers and tracking repeat orders was impossible before. Now I have complete customer history. Public shop brought in new customers I never had before.',
+      name: "Nusrat Jahan",
+      role: "Handicrafts & Gifts Business",
+      content:
+        "Managing customers and tracking repeat orders was impossible before. Now I have complete customer history. Public shop brought in new customers I never had before.",
       rating: 5,
-      avatar: 'NJ',
+      avatar: "NJ",
     },
   ];
 
   const stats = [
-    { value: '5,000+', label: 'Active Businesses' },
-    { value: '1M+', label: 'Invoices Generated' },
-    { value: '$50M', label: 'Transactions Processed' },
-    { value: '4.8/5', label: 'User Rating' },
+    { value: "5,000+", label: "Active Businesses" },
+    { value: "1M+", label: "Invoices Generated" },
+    { value: "$50M", label: "Transactions Processed" },
+    { value: "4.8/5", label: "User Rating" },
   ];
 
   const integrations = [
-    { name: 'bKash', color: 'bg-pink-100 text-pink-700' },
-    { name: 'Nagad', color: 'bg-orange-100 text-orange-700' },
-    { name: 'Rocket', color: 'bg-purple-100 text-purple-700' },
-    { name: 'Pathao', color: 'bg-green-100 text-green-700' },
-    { name: 'RedX', color: 'bg-red-100 text-red-700' },
-    { name: 'Steadfast', color: 'bg-blue-100 text-blue-700' },
+    { name: "bKash", color: "bg-pink-100 text-pink-700" },
+    { name: "Nagad", color: "bg-orange-100 text-orange-700" },
+    { name: "Rocket", color: "bg-purple-100 text-purple-700" },
+    { name: "Pathao", color: "bg-green-100 text-green-700" },
+    { name: "RedX", color: "bg-red-100 text-red-700" },
+    { name: "Steadfast", color: "bg-blue-100 text-blue-700" },
   ];
 
   return (
@@ -188,16 +197,28 @@ export default function HomePage() {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-8">
-              <Link href="#features" className="text-gray-600 hover:text-gray-900 text-sm font-medium">
+              <Link
+                href="#features"
+                className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+              >
                 Features
               </Link>
-              <Link href="/pricing" className="text-gray-600 hover:text-gray-900 text-sm font-medium">
+              <Link
+                href="/pricing"
+                className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+              >
                 Pricing
               </Link>
-              <Link href="#testimonials" className="text-gray-600 hover:text-gray-900 text-sm font-medium">
+              <Link
+                href="#testimonials"
+                className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+              >
                 Testimonials
               </Link>
-              <Link href="#faq" className="text-gray-600 hover:text-gray-900 text-sm font-medium">
+              <Link
+                href="#faq"
+                className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+              >
                 FAQ
               </Link>
             </div>
@@ -231,7 +252,11 @@ export default function HomePage() {
               className="md:hidden p-2"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
             </button>
           </div>
         </div>
@@ -239,13 +264,22 @@ export default function HomePage() {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden bg-white border-t px-4 py-4 space-y-4">
-            <Link href="#features" className="block text-gray-600 hover:text-gray-900">
+            <Link
+              href="#features"
+              className="block text-gray-600 hover:text-gray-900"
+            >
               Features
             </Link>
-            <Link href="/pricing" className="block text-gray-600 hover:text-gray-900">
+            <Link
+              href="/pricing"
+              className="block text-gray-600 hover:text-gray-900"
+            >
               Pricing
             </Link>
-            <Link href="#testimonials" className="block text-gray-600 hover:text-gray-900">
+            <Link
+              href="#testimonials"
+              className="block text-gray-600 hover:text-gray-900"
+            >
               Testimonials
             </Link>
             <div className="pt-4 space-y-2">
@@ -256,7 +290,9 @@ export default function HomePage() {
               ) : (
                 <>
                   <Link href="/auth/login">
-                    <Button variant="outline" className="w-full">Log in</Button>
+                    <Button variant="outline" className="w-full">
+                      Log in
+                    </Button>
                   </Link>
                   <Link href="/auth/login">
                     <Button className="w-full">Start Free</Button>
@@ -280,7 +316,7 @@ export default function HomePage() {
 
             {/* Main Heading - H1 for SEO */}
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
-              EzyMemo: The Easiest Order Memo Maker for{' '}
+              EzyMemo: The Easiest Order Memo Maker for{" "}
               <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 Facebook Sellers
               </span>
@@ -288,21 +324,29 @@ export default function HomePage() {
 
             {/* Subheading */}
             <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              The easy memo platform for Facebook sellers. Get orders from social media and your live public shop.
-              Track everything in one place. Manage customers, products, and memos with ezymemo.
-              Grow your online business.
+              The easy memo platform for Facebook sellers. Get orders from
+              social media and your live public shop. Track everything in one
+              place. Manage customers, products, and memos with ezymemo. Grow
+              your online business.
             </p>
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-              <Link href={isAuthenticated ? '/dashboard' : '/auth/login'}>
-                <Button size="lg" className="text-lg px-8 py-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+              <Link href={isAuthenticated ? "/dashboard" : "/auth/login"}>
+                <Button
+                  size="lg"
+                  className="text-lg px-8 py-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                >
                   Start Free Today
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
               <Link href="#demo">
-                <Button size="lg" variant="outline" className="text-lg px-8 py-6">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="text-lg px-8 py-6"
+                >
                   <Play className="w-5 h-5 mr-2" />
                   Watch Demo
                 </Button>
@@ -326,78 +370,101 @@ export default function HomePage() {
             </div>
           </div>
 
-            {/* Hero Image/Dashboard Preview - Platform Overview */}
-            <div className="mt-16">
-              <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-1 shadow-2xl">
-                <div className="bg-gray-900 rounded-xl overflow-hidden">
-                  <div className="bg-gray-800 px-4 py-3 flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                    <span className="ml-4 text-gray-400 text-sm">ezymemo.com/dashboard</span>
+          {/* Hero Image/Dashboard Preview - Platform Overview */}
+          <div className="mt-16">
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-1 shadow-2xl">
+              <div className="bg-gray-900 rounded-xl overflow-hidden">
+                <div className="bg-gray-800 px-4 py-3 flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                  <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  <span className="ml-4 text-gray-400 text-sm">
+                    ezymemo.com/dashboard
+                  </span>
+                </div>
+                <div className="p-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-[300px] md:min-h-[400px]">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 max-w-5xl mx-auto">
+                    <Card className="p-4 text-center hover:shadow-lg transition-shadow">
+                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <ShoppingCart className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <div className="text-2xl font-bold">1,420</div>
+                      <div className="text-xs text-gray-500">Orders</div>
+                      <div className="text-xs text-green-600 mt-1">
+                        +12% this week
+                      </div>
+                    </Card>
+                    <Card className="p-4 text-center hover:shadow-lg transition-shadow">
+                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <Globe className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div className="text-2xl font-bold">856</div>
+                      <div className="text-xs text-gray-500">
+                        From Public Shop
+                      </div>
+                      <div className="text-xs text-green-600 mt-1">
+                        +25% growth
+                      </div>
+                    </Card>
+                    <Card className="p-4 text-center hover:shadow-lg transition-shadow">
+                      <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <Users className="w-5 h-5 text-purple-600" />
+                      </div>
+                      <div className="text-2xl font-bold">892</div>
+                      <div className="text-xs text-gray-500">Customers</div>
+                      <div className="text-xs text-green-600 mt-1">
+                        +45 repeat
+                      </div>
+                    </Card>
+                    <Card className="p-4 text-center hover:shadow-lg transition-shadow">
+                      <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <Package className="w-5 h-5 text-orange-600" />
+                      </div>
+                      <div className="text-2xl font-bold">248</div>
+                      <div className="text-xs text-gray-500">Products</div>
+                      <div className="text-xs text-blue-600 mt-1">
+                        Stock tracking
+                      </div>
+                    </Card>
                   </div>
-                  <div className="p-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-[300px] md:min-h-[400px]">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 max-w-5xl mx-auto">
-                      <Card className="p-4 text-center hover:shadow-lg transition-shadow">
-                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                          <ShoppingCart className="w-5 h-5 text-blue-600" />
-                        </div>
-                        <div className="text-2xl font-bold">1,420</div>
-                        <div className="text-xs text-gray-500">Orders</div>
-                        <div className="text-xs text-green-600 mt-1">+12% this week</div>
-                      </Card>
-                      <Card className="p-4 text-center hover:shadow-lg transition-shadow">
-                        <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                          <Globe className="w-5 h-5 text-green-600" />
-                        </div>
-                        <div className="text-2xl font-bold">856</div>
-                        <div className="text-xs text-gray-500">From Public Shop</div>
-                        <div className="text-xs text-green-600 mt-1">+25% growth</div>
-                      </Card>
-                      <Card className="p-4 text-center hover:shadow-lg transition-shadow">
-                        <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                          <Users className="w-5 h-5 text-purple-600" />
-                        </div>
-                        <div className="text-2xl font-bold">892</div>
-                        <div className="text-xs text-gray-500">Customers</div>
-                        <div className="text-xs text-green-600 mt-1">+45 repeat</div>
-                      </Card>
-                      <Card className="p-4 text-center hover:shadow-lg transition-shadow">
-                        <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                          <Package className="w-5 h-5 text-orange-600" />
-                        </div>
-                        <div className="text-2xl font-bold">248</div>
-                        <div className="text-xs text-gray-500">Products</div>
-                        <div className="text-xs text-blue-600 mt-1">Stock tracking</div>
-                      </Card>
-                    </div>
 
-                    <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
-                      <div className="bg-white rounded-lg p-4 border border-gray-200 flex items-center gap-3">
-                        <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                          <CheckCircle2 className="w-4 h-4 text-green-600" />
+                  <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
+                    <div className="bg-white rounded-lg p-4 border border-gray-200 flex items-center gap-3">
+                      <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium">
+                          Facebook Orders
                         </div>
-                        <div>
-                          <div className="text-sm font-medium">Facebook Orders</div>
-                          <div className="text-xs text-gray-500">28 new today</div>
+                        <div className="text-xs text-gray-500">
+                          28 new today
                         </div>
                       </div>
-                      <div className="bg-white rounded-lg p-4 border border-gray-200 flex items-center gap-3">
-                        <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                          <CheckCircle2 className="w-4 h-4 text-purple-600" />
+                    </div>
+                    <div className="bg-white rounded-lg p-4 border border-gray-200 flex items-center gap-3">
+                      <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                        <CheckCircle2 className="w-4 h-4 text-purple-600" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium">
+                          Instagram Orders
                         </div>
-                        <div>
-                          <div className="text-sm font-medium">Instagram Orders</div>
-                          <div className="text-xs text-gray-500">15 new today</div>
+                        <div className="text-xs text-gray-500">
+                          15 new today
                         </div>
                       </div>
-                      <div className="bg-white rounded-lg p-4 border border-gray-200 flex items-center gap-3">
-                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                          <CheckCircle2 className="w-4 h-4 text-blue-600" />
+                    </div>
+                    <div className="bg-white rounded-lg p-4 border border-gray-200 flex items-center gap-3">
+                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        <CheckCircle2 className="w-4 h-4 text-blue-600" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium">
+                          Public Shop Orders
                         </div>
-                        <div>
-                          <div className="text-sm font-medium">Public Shop Orders</div>
-                          <div className="text-xs text-gray-500">42 new today</div>
+                        <div className="text-xs text-gray-500">
+                          42 new today
                         </div>
                       </div>
                     </div>
@@ -405,6 +472,7 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
+          </div>
         </div>
       </section>
 
@@ -425,16 +493,22 @@ export default function HomePage() {
       </section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-20 bg-gradient-to-br from-blue-50 to-purple-50">
+      <section
+        id="how-it-works"
+        className="py-20 bg-gradient-to-br from-blue-50 to-purple-50"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-blue-100 text-blue-700">How It Works</Badge>
+            <Badge className="mb-4 bg-blue-100 text-blue-700">
+              How It Works
+            </Badge>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Get Started in 5 Simple Steps
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Start managing your online sales with ezy memo in minutes. No technical skills required.
-              The easiest way to create order memos and manage your business.
+              Start managing your online sales with ezy memo in minutes. No
+              technical skills required. The easiest way to create order memos
+              and manage your business.
             </p>
           </div>
 
@@ -467,7 +541,8 @@ export default function HomePage() {
               {
                 icon: CheckCircle,
                 title: "Confirm & Grow",
-                description: "Confirm orders, share memos & invoices, grow your business",
+                description:
+                  "Confirm orders, share memos & invoices, grow your business",
                 step: 5,
               },
             ].map((item, index) => (
@@ -478,13 +553,16 @@ export default function HomePage() {
                       <item.icon className="w-8 h-8 text-white" />
                     </div>
                     <div className="absolute -top-1 -right-1 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md border-2 border-blue-600">
-                      <span className="text-sm font-bold text-blue-600">{item.step}</span>
+                      <span className="text-sm font-bold text-blue-600">
+                        {item.step}
+                      </span>
                     </div>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.title}</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    {item.title}
+                  </h3>
                   <p className="text-sm text-gray-600">{item.description}</p>
                 </div>
-
               </div>
             ))}
           </div>
@@ -495,24 +573,35 @@ export default function HomePage() {
       <section id="features" className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-purple-100 text-purple-700">Features</Badge>
+            <Badge className="mb-4 bg-purple-100 text-purple-700">
+              Features
+            </Badge>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Easy Memo: Everything You Need to Run Your Online Business
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Ezymemo makes it easy to get orders from social media and your live shop. Manage everything in one place.
-              Build customer relationships. Create professional order memos. Grow your sales systematically with our easy memo platform.
+              Ezymemo makes it easy to get orders from social media and your
+              live shop. Manage everything in one place. Build customer
+              relationships. Create professional order memos. Grow your sales
+              systematically with our easy memo platform.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className={`group hover:shadow-lg transition-all duration-300 border-0 bg-white ${feature.highlight ? 'ring-2 ring-blue-500' : ''}`}>
-                <CardContent className="p-6">
-                  <div className={`w-12 h-12 ${feature.color} rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+              <Card
+                key={index}
+                className={`group hover:shadow-lg transition-all duration-300 border-0 bg-white ${feature.highlight ? "ring-2 ring-blue-500" : ""}`}
+              >
+                <CardContent className="p-6 flex flex-col items-center">
+                  <div
+                    className={`w-12 h-12 ${feature.color} rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}
+                  >
                     <feature.icon className="w-6 h-6 text-white" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{feature.title}</h3>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    {feature.title}
+                  </h3>
                   <p className="text-gray-600">{feature.description}</p>
                 </CardContent>
               </Card>
@@ -526,14 +615,18 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
-              <Badge className="mb-4 bg-blue-100 text-blue-700">Live Shop Website</Badge>
+              <Badge className="mb-4 bg-blue-100 text-blue-700">
+                Live Shop Website
+              </Badge>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
                 Ezy Memo: Get Orders Directly from Your Live Shop
               </h2>
               <p className="text-lg text-gray-600 mb-8">
-                Create a professional e-commerce storefront with ezymemo. Share your shop link on Facebook, Instagram, and WhatsApp.
-                Customers browse products, view details, and place orders directly on your live site.
-                All orders flow into your dashboard automatically. The easy memo solution for online sellers.
+                Create a professional e-commerce storefront with ezymemo. Share
+                your shop link on Facebook, Instagram, and WhatsApp. Customers
+                browse products, view details, and place orders directly on your
+                live site. All orders flow into your dashboard automatically.
+                The easy memo solution for online sellers.
               </p>
 
               <div className="space-y-4 mb-8">
@@ -542,8 +635,12 @@ export default function HomePage() {
                     <CheckCircle2 className="w-5 h-5 text-green-600" />
                   </div>
                   <div>
-                    <div className="font-medium text-gray-900">Professional Online Storefront</div>
-                    <div className="text-sm text-gray-500">Beautiful product catalog with images & prices</div>
+                    <div className="font-medium text-gray-900">
+                      Professional Online Storefront
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      Beautiful product catalog with images & prices
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -551,8 +648,12 @@ export default function HomePage() {
                     <CheckCircle2 className="w-5 h-5 text-green-600" />
                   </div>
                   <div>
-                    <div className="font-medium text-gray-900">Orders Flow to Dashboard</div>
-                    <div className="text-sm text-gray-500">Automatic sync - no manual entry needed</div>
+                    <div className="font-medium text-gray-900">
+                      Orders Flow to Dashboard
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      Automatic sync - no manual entry needed
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -560,8 +661,12 @@ export default function HomePage() {
                     <CheckCircle2 className="w-5 h-5 text-green-600" />
                   </div>
                   <div>
-                    <div className="font-medium text-gray-900">Share Anywhere</div>
-                    <div className="text-sm text-gray-500">One link in bio, posts, groups, and chats</div>
+                    <div className="font-medium text-gray-900">
+                      Share Anywhere
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      One link in bio, posts, groups, and chats
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -569,14 +674,21 @@ export default function HomePage() {
                     <CheckCircle2 className="w-5 h-5 text-green-600" />
                   </div>
                   <div>
-                    <div className="font-medium text-gray-900">New Customer Acquisition</div>
-                    <div className="text-sm text-gray-500">Discoverable by new customers searching online</div>
+                    <div className="font-medium text-gray-900">
+                      New Customer Acquisition
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      Discoverable by new customers searching online
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <Link href={isAuthenticated ? '/dashboard' : '/auth/login'}>
-                <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+              <Link href={isAuthenticated ? "/dashboard" : "/auth/login"}>
+                <Button
+                  size="lg"
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                >
                   Launch Your Live Shop
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
@@ -586,20 +698,24 @@ export default function HomePage() {
             <div className="relative">
               <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6">
                 <Card className="overflow-hidden">
-                  <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                          <FileText className="w-6 h-6 text-white" />
+                  <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4 relative">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                        <FileText className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <div className="text-white font-semibold">
+                          Fashion House
                         </div>
-                        <div>
-                          <div className="text-white font-semibold">Fashion House BD</div>
-                          <div className="text-blue-100 text-sm">ezymemo.com/shop/fashion-house</div>
+                        <div className="text-blue-100 text-sm">
+                          ezymemo.com/shop/fashion-house
                         </div>
                       </div>
-                  <Badge className="bg-green-400 text-green-900">Live Store</Badge>
-                </div>
-              </div>
+                    </div>
+                    <Badge className="bg-green-400 text-green-900 absolute top-2 right-2">
+                      Live Store
+                    </Badge>
+                  </div>
 
                   <div className="p-6 space-y-4">
                     <div className="grid grid-cols-2 gap-4">
@@ -607,17 +723,29 @@ export default function HomePage() {
                         <div className="w-full h-32 bg-gradient-to-br from-blue-100 to-purple-100 rounded mb-3 flex items-center justify-center">
                           <Package className="w-12 h-12 text-blue-600" />
                         </div>
-                        <div className="font-medium text-gray-900">Kurti Collection</div>
-                        <div className="text-sm text-green-600 font-medium">$850</div>
-                        <div className="text-xs text-gray-500 mt-1">In Stock: 45</div>
+                        <div className="font-medium text-gray-900">
+                          Kurti Collection
+                        </div>
+                        <div className="text-sm text-green-600 font-medium">
+                          $850
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          In Stock: 45
+                        </div>
                       </div>
                       <div className="bg-gray-50 rounded-lg p-4 cursor-pointer hover:shadow-md transition-shadow">
                         <div className="w-full h-32 bg-gradient-to-br from-green-100 to-blue-100 rounded mb-3 flex items-center justify-center">
                           <Package className="w-12 h-12 text-green-600" />
                         </div>
-                        <div className="font-medium text-gray-900">Saree Set</div>
-                        <div className="text-sm text-green-600 font-medium">$1,200</div>
-                        <div className="text-xs text-gray-500 mt-1">In Stock: 28</div>
+                        <div className="font-medium text-gray-900">
+                          Saree Set
+                        </div>
+                        <div className="text-sm text-green-600 font-medium">
+                          $1,200
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          In Stock: 28
+                        </div>
                       </div>
                     </div>
 
@@ -649,12 +777,18 @@ export default function HomePage() {
                   <div className="bg-gradient-to-r from-green-50 to-blue-50 px-6 py-4 border-t border-green-200">
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="text-sm text-gray-500">Live Orders Today</div>
-                        <div className="text-2xl font-bold text-green-600">12 Orders</div>
+                        <div className="text-sm text-gray-500">
+                          Live Orders Today
+                        </div>
+                        <div className="text-2xl font-bold text-green-600">
+                          12 Orders
+                        </div>
                       </div>
                       <div className="text-right">
                         <div className="text-sm text-gray-500">Revenue</div>
-                        <div className="text-2xl font-bold text-gray-900">$18,450</div>
+                        <div className="text-2xl font-bold text-gray-900">
+                          $18,450
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -670,24 +804,31 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
-              <Badge className="mb-4 bg-green-100 text-green-700">Why EzyMemo?</Badge>
+              <Badge className="mb-4 bg-green-100 text-green-700">
+                Why EzyMemo?
+              </Badge>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
                 Built for Online Sellers Who Want to Grow
               </h2>
               <p className="text-lg text-gray-600 mb-8">
-                Stop struggling with scattered orders on Facebook, Instagram, and WhatsApp.
-                Bring everything to one place. Showcase products professionally.
-                Get orders from your live shop. Manage customers and grow systematically.
+                Stop struggling with scattered orders on Facebook, Instagram,
+                and WhatsApp. Bring everything to one place. Showcase products
+                professionally. Get orders from your live shop. Manage customers
+                and grow systematically.
               </p>
               <div className="grid grid-cols-2 gap-6">
                 {benefits.map((benefit, index) => (
-                  <div key={index} className="flex items-start gap-3">
+                  <div key={index} className="text-center md:text-left flex flex-col items-center md:flex-row md:items-start gap-3">
                     <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
                       <benefit.icon className="w-5 h-5 text-blue-600" />
                     </div>
                     <div>
-                      <div className="font-medium text-gray-900">{benefit.title}</div>
-                      <div className="text-sm text-gray-500">{benefit.description}</div>
+                      <div className="font-medium text-gray-900">
+                        {benefit.title}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {benefit.description}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -702,9 +843,13 @@ export default function HomePage() {
                       <Globe className="w-6 h-6 text-blue-600" />
                       <div>
                         <div className="font-medium">Your Public Shop</div>
-                        <div className="text-xs text-gray-500">ezymemo.com/shop/your-name</div>
+                        <div className="text-xs text-gray-500">
+                          ezymemo.com/shop/your-name
+                        </div>
                       </div>
-                      <Badge className="bg-green-100 text-green-700 ml-auto">Live</Badge>
+                      <Badge className="bg-green-100 text-green-700 ml-auto">
+                        Live
+                      </Badge>
                     </div>
                     <div className="bg-white rounded p-3 text-center text-sm text-gray-600 border border-dashed border-gray-300">
                       📱 Share this link with customers
@@ -718,20 +863,28 @@ export default function HomePage() {
                         <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                           <Smartphone className="w-4 h-4 text-blue-600" />
                         </div>
-                        <span className="text-xs text-gray-500">WhatsApp Shares</span>
+                        <span className="text-xs text-gray-500">
+                          WhatsApp Shares
+                        </span>
                       </div>
                       <div className="text-2xl font-bold">156</div>
-                      <div className="text-xs text-green-600">+23% this week</div>
+                      <div className="text-xs text-green-600">
+                        +23% this week
+                      </div>
                     </Card>
                     <Card className="p-4">
                       <div className="flex items-center gap-2 mb-2">
                         <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                           <TrendingUp className="w-4 h-4 text-green-600" />
                         </div>
-                        <span className="text-xs text-gray-500">From Shop Link</span>
+                        <span className="text-xs text-gray-500">
+                          From Shop Link
+                        </span>
                       </div>
                       <div className="text-2xl font-bold">42</div>
-                      <div className="text-xs text-green-600">New customers</div>
+                      <div className="text-xs text-green-600">
+                        New customers
+                      </div>
                     </Card>
                   </div>
 
@@ -742,8 +895,12 @@ export default function HomePage() {
                         <CheckCircle2 className="w-5 h-5" />
                       </div>
                       <div>
-                        <div className="font-medium text-gray-900">Professional Image</div>
-                        <div className="text-xs text-gray-600">Customers trust you more = More sales</div>
+                        <div className="font-medium text-gray-900">
+                          Professional Image
+                        </div>
+                        <div className="text-xs text-gray-600">
+                          Customers trust you more = More sales
+                        </div>
                       </div>
                     </div>
                   </Card>
@@ -762,7 +919,10 @@ export default function HomePage() {
           </h3>
           <div className="flex flex-wrap items-center justify-center gap-4">
             {integrations.map((integration, index) => (
-              <Badge key={index} className={`${integration.color} text-sm px-4 py-2`}>
+              <Badge
+                key={index}
+                className={`${integration.color} text-sm px-4 py-2`}
+              >
                 {integration.name}
               </Badge>
             ))}
@@ -774,21 +934,30 @@ export default function HomePage() {
       <section id="testimonials" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-orange-100 text-orange-700">Testimonials</Badge>
+            <Badge className="mb-4 bg-orange-100 text-orange-700">
+              Testimonials
+            </Badge>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Online Sellers Growing with Ezy Memo
             </h2>
             <p className="text-lg text-gray-600">
-              See how sellers manage orders, showcase products, and grow their sales
+              See how sellers manage orders, showcase products, and grow their
+              sales
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
-              <Card key={index} className="p-6 hover:shadow-lg transition-shadow">
+              <Card
+                key={index}
+                className="p-6 hover:shadow-lg transition-shadow"
+              >
                 <div className="flex gap-1 mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                    <Star
+                      key={i}
+                      className="w-5 h-5 text-yellow-400 fill-current"
+                    />
                   ))}
                 </div>
                 <p className="text-gray-600 mb-6">{testimonial.content}</p>
@@ -797,8 +966,12 @@ export default function HomePage() {
                     {testimonial.avatar}
                   </div>
                   <div>
-                    <div className="font-medium text-gray-900">{testimonial.name}</div>
-                    <div className="text-sm text-gray-500">{testimonial.role}</div>
+                    <div className="font-medium text-gray-900">
+                      {testimonial.name}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {testimonial.role}
+                    </div>
                   </div>
                 </div>
               </Card>
@@ -820,24 +993,24 @@ export default function HomePage() {
           <div className="space-y-4">
             {[
               {
-                q: 'What is EzyMemo?',
-                a: 'EzyMemo is the easy memo platform for online sellers. Get orders from Facebook, Instagram, WhatsApp, and your live shop. Track everything in one dashboard. Manage products, customers, and professional memos. Ezymemo simplifies your entire business.',
+                q: "What is EzyMemo?",
+                a: "EzyMemo is the easy memo platform for online sellers. Get orders from Facebook, Instagram, WhatsApp, and your live shop. Track everything in one dashboard. Manage products, customers, and professional memos. Ezymemo simplifies your entire business.",
               },
               {
-                q: 'How does the live shop work?',
-                a: 'Your live shop is a professional e-commerce storefront. Customers browse products, view details, and place orders directly. All orders automatically sync to your dashboard for easy management.',
+                q: "How does the live shop work?",
+                a: "Your live shop is a professional e-commerce storefront. Customers browse products, view details, and place orders directly. All orders automatically sync to your dashboard for easy management.",
               },
               {
-                q: 'Can I track orders from Facebook and Instagram?',
-                a: 'Yes! You can create orders from any source - Facebook, Instagram, WhatsApp, or your live shop. All orders are tracked in one place with status updates and payment tracking.',
+                q: "Can I track orders from Facebook and Instagram?",
+                a: "Yes! You can create orders from any source - Facebook, Instagram, WhatsApp, or your live shop. All orders are tracked in one place with status updates and payment tracking.",
               },
               {
-                q: 'Do I need technical skills?',
-                a: 'Not at all! If you can use Facebook, you can use EzyMemo. Simple interface designed for non-technical users.',
+                q: "Do I need technical skills?",
+                a: "Not at all! If you can use Facebook, you can use EzyMemo. Simple interface designed for non-technical users.",
               },
               {
-                q: 'How does this help me get more sales?',
-                a: 'Your live shop makes your products discoverable to new customers. Professional showcase builds trust. Customer database helps you get repeat orders. Track and optimize your sales. Ezymemo and easy memo help you grow.',
+                q: "How does this help me get more sales?",
+                a: "Your live shop makes your products discoverable to new customers. Professional showcase builds trust. Customer database helps you get repeat orders. Track and optimize your sales. Ezymemo and easy memo help you grow.",
               },
             ].map((faq, index) => (
               <Card key={index} className="p-6">
@@ -856,18 +1029,27 @@ export default function HomePage() {
             Ready to Grow Your Online Business with Ezy Memo?
           </h2>
           <p className="text-xl text-blue-100 mb-8">
-            Get orders from social media and your live shop with ezymemo. Manage everything in one place.
-            Build customer relationships. Create easy memos. Track sales. Grow systematically with the easiest order management platform.
+            Get orders from social media and your live shop with ezymemo. Manage
+            everything in one place. Build customer relationships. Create easy
+            memos. Track sales. Grow systematically with the easiest order
+            management platform.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href={isAuthenticated ? '/dashboard' : '/auth/login'}>
-              <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 text-lg px-8 py-6">
+            <Link href={isAuthenticated ? "/dashboard" : "/auth/login"}>
+              <Button
+                size="lg"
+                className="bg-white text-blue-600 hover:bg-gray-100 text-lg px-8 py-6"
+              >
                 Get Started Free
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
             <Link href="/pricing">
-              <Button size="lg" variant="outline" className="border-white text-black hover:text-white hover:bg-white/10 text-lg px-8 py-6">
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-white text-black hover:text-white hover:bg-white/10 text-lg px-8 py-6"
+              >
                 View Pricing
               </Button>
             </Link>
@@ -884,43 +1066,95 @@ export default function HomePage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
             <div className="col-span-2 md:col-span-1">
               <Link href="/" className="flex items-center gap-2 mb-4">
-               <Image
-                src="/logo.webp"
-                alt="EzyMemo Logo"
-                width={24}
-                height={24}
-                className="rounded-sm"
-              />
+                <Image
+                  src="/logo.webp"
+                  alt="EzyMemo Logo"
+                  width={24}
+                  height={24}
+                  className="rounded-sm"
+                />
                 <span className="text-xl font-bold text-white">EzyMemo</span>
               </Link>
               <p className="text-sm">
-                Bangladesh&apos;s leading easy memo and e-commerce management platform for online sellers and small businesses. Ezymemo simplifies your business.
+                Bangladesh&apos;s leading easy memo and e-commerce management
+                platform for online sellers and small businesses. Ezymemo
+                simplifies your business.
               </p>
             </div>
             <div>
               <h4 className="text-white font-semibold mb-4">Product</h4>
               <ul className="space-y-2 text-sm">
-                <li><Link href="#features" className="hover:text-white">Features</Link></li>
-                <li><Link href="/pricing" className="hover:text-white">Pricing</Link></li>
-                <li><Link href="#testimonials" className="hover:text-white">Testimonials</Link></li>
-                <li><Link href="#faq" className="hover:text-white">FAQ</Link></li>
+                <li>
+                  <Link href="#features" className="hover:text-white">
+                    Features
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/pricing" className="hover:text-white">
+                    Pricing
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#testimonials" className="hover:text-white">
+                    Testimonials
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#faq" className="hover:text-white">
+                    FAQ
+                  </Link>
+                </li>
               </ul>
             </div>
             <div>
               <h4 className="text-white font-semibold mb-4">Company</h4>
               <ul className="space-y-2 text-sm">
-                <li><Link href="/about" className="hover:text-white">About Us</Link></li>
-                <li><Link href="/contact" className="hover:text-white">Contact</Link></li>
-                <li><Link href="/privacy" className="hover:text-white">Privacy Policy</Link></li>
-                <li><Link href="/terms" className="hover:text-white">Terms of Service</Link></li>
+                <li>
+                  <Link href="/about" className="hover:text-white">
+                    About Us
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/contact" className="hover:text-white">
+                    Contact
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/privacy" className="hover:text-white">
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/terms" className="hover:text-white">
+                    Terms of Service
+                  </Link>
+                </li>
               </ul>
             </div>
             <div>
               <h4 className="text-white font-semibold mb-4">Support</h4>
               <ul className="space-y-2 text-sm">
-                <li><Link href="/help" className="hover:text-white">Help Center</Link></li>
-                <li><a href="mailto:support@ezymemo.com" className="hover:text-white">support@ezymemo.com</a></li>
-                <li><a href="https://facebook.com/ezymemo" className="hover:text-white">Facebook</a></li>
+                <li>
+                  <Link href="/help" className="hover:text-white">
+                    Help Center
+                  </Link>
+                </li>
+                <li>
+                  <a
+                    href="mailto:support@ezymemo.com"
+                    className="hover:text-white"
+                  >
+                    support@ezymemo.com
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://facebook.com/ezymemo"
+                    className="hover:text-white"
+                  >
+                    Facebook
+                  </a>
+                </li>
               </ul>
             </div>
           </div>
