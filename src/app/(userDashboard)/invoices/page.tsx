@@ -374,6 +374,10 @@ export default function InvoicesPage() {
                 invoiceId={selectedInvoiceId || 0}
                 userProfile={userProfile}
                 user={user}
+                onInvoiceUpdated={() => {
+                    fetchInvoices();
+                    fetchStats();
+                }}
             />
         </div>
     );

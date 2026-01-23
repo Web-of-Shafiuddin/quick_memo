@@ -91,9 +91,10 @@ interface InvoiceDialogProps {
     invoiceId: number;
     userProfile: User | null;
     user: User | null;
+    onInvoiceUpdated?: () => void;
 }
 
-export const InvoiceDialog = ({ open, onOpenChange, invoiceId, userProfile, user }: InvoiceDialogProps) => {
+export const InvoiceDialog = ({ open, onOpenChange, invoiceId, userProfile, user, onInvoiceUpdated }: InvoiceDialogProps) => {
     const { format: formatCurrency } = useCurrency();
     const [selectedInvoice, setSelectedInvoice] = useState<InvoiceDetail | null>(null);
     const [payments, setPayments] = useState<PaymentRecord[]>([]);
@@ -162,6 +163,7 @@ export const InvoiceDialog = ({ open, onOpenChange, invoiceId, userProfile, user
             if (selectedInvoice) {
                 fetchInvoiceDetails();
             }
+            onInvoiceUpdated?.();
         } catch (error: any) {
             console.error('Error recording payment:', error);
             toast.error(error.response?.data?.error || 'Failed to record payment');
@@ -180,6 +182,7 @@ export const InvoiceDialog = ({ open, onOpenChange, invoiceId, userProfile, user
                 fetchPayments(selectedInvoice.invoice_id);
                 fetchInvoiceDetails();
             }
+            onInvoiceUpdated?.();
         } catch (error: any) {
             console.error('Error deleting payment:', error);
             toast.error(error.response?.data?.error || 'Failed to delete payment');
