@@ -236,7 +236,7 @@ export default function LoginPage() {
                     </Button>
                   </div>
                   <div className="text-xs text-gray-500 bg-blue-50 p-3 rounded">
-                    💡 Demo Mode: Registration is simulated locally
+                    💡 Tips: First setup your profile
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? "Creating Account..." : "Create Account"}
