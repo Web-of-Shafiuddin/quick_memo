@@ -176,10 +176,10 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <main className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-b z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <header className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-b z-50">
+        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2">
@@ -259,7 +259,6 @@ export default function HomePage() {
               )}
             </button>
           </div>
-        </div>
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
@@ -303,6 +302,7 @@ export default function HomePage() {
           </div>
         )}
       </nav>
+      </header>
 
       {/* Hero Section */}
       <section className="pt-24 pb-16 md:pt-32 md:pb-24 bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
@@ -371,7 +371,7 @@ export default function HomePage() {
           </div>
 
           {/* Hero Image/Dashboard Preview - Platform Overview */}
-          <div className="mt-16">
+          <figure className="mt-16">
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-1 shadow-2xl">
               <div className="bg-gray-900 rounded-xl overflow-hidden">
                 <div className="bg-gray-800 px-4 py-3 flex items-center gap-2">
@@ -472,7 +472,7 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-          </div>
+          </figure>
         </div>
       </section>
 
@@ -512,7 +512,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+          <ol className="grid grid-cols-1 md:grid-cols-5 gap-6 list-none">
             {[
               {
                 icon: Globe,
@@ -546,8 +546,8 @@ export default function HomePage() {
                 step: 5,
               },
             ].map((item, index) => (
-              <div key={index} className="relative">
-                <div className="text-center">
+              <li key={index} className="relative">
+                <article className="text-center">
                   <div className="relative inline-block mb-4">
                     <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto">
                       <item.icon className="w-8 h-8 text-white" />
@@ -562,10 +562,10 @@ export default function HomePage() {
                     {item.title}
                   </h3>
                   <p className="text-sm text-gray-600">{item.description}</p>
-                </div>
-              </div>
+                </article>
+              </li>
             ))}
-          </div>
+          </ol>
         </div>
       </section>
 
@@ -589,22 +589,24 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <Card
+              <article
                 key={index}
                 className={`group hover:shadow-lg transition-all duration-300 border-0 bg-white ${feature.highlight ? "ring-2 ring-blue-500" : ""}`}
               >
-                <CardContent className="p-6 flex flex-col items-center">
-                  <div
-                    className={`w-12 h-12 ${feature.color} rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}
-                  >
-                    <feature.icon className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    {feature.title}
-                  </h3>
-                  <p className="text-gray-600">{feature.description}</p>
-                </CardContent>
-              </Card>
+                <Card className="h-full">
+                  <CardContent className="p-6 flex flex-col items-center">
+                    <div
+                      className={`w-12 h-12 ${feature.color} rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}
+                    >
+                      <feature.icon className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                      {feature.title}
+                    </h3>
+                    <p className="text-gray-600">{feature.description}</p>
+                  </CardContent>
+                </Card>
+              </article>
             ))}
           </div>
         </div>
@@ -816,23 +818,23 @@ export default function HomePage() {
                 professionally. Get orders from your live shop. Manage customers
                 and grow systematically.
               </p>
-              <div className="grid grid-cols-2 gap-6">
+              <ul className="grid grid-cols-2 gap-6 list-none">
                 {benefits.map((benefit, index) => (
-                  <div key={index} className="text-center md:text-left flex flex-col items-center md:flex-row md:items-start gap-3">
+                  <li key={index} className="text-center md:text-left flex flex-col items-center md:flex-row md:items-start gap-3">
                     <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
                       <benefit.icon className="w-5 h-5 text-blue-600" />
                     </div>
                     <div>
-                      <div className="font-medium text-gray-900">
+                      <strong className="font-medium text-gray-900 block">
                         {benefit.title}
-                      </div>
-                      <div className="text-sm text-gray-500">
+                      </strong>
+                      <span className="text-sm text-gray-500">
                         {benefit.description}
-                      </div>
+                      </span>
                     </div>
-                  </div>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
             <div className="relative">
               <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl p-8">
@@ -948,33 +950,37 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
-              <Card
+              <article
                 key={index}
                 className="p-6 hover:shadow-lg transition-shadow"
               >
-                <div className="flex gap-1 mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="w-5 h-5 text-yellow-400 fill-current"
-                    />
-                  ))}
-                </div>
-                <p className="text-gray-600 mb-6">{testimonial.content}</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-medium">
-                    {testimonial.avatar}
-                  </div>
-                  <div>
-                    <div className="font-medium text-gray-900">
-                      {testimonial.name}
+                <Card className="h-full">
+                  <CardContent className="p-6">
+                    <div className="flex gap-1 mb-4">
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className="w-5 h-5 text-yellow-400 fill-current"
+                        />
+                      ))}
                     </div>
-                    <div className="text-sm text-gray-500">
-                      {testimonial.role}
+                    <p className="text-gray-600 mb-6">{testimonial.content}</p>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-medium">
+                        {testimonial.avatar}
+                      </div>
+                      <div>
+                        <div className="font-medium text-gray-900">
+                          {testimonial.name}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {testimonial.role}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </Card>
+                  </CardContent>
+                </Card>
+              </article>
             ))}
           </div>
         </div>
@@ -990,7 +996,7 @@ export default function HomePage() {
             </h2>
           </div>
 
-          <div className="space-y-4">
+          <dl className="space-y-4">
             {[
               {
                 q: "What is EzyMemo?",
@@ -1014,11 +1020,11 @@ export default function HomePage() {
               },
             ].map((faq, index) => (
               <Card key={index} className="p-6">
-                <h3 className="font-semibold text-gray-900 mb-2">{faq.q}</h3>
-                <p className="text-gray-600">{faq.a}</p>
+                <dt className="font-semibold text-gray-900 mb-2">{faq.q}</dt>
+                <dd className="text-gray-600">{faq.a}</dd>
               </Card>
             ))}
-          </div>
+          </dl>
         </div>
       </section>
 
@@ -1131,7 +1137,7 @@ export default function HomePage() {
                 </li>
               </ul>
             </div>
-            <div>
+            <address className="not-italic">
               <h4 className="text-white font-semibold mb-4">Support</h4>
               <ul className="space-y-2 text-sm">
                 <li>
@@ -1151,12 +1157,14 @@ export default function HomePage() {
                   <a
                     href="https://facebook.com/ezymemo"
                     className="hover:text-white"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
                     Facebook
                   </a>
                 </li>
               </ul>
-            </div>
+            </address>
           </div>
           <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm">
@@ -1173,6 +1181,6 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
-    </div>
+    </main>
   );
 }
