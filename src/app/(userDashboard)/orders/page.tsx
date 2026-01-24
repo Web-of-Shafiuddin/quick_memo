@@ -279,6 +279,8 @@ const OrdersPage = () => {
             <TableHead>Source</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="text-right">Total</TableHead>
+            <TableHead>Payment Status</TableHead>
+            <TableHead className="text-right">Balance Due</TableHead>
             <TableHead>Date</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
@@ -286,7 +288,7 @@ const OrdersPage = () => {
         <TableBody>
           {orders.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={12} className="text-center text-muted-foreground">
+              <TableCell colSpan={14} className="text-center text-muted-foreground">
                 No orders found. Create your first order to get started.
               </TableCell>
             </TableRow>
@@ -313,6 +315,20 @@ const OrdersPage = () => {
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">{formatPrice(parseFloat(order.total_amount.toString()))}</TableCell>
+                <TableCell>
+                  {order.invoice_status === 'PAID' ? (
+                    <Badge className="bg-green-100 text-green-800">Paid</Badge>
+                  ) : order.invoice_status === 'PARTIAL' ? (
+                    <Badge className="bg-blue-100 text-blue-800">Partial</Badge>
+                  ) : order.invoice_status === 'DUE' ? (
+                    <Badge className="bg-yellow-100 text-yellow-800">Due</Badge>
+                  ) : (
+                    <span className="text-muted-foreground">-</span>
+                  )}
+                </TableCell>
+                <TableCell className={`text-right ${(order.balance_remaining || 0) > 0 ? 'text-orange-600 font-medium' : 'text-green-600'}`}>
+                  {order.balance_remaining !== undefined ? formatPrice(order.balance_remaining) : '-'}
+                </TableCell>
                 <TableCell>{new Date(order.order_date).toLocaleDateString()}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex gap-2 justify-end">
@@ -608,6 +624,9 @@ const OrdersPage = () => {
         invoiceId={selectedInvoiceId || 0}
         userProfile={userProfile}
         user={user}
+        onInvoiceUpdated={() => {
+          fetchOrders();
+        }}
       />
     </div>
   );

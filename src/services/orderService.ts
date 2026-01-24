@@ -38,6 +38,8 @@ export interface Order {
   invoice_id?: number;
   invoice_number?: string;
   invoice_status?: string;
+  amount_paid?: number;
+  balance_remaining?: number;
 }
 
 export interface CreateOrderItemInput {

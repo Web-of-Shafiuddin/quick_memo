@@ -34,6 +34,11 @@ import { getActivePaymentMethods } from "@/services/paymentMethodService";
 import { Plus, Trash2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useCurrency } from "@/hooks/useCurrency";
+import { InvoiceDialog } from "@/components/invoice-dialog";
+import { User } from "@/types/User";
+import useAuthStore from "@/store/authStore";
+import { useShallow } from "zustand/react/shallow";
+import api from "@/lib/api";
 
 interface ExtendedOrderItem extends OrderItem {
   product?: Product;
@@ -45,12 +50,21 @@ const EditOrderPage = () => {
   const orderId = parseInt(params.id as string);
   const { format: formatPrice, symbol } = useCurrency();
 
+  const { user } = useAuthStore(
+    useShallow((state) => ({
+      user: state.user,
+    }))
+  );
+
   const [order, setOrder] = useState<Order | null>(null);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<{ payment_method_id: number; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [invoiceData, setInvoiceData] = useState<any>(null);
+  const [paymentDialog, setPaymentDialog] = useState(false);
+  const [userProfile, setUserProfile] = useState<User | null>(null);
 
   // Form state
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
@@ -68,7 +82,14 @@ const EditOrderPage = () => {
 
   useEffect(() => {
     fetchInitialData();
+    fetchInvoiceData();
   }, []);
+
+  useEffect(() => {
+    if (user?.user_id) {
+      fetchUserProfile();
+    }
+  }, [user]);
 
   const fetchInitialData = async () => {
     try {
@@ -111,6 +132,27 @@ const EditOrderPage = () => {
       router.push('/orders');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchInvoiceData = async () => {
+    try {
+      const response = await api.get(`/invoices`, { params: { transaction_id: orderId } });
+      if (response.data.data && response.data.data.length > 0) {
+        setInvoiceData(response.data.data[0]);
+      }
+    } catch (error) {
+      console.error('Error fetching invoice:', error);
+    }
+  };
+
+  const fetchUserProfile = async () => {
+    if (!user?.user_id) return;
+    try {
+      const response = await api.get(`/users/${user.user_id}`);
+      setUserProfile(response.data.data);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
     }
   };
 
@@ -429,6 +471,45 @@ const EditOrderPage = () => {
               </div>
             </div>
 
+            {/* Payment Summary */}
+            {invoiceData && (
+              <div className="p-4 border rounded-lg">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold">Payment Summary</h3>
+                  <Badge className={
+                    invoiceData.status === 'PAID' ? 'bg-green-100 text-green-800' :
+                    invoiceData.status === 'PARTIAL' ? 'bg-blue-100 text-blue-800' :
+                    'bg-yellow-100 text-yellow-800'
+                  }>
+                    {invoiceData.status}
+                  </Badge>
+                </div>
+                <div className="grid grid-cols-3 gap-4 mb-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Amount</p>
+                    <p className="text-lg font-bold">{formatPrice(invoiceData.total_amount)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Paid</p>
+                    <p className="text-lg font-bold text-green-600">{formatPrice(invoiceData.amount_paid || 0)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Balance</p>
+                    <p className={`text-lg font-bold ${(invoiceData.total_amount - (invoiceData.amount_paid || 0)) > 0 ? 'text-orange-600' : 'text-green-600'}`}>
+                      {formatPrice(invoiceData.total_amount - (invoiceData.amount_paid || 0))}
+                    </p>
+                  </div>
+                </div>
+
+                {invoiceData.status !== 'PAID' && (
+                  <Button type="button" onClick={() => setPaymentDialog(true)}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Record Payment
+                  </Button>
+                )}
+              </div>
+            )}
+
             {/* Form Actions */}
             <div className="flex justify-between pt-4 border-t">
               <Button type="button" variant="outline" onClick={() => router.back()}>
@@ -441,6 +522,18 @@ const EditOrderPage = () => {
           </form>
         </CardContent>
       </Card>
+
+      {/* Invoice Dialog for Payment Recording */}
+      <InvoiceDialog
+        open={paymentDialog}
+        onOpenChange={setPaymentDialog}
+        invoiceId={invoiceData?.invoice_id || 0}
+        userProfile={userProfile}
+        user={user}
+        onInvoiceUpdated={() => {
+          fetchInvoiceData();
+        }}
+      />
     </div>
   );
 };
