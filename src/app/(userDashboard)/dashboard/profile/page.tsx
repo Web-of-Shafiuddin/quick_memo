@@ -330,7 +330,7 @@ const ProfilePage = () => {
                       name="shop_slug"
                       value={formData.shop_slug}
                       onChange={handleChange}
-                      className="pl-9"
+                      className="pl-14"
                       placeholder="shop-name"
                     />
                   </div>
