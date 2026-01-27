@@ -34,6 +34,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 
 const ProfilePage = () => {
   const { user } = useAuthStore(
@@ -41,7 +42,7 @@ const ProfilePage = () => {
       user: state.user,
     })),
   );
-
+console.log("user: ", user)
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -55,6 +56,7 @@ const ProfilePage = () => {
     shop_address: "",
     shop_logo_url: "",
     shop_slug: "",
+    
     shop_description: "",
     nid_license_url: "",
     verification_images: [] as string[],
@@ -110,6 +112,7 @@ const ProfilePage = () => {
         shop_logo_url: userData.shop_logo_url || "",
         shop_description: userData.shop_description || "",
         nid_license_url: userData.nid_license_url || "",
+        is_verified: userData.is_verified,
         verification_images: Array.isArray(userData.verification_images)
           ? userData.verification_images
           : [],
@@ -526,17 +529,23 @@ const ProfilePage = () => {
         {/* Trust & Verification */}
         <Card>
           <CardHeader>
+            <div className="flex items-center justify-between">
+
             <CardTitle className="flex items-center gap-2 text-primary font-bold">
-              <ShieldCheck className="w-5 h-5" />
+              <ShieldCheck className="w-5 h-5 text-green-900" />
               Trust & Verification
             </CardTitle>
+            {formData?.is_verified && (
+              <Badge variant="outline" className="ml-2 bg-green-100 text-green-900">Verified</Badge>
+            )}
+            </div>
             <CardDescription>
               Build trust with your customers by providing verification details
               and social links. Verified shops get a &quot;Green Badge&quot; and
               better visibility.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          {!formData?.is_verified && <CardContent className="space-y-6">
             {/* NID/Trade License */}
             <div className="space-y-2">
               <MultipleImageUpload
@@ -553,7 +562,7 @@ const ProfilePage = () => {
                 upload up to 5 images.
               </p>
             </div>
-          </CardContent>
+          </CardContent>}
         </Card>
 
         {/* Save Button */}
