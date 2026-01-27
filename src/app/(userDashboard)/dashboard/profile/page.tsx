@@ -56,7 +56,7 @@ console.log("user: ", user)
     shop_address: "",
     shop_logo_url: "",
     shop_slug: "",
-    
+    is_verified: false,
     shop_description: "",
     nid_license_url: "",
     verification_images: [] as string[],
@@ -78,6 +78,7 @@ console.log("user: ", user)
         shop_email: user.shop_email || "",
         shop_address: user.shop_address || "",
         shop_logo_url: user.shop_logo_url || "",
+        is_verified: user.is_verified || false,
         shop_description: user.shop_description || "",
         nid_license_url: user.nid_license_url || "",
         verification_images: Array.isArray(user.verification_images)
