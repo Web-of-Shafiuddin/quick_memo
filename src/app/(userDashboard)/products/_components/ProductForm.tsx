@@ -23,6 +23,8 @@ import { ImageUpload } from "@/components/ImageUpload";
 import { Product } from "@/services/productService";
 import { categoryService, Category } from "@/services/categoryService";
 import { Plus, X } from "lucide-react";
+import { HierarchicalCategorySelect } from "@/components/categories/HierarchicalCategorySelect";
+import { CategoryBreadcrumb } from "@/components/categories/CategoryBreadcrumb";
 import { useCurrency } from "@/hooks/useCurrency";
 import {
   attributeService,
@@ -285,26 +287,27 @@ const ProductForm = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="category_id">Category</Label>
-              <Select
-                name="category_id"
-                value={formData.category_id}
-                onValueChange={(value) => handleChange("category_id", value)}
-                required
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem
-                      key={cat.category_id}
-                      value={cat.category_id.toString()}
-                    >
-                      {cat.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <HierarchicalCategorySelect
+                categories={categories}
+                value={formData.category_id ? parseInt(formData.category_id) : null}
+                onValueChange={(value) =>
+                  handleChange("category_id", value?.toString() || "")
+                }
+                placeholder="Select category"
+                allowClear
+              />
+              {formData.category_id && (() => {
+                const selectedCategory = categories.find(
+                  (c) => c.category_id === parseInt(formData.category_id)
+                );
+                return selectedCategory ? (
+                  <CategoryBreadcrumb
+                    category={selectedCategory}
+                    categories={categories}
+                    className="text-xs text-muted-foreground"
+                  />
+                ) : null;
+              })()}
             </div>
             <div className="space-y-2">
               <Label htmlFor="price">{`Price (${symbol})`}</Label>

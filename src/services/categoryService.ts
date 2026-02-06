@@ -7,14 +7,20 @@ export interface Category {
   created_at: string;
   updated_at: string;
   product_count?: number;
+  parent_category_id?: number | null;
+  parent_category_name?: string;
+  children_count?: number;
+  children?: Category[];
 }
 
 export interface CreateCategoryInput {
   name: string;
+  parent_category_id?: number | null;
 }
 
 export interface UpdateCategoryInput {
-  name: string;
+  name?: string;
+  parent_category_id?: number | null;
 }
 
 export const categoryService = {
@@ -28,6 +34,13 @@ export const categoryService = {
   getById: async (id: number) => {
     const response = await api.get<{ success: boolean; data: Category }>(
       `/categories/${id}`
+    );
+    return response.data;
+  },
+
+  getChildren: async (id: number) => {
+    const response = await api.get<{ success: boolean; data: Category[] }>(
+      `/categories/${id}/children`
     );
     return response.data;
   },
