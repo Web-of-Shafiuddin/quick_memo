@@ -1,0 +1,92 @@
+
+> quick-memo@0.1.0 build
+> next build
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+   ▲ Next.js 16.0.10 (Turbopack)
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+ ✓ Compiled successfully in 6.8s
+   Running TypeScript ...
+   Collecting page data using 11 workers ...
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+   Generating static pages using 11 workers (0/39) ...
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+   Generating static pages using 11 workers (9/39) 
+   Generating static pages using 11 workers (19/39) 
+Error generating sitemap: TypeError: fetch failed
+    at async w (.next/server/chunks/[root-of-the-server]__8a255c71._.js:16:1065)
+    at async R (.next/server/chunks/[root-of-the-server]__8a255c71._.js:16:2198) {
+  [cause]: AggregateError: 
+      at ignore-listed frames {
+    code: 'ECONNREFUSED'
+  }
+}
+   Generating static pages using 11 workers (29/39) 
+ ✓ Generating static pages using 11 workers (39/39) in 1293.7ms
+   Finalizing page optimization ...
+
+Route (app)                  Revalidate  Expire
+┌ ○ /
+├ ○ /_not-found
+├ ○ /about
+├ ○ /admin/dashboard
+├ ○ /admin/login
+├ ○ /admin/payouts
+├ ○ /admin/plans
+├ ○ /admin/reports
+├ ○ /admin/reviews
+├ ○ /admin/subscriptions
+├ ○ /admin/users
+├ ○ /admin/verification
+├ ○ /attributes
+├ ○ /auth/login
+├ ○ /categories
+├ ○ /contact
+├ ○ /customers
+├ ○ /dashboard
+├ ○ /dashboard/profile
+├ ○ /earnings
+├ ○ /help
+├ ○ /invoices
+├ ○ /marketplace
+├ ○ /marketplace/cart
+├ ○ /orders
+├ ○ /orders/add
+├ ƒ /orders/edit/[id]
+├ ○ /payment-methods
+├ ○ /pricing
+├ ○ /privacy
+├ ○ /products
+├ ○ /products/add
+├ ƒ /products/edit/[sku]
+├ ○ /robots.txt
+├ ○ /settings/custom-domain
+├ ○ /settings/marketplace
+├ ƒ /shop/[slug]
+├ ƒ /shop/[slug]/cart
+├ ƒ /shop/[slug]/p/[sku]
+├ ƒ /shop/[slug]/reviews
+├ ○ /sitemap.xml                     1h      1y
+├ ○ /subscription
+└ ○ /terms
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

@@ -110,7 +110,7 @@ export default function Dashboard() {
 
   // Analytics data states
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(
-    null
+    null,
   );
   const [salesOverTime, setSalesOverTime] = useState<SalesDataPoint[]>([]);
   const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
@@ -337,7 +337,8 @@ export default function Dashboard() {
             ) : (
               <div className="flex items-center gap-2 bg-background p-2 rounded border w-full md:w-auto">
                 <span className="text-muted-foreground text-sm pl-2">
-                  {typeof window !== "undefined" ? window.location.host : ""}/shop/
+                  {typeof window !== "undefined" ? window.location.host : ""}
+                  /shop/
                 </span>
                 <span className="font-medium text-blue-700">
                   {user?.shop_slug}
@@ -558,8 +559,10 @@ export default function Dashboard() {
                     <YAxis yAxisId="left" />
                     <YAxis yAxisId="right" orientation="right" />
                     <Tooltip
-                      formatter={(value: number | undefined, name: string | undefined) => [
-                        name === "revenue" ? formatPrice(value ?? 0) : value ?? 0,
+                      formatter={(value: any, name: string) => [
+                        name === "revenue"
+                          ? formatPrice(Number(value) || 0)
+                          : value,
                         name === "revenue" ? "Revenue" : "Orders",
                       ]}
                       labelFormatter={formatDate}
@@ -608,7 +611,7 @@ export default function Dashboard() {
                             ({
                               name: c.category_name,
                               value: c.total_revenue,
-                            } as PieDataItem)
+                            }) as PieDataItem,
                         )}
                         cx="50%"
                         cy="50%"
@@ -628,7 +631,9 @@ export default function Dashboard() {
                         ))}
                       </Pie>
                       <Tooltip
-                        formatter={(value: number | undefined) => formatPrice(value ?? 0)}
+                        formatter={(value: any) =>
+                          formatPrice(Number(value) || 0)
+                        }
                       />
                     </RechartsPieChart>
                   </ResponsiveContainer>
@@ -653,8 +658,10 @@ export default function Dashboard() {
                         width={100}
                       />
                       <Tooltip
-                        formatter={(value: number | undefined, name: string | undefined) => [
-                          name === "total_revenue" ? formatPrice(value ?? 0) : value ?? 0,
+                        formatter={(value: any, name: string) => [
+                          name === "total_revenue"
+                            ? formatPrice(Number(value) || 0)
+                            : value,
                           name === "total_revenue" ? "Revenue" : "Orders",
                         ]}
                       />
@@ -827,7 +834,9 @@ export default function Dashboard() {
                     <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip
-                      formatter={(value: number | undefined) => formatPrice(value ?? 0)}
+                      formatter={(value: any) =>
+                        formatPrice(Number(value) || 0)
+                      }
                     />
                     <Bar
                       dataKey="total_revenue"
@@ -911,8 +920,8 @@ export default function Dashboard() {
                           order.order_status === "DELIVERED"
                             ? "default"
                             : order.order_status === "CANCELLED"
-                            ? "destructive"
-                            : "secondary"
+                              ? "destructive"
+                              : "secondary"
                         }
                       >
                         {order.order_status}
@@ -946,7 +955,9 @@ export default function Dashboard() {
                     <XAxis type="number" />
                     <YAxis dataKey="name" type="category" width={120} />
                     <Tooltip
-                      formatter={(value: number | undefined) => formatPrice(value ?? 0)}
+                      formatter={(value: any) =>
+                        formatPrice(Number(value) || 0)
+                      }
                     />
                     <Bar
                       dataKey="total_spent"
@@ -977,8 +988,10 @@ export default function Dashboard() {
                     <YAxis yAxisId="left" />
                     <YAxis yAxisId="right" orientation="right" />
                     <Tooltip
-                      formatter={(value: number | undefined, name: string | undefined) => [
-                        name === "revenue" ? formatPrice(value ?? 0) : value ?? 0,
+                      formatter={(value: any, name: string) => [
+                        name === "revenue"
+                          ? formatPrice(Number(value) || 0)
+                          : value,
                         name === "revenue" ? "Revenue" : "Orders",
                       ]}
                       labelFormatter={formatMonth}
@@ -1026,7 +1039,7 @@ export default function Dashboard() {
                     </p>
                     <p className="text-2xl font-bold text-purple-700">
                       {formatPrice(
-                        prediction?.prediction.nextMonth.revenue || 0
+                        prediction?.prediction.nextMonth.revenue || 0,
                       )}
                     </p>
                   </div>

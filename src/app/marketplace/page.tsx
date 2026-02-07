@@ -1,33 +1,42 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { marketplaceService, MarketplaceProduct } from '@/services/marketplaceService';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import React, { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import {
+  marketplaceService,
+  MarketplaceProduct,
+} from "@/services/marketplaceService";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Star, Store as StoreIcon, TrendingUp, ShoppingCart, Verified } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { toast } from 'sonner';
+} from "@/components/ui/select";
+import {
+  Star,
+  Store as StoreIcon,
+  TrendingUp,
+  ShoppingCart,
+  Verified,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { toast } from "sonner";
 
-export default function MarketplacePage() {
+function MarketplaceContent() {
   const searchParams = useSearchParams();
   const [products, setProducts] = useState<MarketplaceProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState<any>(null);
 
   const [filters, setFilters] = useState({
-    search: searchParams?.get('search') || '',
-    category: searchParams?.get('category') || '',
-    sortBy: (searchParams?.get('sortBy') as any) || 'newest',
+    search: searchParams?.get("search") || "",
+    category: searchParams?.get("category") || "",
+    sortBy: (searchParams?.get("sortBy") as any) || "newest",
     page: 1,
   });
 
@@ -42,8 +51,8 @@ export default function MarketplacePage() {
       setProducts(data.products);
       setPagination(data.pagination);
     } catch (error) {
-      console.error('Error fetching products:', error);
-      toast.error('Failed to load products');
+      console.error("Error fetching products:", error);
+      toast.error("Failed to load products");
     } finally {
       setLoading(false);
     }
@@ -51,10 +60,12 @@ export default function MarketplacePage() {
 
   const addToCart = (product: MarketplaceProduct) => {
     // Get existing cart from localStorage
-    const cart = JSON.parse(localStorage.getItem('marketplace_cart') || '[]');
+    const cart = JSON.parse(localStorage.getItem("marketplace_cart") || "[]");
 
     // Check if product already in cart
-    const existingIndex = cart.findIndex((item: any) => item.sku === product.sku);
+    const existingIndex = cart.findIndex(
+      (item: any) => item.sku === product.sku,
+    );
 
     if (existingIndex >= 0) {
       cart[existingIndex].quantity += 1;
@@ -66,8 +77,8 @@ export default function MarketplacePage() {
       });
     }
 
-    localStorage.setItem('marketplace_cart', JSON.stringify(cart));
-    toast.success('Added to cart!');
+    localStorage.setItem("marketplace_cart", JSON.stringify(cart));
+    toast.success("Added to cart!");
   };
 
   if (loading) {
@@ -97,7 +108,9 @@ export default function MarketplacePage() {
         <div className="flex items-center gap-4">
           <Select
             value={filters.sortBy}
-            onValueChange={(value: any) => setFilters({ ...filters, sortBy: value })}
+            onValueChange={(value: any) =>
+              setFilters({ ...filters, sortBy: value })
+            }
           >
             <SelectTrigger className="w-48">
               <SelectValue />
@@ -130,7 +143,10 @@ export default function MarketplacePage() {
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {products.map((product) => (
-              <Card key={product.product_id} className="group hover:shadow-lg transition-shadow">
+              <Card
+                key={product.product_id}
+                className="group hover:shadow-lg transition-shadow"
+              >
                 <Link href={`/marketplace/products/${product.sku}`}>
                   <div className="aspect-square relative overflow-hidden rounded-t-lg bg-gray-100">
                     {product.image_url ? (
@@ -185,7 +201,9 @@ export default function MarketplacePage() {
                   </div>
 
                   <div className="flex items-baseline gap-2 mb-3">
-                    <span className="text-2xl font-bold">৳{product.price.toLocaleString()}</span>
+                    <span className="text-2xl font-bold">
+                      ৳{product.price.toLocaleString()}
+                    </span>
                   </div>
 
                   {product.stock < 10 && product.stock > 0 && (
@@ -202,7 +220,7 @@ export default function MarketplacePage() {
                     disabled={product.stock === 0}
                   >
                     <ShoppingCart className="h-4 w-4 mr-2" />
-                    {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+                    {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
                   </Button>
                 </CardFooter>
               </Card>
@@ -214,7 +232,9 @@ export default function MarketplacePage() {
             <div className="flex items-center justify-center gap-2">
               <Button
                 variant="outline"
-                onClick={() => setFilters({ ...filters, page: filters.page - 1 })}
+                onClick={() =>
+                  setFilters({ ...filters, page: filters.page - 1 })
+                }
                 disabled={!pagination.hasPrev}
               >
                 Previous
@@ -224,7 +244,9 @@ export default function MarketplacePage() {
               </span>
               <Button
                 variant="outline"
-                onClick={() => setFilters({ ...filters, page: filters.page + 1 })}
+                onClick={() =>
+                  setFilters({ ...filters, page: filters.page + 1 })
+                }
                 disabled={!pagination.hasNext}
               >
                 Next
@@ -234,5 +256,23 @@ export default function MarketplacePage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function MarketplacePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="container mx-auto px-4 py-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+              <div key={i} className="h-80 bg-muted animate-pulse rounded-lg" />
+            ))}
+          </div>
+        </div>
+      }
+    >
+      <MarketplaceContent />
+    </Suspense>
   );
 }
