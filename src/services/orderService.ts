@@ -26,6 +26,9 @@ export interface Order {
   customer_address?: string;
   order_date: string;
   order_source: string;
+  order_channel?: 'DIRECT_SHOP' | 'MARKETPLACE' | 'CUSTOM_DOMAIN';
+  commission_applied?: boolean;
+  commission_amount?: number;
   order_status: 'PENDING' | 'CONFIRMED' | 'SHIPPED' | 'DELIVERED' | 'RETURNED' | 'CANCELLED';
   payment_method_id: number;
   payment_method_name?: string;
@@ -83,6 +86,7 @@ export type OrderListParams = {
   start_date?: string;
   end_date?: string;
   order_source?: string;
+  order_channel?: string;
   page?: number;
   limit?: number;
   sortBy?: string;

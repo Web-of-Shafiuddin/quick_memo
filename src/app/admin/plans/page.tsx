@@ -41,6 +41,9 @@ interface Plan {
     max_orders_per_month: number;
     max_customers: number;
     can_upload_images: boolean;
+    can_use_custom_domain: boolean;
+    can_list_in_marketplace: boolean;
+    commission_percentage: number;
     features: string[];
     badge_text: string | null;
     badge_color: string | null;
@@ -60,6 +63,9 @@ const initialFormState = {
     max_orders_per_month: -1,
     max_customers: -1,
     can_upload_images: false,
+    can_use_custom_domain: false,
+    can_list_in_marketplace: true,
+    commission_percentage: 0,
     features: [] as string[],
     badge_text: '',
     badge_color: '',
@@ -120,6 +126,9 @@ export default function AdminPlansPage() {
             max_orders_per_month: plan.max_orders_per_month,
             max_customers: plan.max_customers,
             can_upload_images: plan.can_upload_images,
+            can_use_custom_domain: plan.can_use_custom_domain,
+            can_list_in_marketplace: plan.can_list_in_marketplace,
+            commission_percentage: plan.commission_percentage,
             features: plan.features,
             badge_text: plan.badge_text || '',
             badge_color: plan.badge_color || '',
@@ -270,6 +279,24 @@ export default function AdminPlansPage() {
                                                         <div>Products: {formatLimit(plan.max_products)}</div>
                                                         <div>Orders: {formatLimit(plan.max_orders_per_month)}</div>
                                                         <div>Customers: {formatLimit(plan.max_customers)}</div>
+                                                        <div className="flex items-center gap-2 mt-2 pt-2 border-t border-slate-700">
+                                                            {plan.can_use_custom_domain && (
+                                                                <Badge variant="secondary" className="text-xs">Custom Domain</Badge>
+                                                            )}
+                                                            {plan.can_list_in_marketplace && (
+                                                                <Badge variant="outline" className="text-xs">Marketplace</Badge>
+                                                            )}
+                                                        </div>
+                                                        {plan.commission_percentage > 0 && (
+                                                            <div className="text-xs text-orange-400">
+                                                                Commission: {plan.commission_percentage}%
+                                                            </div>
+                                                        )}
+                                                        {plan.commission_percentage === 0 && plan.can_list_in_marketplace && (
+                                                            <div className="text-xs text-green-400">
+                                                                Commission: 0% (Free)
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
@@ -452,6 +479,43 @@ export default function AdminPlansPage() {
                                 placeholder="Enter each feature on a new line"
                                 rows={5}
                             />
+                        </div>
+
+                        <div className="border-t border-slate-700 pt-4">
+                            <h4 className="text-sm font-semibold text-slate-300 mb-3">Marketplace Settings</h4>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="flex items-center gap-2">
+                                    <Switch
+                                        checked={formData.can_use_custom_domain}
+                                        onCheckedChange={(checked) => setFormData({ ...formData, can_use_custom_domain: checked })}
+                                    />
+                                    <Label className="text-slate-300">Custom Domain</Label>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Switch
+                                        checked={formData.can_list_in_marketplace}
+                                        onCheckedChange={(checked) => setFormData({ ...formData, can_list_in_marketplace: checked })}
+                                    />
+                                    <Label className="text-slate-300">Marketplace Listing</Label>
+                                </div>
+                            </div>
+                            <div className="space-y-2 mt-4">
+                                <Label className="text-slate-300">Commission Percentage (%)</Label>
+                                <div className="relative">
+                                    <Input
+                                        type="number"
+                                        min="0"
+                                        max="100"
+                                        step="0.01"
+                                        value={formData.commission_percentage}
+                                        onChange={(e) => setFormData({ ...formData, commission_percentage: parseFloat(e.target.value) || 0 })}
+                                        className="bg-slate-700 border-slate-600 pr-8"
+                                        placeholder="0.00"
+                                    />
+                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">%</span>
+                                </div>
+                                <p className="text-xs text-slate-400">Platform commission on marketplace sales (0-100%)</p>
+                            </div>
                         </div>
 
                         <div className="flex items-center gap-6">

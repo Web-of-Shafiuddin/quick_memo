@@ -1,17 +1,3 @@
-// // proxy.ts
-// import { NextResponse } from 'next/server';
-
-// export async function proxy() {
-//   // Auth is handled client-side via localStorage and AuthInitializer
-//   // Protected routes are guarded by the (userDashboard) layout
-//   return NextResponse.next();
-// }
-
-// export const config = {
-//   matcher: [],
-// };
-
-
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
@@ -29,7 +15,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 const MARKETPLACE_DOMAIN = process.env.NEXT_PUBLIC_MARKETPLACE_DOMAIN || 'shop.ezymemo.com';
 const MAIN_DOMAIN = process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'ezymemo.com';
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { hostname, pathname } = request.nextUrl;
 
   // Skip middleware for static files, API routes, and Next.js internals

@@ -65,6 +65,19 @@ const getStatusBadgeVariant = (status: Order['order_status']) => {
   }
 };
 
+// Helper function to get channel badge display
+const getChannelBadge = (channel?: string) => {
+  switch (channel) {
+    case "MARKETPLACE":
+      return { label: "Marketplace", variant: "default" as const };
+    case "CUSTOM_DOMAIN":
+      return { label: "Custom Domain", variant: "secondary" as const };
+    case "DIRECT_SHOP":
+    default:
+      return { label: "Direct Shop", variant: "outline" as const };
+  }
+};
+
 const OrdersPage = () => {
   const { user } = useAuthStore(
     useShallow((state) => ({
@@ -81,6 +94,7 @@ const OrdersPage = () => {
   const [sortBy, setSortBy] = useState("order_date");
   const [sortOrder, setSortOrder] = useState<"ASC" | "DESC">("DESC");
   const [filterStatus, setFilterStatus] = useState<string>("");
+  const [filterChannel, setFilterChannel] = useState<string>("");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [isMemoDialogOpen, setIsMemoDialogOpen] = useState(false);
@@ -107,7 +121,7 @@ const OrdersPage = () => {
 
   useEffect(() => {
     fetchOrders();
-  }, [page, filterStatus, sortBy, sortOrder]);
+  }, [page, filterStatus, filterChannel, sortBy, sortOrder]);
 
   const fetchUserProfile = async () => {
     if (!user?.user_id) return;
@@ -128,6 +142,7 @@ const OrdersPage = () => {
         sortBy,
         sortOrder,
         ...(filterStatus && filterStatus !== "all" && { status: filterStatus }),
+        ...(filterChannel && filterChannel !== "all" && { order_channel: filterChannel }),
       };
       const response = await orderService.getAll(params);
       setOrders(response.data);
@@ -142,6 +157,11 @@ const OrdersPage = () => {
 
   const handleStatusFilter = (status: string) => {
     setFilterStatus(status);
+    setPage(1);
+  };
+
+  const handleChannelFilter = (channel: string) => {
+    setFilterChannel(channel);
     setPage(1);
   };
 
@@ -225,7 +245,7 @@ const OrdersPage = () => {
         </Link>
       </div>
 
-      {/* Filter by status and sorting */}
+      {/* Filter by status, channel, and sorting */}
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         <Select value={filterStatus || "all"} onValueChange={handleStatusFilter}>
           <SelectTrigger className="w-[200px]">
@@ -239,6 +259,17 @@ const OrdersPage = () => {
             <SelectItem value="DELIVERED">Delivered</SelectItem>
             <SelectItem value="RETURNED">Returned</SelectItem>
             <SelectItem value="CANCELLED">Cancelled</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={filterChannel || "all"} onValueChange={handleChannelFilter}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Filter by channel" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Channels</SelectItem>
+            <SelectItem value="DIRECT_SHOP">Direct Shop</SelectItem>
+            <SelectItem value="MARKETPLACE">Marketplace</SelectItem>
+            <SelectItem value="CUSTOM_DOMAIN">Custom Domain</SelectItem>
           </SelectContent>
         </Select>
         <div className="flex gap-2">
@@ -276,9 +307,10 @@ const OrdersPage = () => {
             <TableHead>Email</TableHead>
             <TableHead>Address</TableHead>
             <TableHead>Payment</TableHead>
-            <TableHead>Source</TableHead>
+            <TableHead>Channel</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="text-right">Total</TableHead>
+            <TableHead className="text-right">Commission</TableHead>
             <TableHead>Payment Status</TableHead>
             <TableHead className="text-right">Balance Due</TableHead>
             <TableHead>Date</TableHead>
@@ -288,7 +320,7 @@ const OrdersPage = () => {
         <TableBody>
           {orders.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={14} className="text-center text-muted-foreground">
+              <TableCell colSpan={15} className="text-center text-muted-foreground">
                 No orders found. Create your first order to get started.
               </TableCell>
             </TableRow>
@@ -308,13 +340,26 @@ const OrdersPage = () => {
                 <TableCell>{order.customer_email || '-'}</TableCell>
                 <TableCell className="max-w-xs truncate">{order.customer_address || '-'}</TableCell>
                 <TableCell>{order.payment_method_name || '-'}</TableCell>
-                <TableCell>{order.order_source}</TableCell>
+                <TableCell>
+                  <Badge variant={getChannelBadge(order.order_channel).variant}>
+                    {getChannelBadge(order.order_channel).label}
+                  </Badge>
+                </TableCell>
                 <TableCell>
                   <Badge variant={getStatusBadgeVariant(order.order_status)}>
                     {order.order_status}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">{formatPrice(parseFloat(order.total_amount.toString()))}</TableCell>
+                <TableCell className="text-right">
+                  {order.commission_applied && order.commission_amount ? (
+                    <span className="text-red-600 font-medium">
+                      -{formatPrice(parseFloat(order.commission_amount.toString()))}
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground">-</span>
+                  )}
+                </TableCell>
                 <TableCell>
                   {order.invoice_status === 'PAID' ? (
                     <Badge className="bg-green-100 text-green-800">Paid</Badge>
@@ -459,6 +504,12 @@ const OrdersPage = () => {
                     <span className="font-medium">Source:</span> {selectedOrder.order_source}
                   </div>
                   <div>
+                    <span className="font-medium">Channel:</span>{' '}
+                    <Badge variant={getChannelBadge(selectedOrder.order_channel).variant}>
+                      {getChannelBadge(selectedOrder.order_channel).label}
+                    </Badge>
+                  </div>
+                  <div>
                     <span className="font-medium">Payment Method:</span> {selectedOrder.payment_method_name}
                   </div>
                   <div>
@@ -467,6 +518,14 @@ const OrdersPage = () => {
                       {selectedOrder.order_status}
                     </Badge>
                   </div>
+                  {selectedOrder.commission_applied && selectedOrder.commission_amount && (
+                    <div>
+                      <span className="font-medium">Commission:</span>{' '}
+                      <span className="text-red-600 font-semibold">
+                        -{formatPrice(parseFloat(selectedOrder.commission_amount.toString()))}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -514,6 +573,23 @@ const OrdersPage = () => {
                     <span>Total Amount:</span>
                     <span>{formatPrice(parseFloat(selectedOrder.total_amount.toString()))}</span>
                   </div>
+                  {selectedOrder.commission_applied && selectedOrder.commission_amount && (
+                    <>
+                      <div className="flex justify-between text-red-600">
+                        <span>Platform Commission:</span>
+                        <span>-{formatPrice(parseFloat(selectedOrder.commission_amount.toString()))}</span>
+                      </div>
+                      <div className="flex justify-between font-bold text-lg text-green-600 border-t pt-2">
+                        <span>Net Earnings:</span>
+                        <span>
+                          {formatPrice(
+                            parseFloat(selectedOrder.total_amount.toString()) -
+                            parseFloat(selectedOrder.commission_amount.toString())
+                          )}
+                        </span>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
