@@ -1,62 +1,57 @@
-// // proxy.ts
-// import { NextResponse } from 'next/server';
-
-// export async function proxy() {
-//   // Auth is handled client-side via localStorage and AuthInitializer
-//   // Protected routes are guarded by the (userDashboard) layout
-//   return NextResponse.next();
-// }
-
-// export const config = {
-//   matcher: [],
-// };
-
-
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 /**
- * Next.js Middleware for Custom Domain Routing
+ * Next.js 16 Proxy (replaces middleware.ts)
  *
- * This middleware intercepts all requests and:
- * 1. Detects the incoming domain
- * 2. Routes custom domains to their respective shop pages
- * 3. Routes shop.ezymemo.com to marketplace pages
- * 4. Allows normal ezymemo.com traffic to pass through
+ * Handles:
+ * 1. Localhost development - everything passes through directly
+ * 2. Marketplace subdomain (shop.yourdomain.com) - rewrites to /marketplace/*
+ * 3. Main domain (yourdomain.com) - passes through
+ * 4. Custom domains (mystore.com) - resolves via API and rewrites to /shop/[slug]
+ *
+ * Environment variables:
+ *   NEXT_PUBLIC_MAIN_DOMAIN        - e.g. ezymemo.com
+ *   NEXT_PUBLIC_MARKETPLACE_DOMAIN - e.g. shop.ezymemo.com
+ *   BACKEND_URL                    - e.g. http://localhost:3001 (internal, no /api suffix)
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-const MARKETPLACE_DOMAIN = process.env.NEXT_PUBLIC_MARKETPLACE_DOMAIN || 'shop.ezymemo.com';
-const MAIN_DOMAIN = process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'ezymemo.com';
+// Backend URL for server-side domain resolution (NOT NEXT_PUBLIC_API_URL which has /api suffix)
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
+const MARKETPLACE_DOMAIN =
+  process.env.NEXT_PUBLIC_MARKETPLACE_DOMAIN || "";
+const MAIN_DOMAIN = process.env.NEXT_PUBLIC_MAIN_DOMAIN || "";
 
 export async function proxy(request: NextRequest) {
   const { hostname, pathname } = request.nextUrl;
 
-  // Skip middleware for static files, API routes, and Next.js internals
+  // Skip for static files, API routes, and Next.js internals
   if (
-    pathname.startsWith('/_next') ||
-    pathname.startsWith('/api') ||
-    pathname.startsWith('/static') ||
-    pathname.includes('.') // Files with extensions (images, fonts, etc.)
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/api") ||
+    pathname.startsWith("/static") ||
+    pathname.includes(".")
   ) {
     return NextResponse.next();
   }
 
-  // Development mode: Allow direct access to /marketplace without subdomain
-  const isLocalhost = hostname === 'localhost' ||
-                      hostname.startsWith('localhost:') ||
-                      hostname === '127.0.0.1' ||
-                      hostname.startsWith('127.0.0.1:');
+  // --- LOCALHOST: Allow everything through directly ---
+  // In development, access marketplace via http://localhost:3000/marketplace
+  const isLocalhost =
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname.endsWith(".localhost");
 
   if (isLocalhost) {
-    // In development, /marketplace routes work directly without subdomain
     return NextResponse.next();
   }
 
-  // Case 1: Marketplace domain (shop.ezymemo.com in production)
-  if (hostname === MARKETPLACE_DOMAIN || hostname === `shop.${MAIN_DOMAIN}`) {
-    // Rewrite to marketplace route group
-    if (!pathname.startsWith('/marketplace')) {
+  // --- MARKETPLACE SUBDOMAIN: Rewrite to /marketplace/* ---
+  if (
+    MARKETPLACE_DOMAIN &&
+    (hostname === MARKETPLACE_DOMAIN || hostname === `shop.${MAIN_DOMAIN}`)
+  ) {
+    if (!pathname.startsWith("/marketplace")) {
       const url = request.nextUrl.clone();
       url.pathname = `/marketplace${pathname}`;
       return NextResponse.rewrite(url);
@@ -64,21 +59,20 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Case 2: Main platform domain (ezymemo.com)
-  if (hostname === MAIN_DOMAIN || hostname === `www.${MAIN_DOMAIN}`) {
+  // --- MAIN DOMAIN: Pass through ---
+  if (
+    MAIN_DOMAIN &&
+    (hostname === MAIN_DOMAIN || hostname === `www.${MAIN_DOMAIN}`)
+  ) {
     return NextResponse.next();
   }
 
-  // Case 3: Custom domain - resolve to shop
+  // --- CUSTOM DOMAIN: Resolve via backend API ---
   try {
-    // Query backend to resolve custom domain
-    const resolveUrl = `${API_BASE_URL}/api/domains/resolve?domain=${hostname}`;
+    const resolveUrl = `${BACKEND_URL}/api/domains/resolve?domain=${hostname}`;
 
     const response = await fetch(resolveUrl, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      // Don't wait too long for domain resolution
+      headers: { "Content-Type": "application/json" },
       signal: AbortSignal.timeout(3000),
     });
 
@@ -88,123 +82,25 @@ export async function proxy(request: NextRequest) {
       if (data.success && data.data?.shopSlug) {
         const { shopSlug } = data.data;
 
-        // Rewrite to the shop page
-        const url = request.nextUrl.clone();
-
-        // If already on /shop/[slug], just continue
         if (pathname.startsWith(`/shop/${shopSlug}`)) {
           return NextResponse.next();
         }
 
-        // Rewrite root domain requests to shop page
-        // mystore.com/ -> ezymemo.com/shop/mystore
-        // mystore.com/products -> ezymemo.com/shop/mystore/products
+        const url = request.nextUrl.clone();
         url.pathname = `/shop/${shopSlug}${pathname}`;
-
         return NextResponse.rewrite(url);
       }
     }
 
-    // Domain not found or not active - show 404
-    return new NextResponse(
-      `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Domain Not Found</title>
-          <style>
-            body {
-              font-family: system-ui, -apple-system, sans-serif;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              height: 100vh;
-              margin: 0;
-              background: #f5f5f5;
-            }
-            .container {
-              text-align: center;
-              padding: 2rem;
-              background: white;
-              border-radius: 8px;
-              box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            }
-            h1 { margin: 0 0 1rem; color: #333; }
-            p { color: #666; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <h1>Domain Not Configured</h1>
-            <p>This domain is not currently active or configured.</p>
-            <p>Please contact the shop owner for assistance.</p>
-          </div>
-        </body>
-      </html>
-      `,
-      {
-        status: 404,
-        headers: { 'Content-Type': 'text/html' },
-      }
-    );
+    return new NextResponse("Domain Not Found", { status: 404 });
   } catch (error) {
-    console.error('Domain resolution error:', error);
-
-    // On error, return 503 Service Unavailable
-    return new NextResponse(
-      `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Service Unavailable</title>
-          <style>
-            body {
-              font-family: system-ui, -apple-system, sans-serif;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              height: 100vh;
-              margin: 0;
-              background: #f5f5f5;
-            }
-            .container {
-              text-align: center;
-              padding: 2rem;
-              background: white;
-              border-radius: 8px;
-              box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            }
-            h1 { margin: 0 0 1rem; color: #333; }
-            p { color: #666; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <h1>Service Temporarily Unavailable</h1>
-            <p>We're experiencing technical difficulties.</p>
-            <p>Please try again in a few moments.</p>
-          </div>
-        </body>
-      </html>
-      `,
-      {
-        status: 503,
-        headers: { 'Content-Type': 'text/html' },
-      }
-    );
+    console.error("Domain resolution error:", error);
+    return new NextResponse("Service Unavailable", { status: 503 });
   }
 }
 
-// Configure which paths the middleware should run on
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder files
-     */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|ttf|eot)$).*)',
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|ttf|eot)$).*)",
   ],
 };
