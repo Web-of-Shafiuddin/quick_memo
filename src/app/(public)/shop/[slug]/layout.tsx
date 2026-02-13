@@ -10,6 +10,7 @@ import api from "@/lib/api";
 import { ReportShopModal } from "@/components/ReportShopModal";
 import { MobileMenu } from "@/components/mobile/MobileMenu";
 import Script from "next/script";
+import AdBanner from "@/components/ads/AdBanner";
 
 interface ShopProfile {
   user_id: number;
@@ -171,6 +172,9 @@ export default function PublicShopLayout({
           </div>
         </div>
       </header>
+
+      {/* Top Ad Banner */}
+      <AdBanner slot="shop_top_banner" variant="banner" />
 
       {/* Main Content */}
       <main className="flex-1 container mx-auto px-4 py-8">{children}</main>

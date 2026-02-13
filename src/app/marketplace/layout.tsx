@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Store, ShoppingCart, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import AdBanner from '@/components/ads/AdBanner';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -75,6 +76,9 @@ export default function MarketplaceLayout({
           </nav>
         </div>
       </header>
+
+      {/* Top Ad Banner */}
+      <AdBanner slot="marketplace_top_banner" variant="banner" />
 
       {/* Main Content */}
       <main className="min-h-screen bg-gray-50">

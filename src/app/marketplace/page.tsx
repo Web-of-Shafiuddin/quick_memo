@@ -26,6 +26,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
+import AdUnit from "@/components/ads/AdUnit";
 
 function MarketplaceContent() {
   const searchParams = useSearchParams();
@@ -142,9 +143,14 @@ function MarketplaceContent() {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {products.map((product) => (
+            {products.map((product, index) => (
+              <React.Fragment key={product.product_id}>
+              {index > 0 && index % 8 === 0 && (
+                <div className="col-span-full">
+                  <AdUnit slotName="marketplace_mid_feed" className="my-2" />
+                </div>
+              )}
               <Card
-                key={product.product_id}
                 className="group hover:shadow-lg transition-shadow"
               >
                 <Link href={`/marketplace/products/${product.sku}`}>
@@ -224,6 +230,7 @@ function MarketplaceContent() {
                   </Button>
                 </CardFooter>
               </Card>
+              </React.Fragment>
             ))}
           </div>
 

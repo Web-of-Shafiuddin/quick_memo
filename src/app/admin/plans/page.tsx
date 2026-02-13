@@ -41,8 +41,8 @@ interface Plan {
     max_orders_per_month: number;
     max_customers: number;
     can_upload_images: boolean;
-    can_use_custom_domain: boolean;
     can_list_in_marketplace: boolean;
+    show_ads: boolean;
     commission_percentage: number;
     features: string[];
     badge_text: string | null;
@@ -63,8 +63,8 @@ const initialFormState = {
     max_orders_per_month: -1,
     max_customers: -1,
     can_upload_images: false,
-    can_use_custom_domain: false,
     can_list_in_marketplace: true,
+    show_ads: true,
     commission_percentage: 0,
     features: [] as string[],
     badge_text: '',
@@ -126,8 +126,8 @@ export default function AdminPlansPage() {
             max_orders_per_month: plan.max_orders_per_month,
             max_customers: plan.max_customers,
             can_upload_images: plan.can_upload_images,
-            can_use_custom_domain: plan.can_use_custom_domain,
             can_list_in_marketplace: plan.can_list_in_marketplace,
+            show_ads: plan.show_ads,
             commission_percentage: plan.commission_percentage,
             features: plan.features,
             badge_text: plan.badge_text || '',
@@ -280,12 +280,12 @@ export default function AdminPlansPage() {
                                                         <div>Orders: {formatLimit(plan.max_orders_per_month)}</div>
                                                         <div>Customers: {formatLimit(plan.max_customers)}</div>
                                                         <div className="flex items-center gap-2 mt-2 pt-2 border-t border-slate-700">
-                                                            {plan.can_use_custom_domain && (
-                                                                <Badge variant="secondary" className="text-xs">Custom Domain</Badge>
-                                                            )}
                                                             {plan.can_list_in_marketplace && (
                                                                 <Badge variant="outline" className="text-xs">Marketplace</Badge>
                                                             )}
+                                                            <Badge variant={plan.show_ads ? "destructive" : "secondary"} className="text-xs">
+                                                                Ads: {plan.show_ads ? 'Yes' : 'No'}
+                                                            </Badge>
                                                         </div>
                                                         {plan.commission_percentage > 0 && (
                                                             <div className="text-xs text-orange-400">
@@ -486,17 +486,17 @@ export default function AdminPlansPage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="flex items-center gap-2">
                                     <Switch
-                                        checked={formData.can_use_custom_domain}
-                                        onCheckedChange={(checked) => setFormData({ ...formData, can_use_custom_domain: checked })}
-                                    />
-                                    <Label className="text-slate-300">Custom Domain</Label>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Switch
                                         checked={formData.can_list_in_marketplace}
                                         onCheckedChange={(checked) => setFormData({ ...formData, can_list_in_marketplace: checked })}
                                     />
                                     <Label className="text-slate-300">Marketplace Listing</Label>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Switch
+                                        checked={formData.show_ads}
+                                        onCheckedChange={(checked) => setFormData({ ...formData, show_ads: checked })}
+                                    />
+                                    <Label className="text-slate-300">Show Ads</Label>
                                 </div>
                             </div>
                             <div className="space-y-2 mt-4">

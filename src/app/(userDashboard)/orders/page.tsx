@@ -70,8 +70,6 @@ const getChannelBadge = (channel?: string) => {
   switch (channel) {
     case "MARKETPLACE":
       return { label: "Marketplace", variant: "default" as const };
-    case "CUSTOM_DOMAIN":
-      return { label: "Custom Domain", variant: "secondary" as const };
     case "DIRECT_SHOP":
     default:
       return { label: "Direct Shop", variant: "outline" as const };
@@ -269,7 +267,6 @@ const OrdersPage = () => {
             <SelectItem value="all">All Channels</SelectItem>
             <SelectItem value="DIRECT_SHOP">Direct Shop</SelectItem>
             <SelectItem value="MARKETPLACE">Marketplace</SelectItem>
-            <SelectItem value="CUSTOM_DOMAIN">Custom Domain</SelectItem>
           </SelectContent>
         </Select>
         <div className="flex gap-2">

@@ -25,6 +25,7 @@ import { MobileMenu } from "@/components/mobile/MobileMenu";
 import { BottomNav } from "@/components/mobile/BottomNav";
 import { QuickActionsMenu } from "@/components/mobile/QuickActionsMenu";
 import Image from "next/image";
+import AdBanner from "@/components/ads/AdBanner";
 
 interface Subscription {
   subscription_id: number;
@@ -235,6 +236,8 @@ export default function ProtectedUserDashboardlayout({
           {/* Main Content - Full width on mobile, variable on desktop */}
           <div className={`${sidebarOpen ? 'lg:col-span-2' : 'lg:col-span-3'}`}>
             {children}
+            {/* Dashboard Ad - shown based on user's plan */}
+            <AdBanner slot="dashboard_sidebar" variant="inline" className="mt-6" />
           </div>
         </div>
       </main>
