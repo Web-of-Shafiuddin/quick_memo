@@ -80,7 +80,7 @@ export default function AdminAdsPage() {
     const fetchPlacements = async () => {
         try {
             setLoading(true);
-            const response = await adminApi.get('/ads');
+            const response = await adminApi.get('/admin/ads');
             setPlacements(response.data.data || []);
         } catch (error) {
             console.error('Error fetching ad placements:', error);
@@ -140,10 +140,10 @@ export default function AdminAdsPage() {
             };
 
             if (selectedPlacement) {
-                await adminApi.put(`/ads/${selectedPlacement.ad_id}`, payload);
+                await adminApi.put(`/admin/ads/${selectedPlacement.ad_id}`, payload);
                 toast.success('Ad placement updated');
             } else {
-                await adminApi.post('/ads', payload);
+                await adminApi.post('/admin/ads', payload);
                 toast.success('Ad placement created');
             }
 
@@ -160,7 +160,7 @@ export default function AdminAdsPage() {
         if (!selectedPlacement) return;
         try {
             setProcessing(true);
-            await adminApi.delete(`/ads/${selectedPlacement.ad_id}`);
+            await adminApi.delete(`/admin/ads/${selectedPlacement.ad_id}`);
             toast.success('Ad placement deleted');
             setDeleteDialog(false);
             fetchPlacements();
@@ -173,7 +173,7 @@ export default function AdminAdsPage() {
 
     const handleToggleActive = async (placement: AdPlacement) => {
         try {
-            await adminApi.put(`/ads/${placement.ad_id}`, {
+            await adminApi.put(`/admin/ads/${placement.ad_id}`, {
                 is_active: !placement.is_active,
             });
             toast.success(`Ad ${placement.is_active ? 'deactivated' : 'activated'}`);
