@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   Flag,
   Star,
+  Megaphone,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -80,6 +81,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { href: "/admin/reviews", label: "Reviews", icon: Star },
     { href: "/admin/subscriptions", label: "Requests", icon: CreditCard },
     { href: "/admin/plans", label: "Plans", icon: Crown },
+    { href: "/admin/ads", label: "Ads", icon: Megaphone },
   ];
 
   return (
