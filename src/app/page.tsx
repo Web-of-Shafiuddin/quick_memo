@@ -59,7 +59,7 @@ export default function HomePage() {
       title: "Public Shop & Live Store",
       description:
         "Create a professional online storefront. Share your shop link on social media. Customers browse products and place orders directly from your live site.",
-      color: "bg-blue-500",
+      color: "bg-[#0096FF]",
       highlight: true,
     },
     {
@@ -74,7 +74,7 @@ export default function HomePage() {
       title: "Customer Management",
       description:
         "Build your customer database. Track purchase history, preferences, and contact info. Send follow-ups and get repeat orders from loyal customers.",
-      color: "bg-purple-500",
+      color: "bg-[#003399]",
     },
     {
       icon: Package,
@@ -244,7 +244,7 @@ export default function HomePage() {
                 height={24}
                 className="rounded-sm"
               />
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <span className="text-xl font-bold bg-gradient-to-r from-[#0096FF] to-[#003399] bg-clip-text text-transparent">
                 EzyMemo
               </span>
             </Link>
@@ -383,7 +383,7 @@ export default function HomePage() {
       </header>
 
       {/* Hero Section */}
-      <section className="pt-24 pb-16 md:pt-32 md:pb-24 bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
+      <section className="pt-24 pb-16 md:pt-32 md:pb-24 bg-gradient-to-br from-slate-50 via-[#87CEFA]/10 to-[#0096FF]/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-4xl mx-auto">
             {/* Badge */}
@@ -444,7 +444,7 @@ export default function HomePage() {
 
           {/* Hero Image/Dashboard Preview - Platform Overview */}
           <figure className="mt-16">
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-1 shadow-2xl">
+            <div className="bg-gradient-to-r from-[#0096FF] to-[#003399] rounded-2xl p-1 shadow-2xl">
               <div className="bg-gray-900 rounded-xl overflow-hidden">
                 <div className="bg-gray-800 px-4 py-3 flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-red-500"></div>
@@ -457,8 +457,8 @@ export default function HomePage() {
                 <div className="p-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-[300px] md:min-h-[400px]">
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4 max-w-5xl mx-auto">
                     <Card className="p-4 text-center hover:shadow-lg transition-shadow">
-                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                        <ShoppingCart className="w-5 h-5 text-blue-600" />
+                      <div className="w-10 h-10 bg-[#87CEFA]/25 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <ShoppingCart className="w-5 h-5 text-[#0096FF]" />
                       </div>
                       <div className="text-2xl font-bold">1,420</div>
                       <div className="text-xs text-gray-500">Orders</div>
@@ -479,8 +479,8 @@ export default function HomePage() {
                       </div>
                     </Card>
                     <Card className="p-4 text-center hover:shadow-lg transition-shadow">
-                      <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                        <Users className="w-5 h-5 text-purple-600" />
+                      <div className="w-10 h-10 bg-[#87CEFA]/30 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <Users className="w-5 h-5 text-[#003399]" />
                       </div>
                       <div className="text-2xl font-bold">892</div>
                       <div className="text-xs text-gray-500">Customers</div>
@@ -494,7 +494,7 @@ export default function HomePage() {
                       </div>
                       <div className="text-2xl font-bold">248</div>
                       <div className="text-xs text-gray-500">Products</div>
-                      <div className="text-xs text-blue-600 mt-1">
+                      <div className="text-xs text-[#0096FF] mt-1">
                         Stock tracking
                       </div>
                     </Card>
@@ -515,8 +515,8 @@ export default function HomePage() {
                       </div>
                     </div>
                     <div className="bg-white rounded-lg p-4 border border-gray-200 flex items-center gap-3">
-                      <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                        <CheckCircle2 className="w-4 h-4 text-purple-600" />
+                      <div className="w-8 h-8 bg-[#87CEFA]/30 rounded-full flex items-center justify-center">
+                        <CheckCircle2 className="w-4 h-4 text-[#003399]" />
                       </div>
                       <div>
                         <div className="text-sm font-medium">
@@ -528,8 +528,8 @@ export default function HomePage() {
                       </div>
                     </div>
                     <div className="bg-white rounded-lg p-4 border border-gray-200 flex items-center gap-3">
-                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                        <CheckCircle2 className="w-4 h-4 text-blue-600" />
+                      <div className="w-8 h-8 bg-[#87CEFA]/25 rounded-full flex items-center justify-center">
+                        <CheckCircle2 className="w-4 h-4 text-[#0096FF]" />
                       </div>
                       <div>
                         <div className="text-sm font-medium">
@@ -554,7 +554,7 @@ export default function HomePage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
               <div key={index} className="text-center">
-                <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-[#0096FF] to-[#003399] bg-clip-text text-transparent">
                   {stat.value}
                 </div>
                 <div className="text-gray-600 mt-1">{stat.label}</div>
@@ -567,11 +567,11 @@ export default function HomePage() {
       {/* How It Works Section */}
       <section
         id="how-it-works"
-        className="py-20 bg-gradient-to-br from-blue-50 to-purple-50"
+        className="py-20 bg-gradient-to-br from-[#87CEFA]/10 to-[#0096FF]/10"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-blue-100 text-blue-700">
+            <Badge className="mb-4 bg-[#87CEFA]/30 text-[#003399]">
               How It Works
             </Badge>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -621,11 +621,11 @@ export default function HomePage() {
               <li key={index} className="relative">
                 <article className="text-center">
                   <div className="relative inline-block mb-4">
-                    <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto">
+                    <div className="w-16 h-16 bg-gradient-to-r from-[#0096FF] to-[#87CEFA] rounded-full flex items-center justify-center mx-auto">
                       <item.icon className="w-8 h-8 text-white" />
                     </div>
-                    <div className="absolute -top-1 -right-1 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md border-2 border-blue-600">
-                      <span className="text-sm font-bold text-blue-600">
+                    <div className="absolute -top-1 -right-1 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md border-2 border-[#0095ffa3]">
+                      <span className="text-sm font-bold text-[#0096FF]">
                         {item.step}
                       </span>
                     </div>
@@ -645,7 +645,7 @@ export default function HomePage() {
       <section id="features" className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-purple-100 text-purple-700">
+            <Badge className="mb-4 bg-[#87CEFA]/30 text-[#003399]">
               Features
             </Badge>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -663,7 +663,7 @@ export default function HomePage() {
             {features.map((feature, index) => (
               <article
                 key={index}
-                className={`group hover:shadow-lg transition-all duration-300 border-0 bg-white ${feature.highlight ? "ring-2 ring-blue-500" : ""}`}
+                className={`group hover:shadow-lg transition-all duration-300 border-0 bg-white ${feature.highlight ? "ring-2 ring-[#0096FF]" : ""}`}
               >
                 <Card className="h-full">
                   <CardContent className="p-6 flex flex-col items-center">
@@ -689,7 +689,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
-              <Badge className="mb-4 bg-blue-100 text-blue-700">
+              <Badge className="mb-4 bg-[#87CEFA]/30 text-[#003399]">
                 Live Shop Website
               </Badge>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
@@ -760,7 +760,7 @@ export default function HomePage() {
               <Link href={isAuthenticated ? "/dashboard" : "/auth/login"}>
                 <Button
                   size="lg"
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  className="bg-gradient-to-r from-[#0096FF] to-[#003399] hover:from-[#0080DD] hover:to-[#002277]"
                 >
                   Launch Your Live Shop
                   <ArrowRight className="w-5 h-5 ml-2" />
@@ -769,9 +769,9 @@ export default function HomePage() {
             </div>
 
             <div className="relative">
-              <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6">
+              <div className="bg-gradient-to-br from-[#87CEFA]/15 to-[#0096FF]/15 rounded-2xl p-6">
                 <Card className="overflow-hidden">
-                  <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4 relative">
+                  <div className="bg-gradient-to-r from-[#0096FF] to-[#003399] px-6 py-4 relative">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
                         <FileText className="w-6 h-6 text-white" />
@@ -793,8 +793,8 @@ export default function HomePage() {
                   <div className="p-6 space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="bg-gray-50 rounded-lg p-4 cursor-pointer hover:shadow-md transition-shadow">
-                        <div className="w-full h-32 bg-gradient-to-br from-blue-100 to-purple-100 rounded mb-3 flex items-center justify-center">
-                          <Package className="w-12 h-12 text-blue-600" />
+                        <div className="w-full h-32 bg-gradient-to-br from-[#87CEFA]/20 to-[#0096FF]/20 rounded mb-3 flex items-center justify-center">
+                          <Package className="w-12 h-12 text-[#0096FF]" />
                         </div>
                         <div className="font-medium text-gray-900">
                           Kurti Collection
@@ -847,7 +847,7 @@ export default function HomePage() {
                     </div>
                   </div>
 
-                  <div className="bg-gradient-to-r from-green-50 to-blue-50 px-6 py-4 border-t border-green-200">
+                  <div className="bg-gradient-to-r from-green-50 to-[#87CEFA]/15 px-6 py-4 border-t border-green-200">
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="text-sm text-gray-500">
@@ -892,8 +892,8 @@ export default function HomePage() {
               <ul className="grid grid-cols-2 gap-6 list-none">
                 {benefits.map((benefit, index) => (
                   <li key={index} className="text-center md:text-left flex flex-col items-center md:flex-row md:items-start gap-3">
-                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <benefit.icon className="w-5 h-5 text-blue-600" />
+                    <div className="w-10 h-10 bg-[#87CEFA]/25 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <benefit.icon className="w-5 h-5 text-[#0096FF]" />
                     </div>
                     <div>
                       <strong className="font-medium text-gray-900 block">
@@ -908,12 +908,12 @@ export default function HomePage() {
               </ul>
             </div>
             <div className="relative">
-              <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl p-8">
+              <div className="bg-gradient-to-br from-[#87CEFA]/25 to-[#0096FF]/20 rounded-2xl p-8">
                 <div className="space-y-4">
                   {/* Public Shop Link Preview */}
                   <Card className="p-4">
                     <div className="flex items-center gap-3 mb-4">
-                      <Globe className="w-6 h-6 text-blue-600" />
+                      <Globe className="w-6 h-6 text-[#0096FF]" />
                       <div>
                         <div className="font-medium">Your Public Shop</div>
                         <div className="text-xs text-gray-500">
@@ -933,8 +933,8 @@ export default function HomePage() {
                   <div className="grid grid-cols-2 gap-4">
                     <Card className="p-4">
                       <div className="flex items-center gap-2 mb-2">
-                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                          <Smartphone className="w-4 h-4 text-blue-600" />
+                        <div className="w-8 h-8 bg-[#87CEFA]/25 rounded-full flex items-center justify-center">
+                          <Smartphone className="w-4 h-4 text-[#0096FF]" />
                         </div>
                         <span className="text-xs text-gray-500">
                           WhatsApp Shares
@@ -962,7 +962,7 @@ export default function HomePage() {
                   </div>
 
                   {/* Trust Badge */}
-                  <Card className="p-4 bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
+                  <Card className="p-4 bg-gradient-to-r from-green-50 to-[#87CEFA]/15 border-green-200">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white">
                         <CheckCircle2 className="w-5 h-5" />
@@ -1037,7 +1037,7 @@ export default function HomePage() {
                     </div>
                     <p className="text-gray-600 mb-6">{testimonial.content}</p>
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-medium">
+                      <div className="w-10 h-10 bg-gradient-to-br from-[#0096FF] to-[#003399] rounded-full flex items-center justify-center text-white font-medium">
                         {testimonial.avatar}
                       </div>
                       <div>
@@ -1061,7 +1061,7 @@ export default function HomePage() {
       <section id="faq" className="py-20 bg-gray-50">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <Badge className="mb-4 bg-blue-100 text-blue-700">FAQ</Badge>
+            <Badge className="mb-4 bg-[#87CEFA]/30 text-[#003399]">FAQ</Badge>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Frequently Asked Questions About Digital Receipts & Order Management
             </h2>
@@ -1100,7 +1100,7 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600">
+      <section className="py-20 bg-[#0096FF]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
             Ready to Grow Your Social Commerce Business?
@@ -1115,7 +1115,7 @@ export default function HomePage() {
             <Link href={isAuthenticated ? "/dashboard" : "/auth/login"}>
               <Button
                 size="lg"
-                className="bg-white text-blue-600 hover:bg-gray-100 text-lg px-8 py-6"
+                className="bg-orange-600 hover:bg-orange-700 text-white text-lg px-8 py-6"
               >
                 Get Started Free
                 <ArrowRight className="w-5 h-5 ml-2" />
@@ -1125,7 +1125,7 @@ export default function HomePage() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-white text-black hover:text-white hover:bg-white/10 text-lg px-8 py-6"
+                className="border-orange-300 text-orange-700 hover:bg-orange-50 text-lg px-8 py-6"
               >
                 View Pricing
               </Button>
