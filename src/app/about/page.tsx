@@ -5,7 +5,7 @@ import Image from "next/image";
 
 export const metadata: Metadata = {
   title: "About Us",
-  description: "Learn about EzyMemo's mission to empower Facebook sellers in Bangladesh with easy order management tools.",
+  description: "Learn about EzyMemo's mission to empower social commerce sellers worldwide with free digital receipt generation and order management tools.",
 };
 
 export default function AboutPage() {
@@ -20,7 +20,7 @@ export default function AboutPage() {
             About EzyMemo
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Empowering thousands of Facebook sellers in Bangladesh with the easiest order management platform
+            Empowering social commerce sellers worldwide with free digital receipts and the easiest order management platform
           </p>
         </div>
 
@@ -29,13 +29,13 @@ export default function AboutPage() {
             <div>
               <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Story</h2>
               <p className="text-gray-600 leading-relaxed mb-4">
-                EzyMemo was born from a simple observation: Facebook sellers in Bangladesh were struggling with managing orders scattered across multiple platforms. Lost messages, missed orders, and chaotic spreadsheets were the norm.
+                EzyMemo was born from a simple observation: social commerce sellers were struggling with managing orders scattered across multiple platforms. Lost messages, missed orders, and chaotic spreadsheets were the norm — whether in Dhaka, Lagos, or Los Angeles.
               </p>
               <p className="text-gray-600 leading-relaxed mb-4">
-                We asked ourselves: <em>Why can&apos;t there be a simple, powerful tool designed specifically for F-commerce sellers?</em> A tool that brings all orders into one place, generates professional memos, and helps businesses grow.
+                We asked ourselves: <em>Why can&apos;t there be a simple, powerful tool designed specifically for social commerce sellers?</em> A tool that brings all orders into one place, generates professional digital receipts, and helps businesses grow.
               </p>
               <p className="text-gray-600 leading-relaxed">
-                So we built it. Today, EzyMemo serves hundreds of sellers across Bangladesh, helping them manage thousands of orders and grow their businesses efficiently. We&apos;re proud to be made in Bangladesh, for Bangladesh.
+                So we built it. Today, EzyMemo serves thousands of sellers across the globe, helping them manage orders and grow their businesses efficiently. We&apos;re proud to be built in Bangladesh and used by entrepreneurs worldwide.
               </p>
             </div>
             <div className="relative">
@@ -62,7 +62,7 @@ export default function AboutPage() {
               <h2 className="text-3xl font-bold text-gray-900">Our Mission</h2>
             </div>
             <p className="text-xl text-gray-700 leading-relaxed max-w-4xl">
-              To simplify online selling for every Facebook business owner in Bangladesh by providing an intuitive, powerful, and affordable platform that manages orders, customers, and growth—all in one place.
+              To simplify online selling for every social commerce entrepreneur worldwide by providing an intuitive, powerful, and free digital receipt and order management platform that handles invoicing, customer relationships, and growth — all in one place.
             </p>
           </div>
         </div>
@@ -87,8 +87,8 @@ export default function AboutPage() {
               },
               {
                 icon: Globe,
-                title: "Made in Bangladesh",
-                description: "Built by Bangladeshi engineers, for Bangladeshi sellers. We understand your needs.",
+                title: "Global Reach, Local Heart",
+                description: "Built by Bangladeshi engineers, used by sellers worldwide. We understand the needs of social commerce.",
                 color: "from-green-100 to-emerald-100",
                 iconColor: "text-green-600",
               },
@@ -169,7 +169,7 @@ export default function AboutPage() {
         <div className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-3xl shadow-xl p-8 md:p-12 text-white mb-12">
           <h2 className="text-3xl font-bold mb-6 text-center">Join Our Growing Community</h2>
           <p className="text-xl text-blue-100 text-center mb-8 max-w-3xl mx-auto">
-            Be part of hundreds of Facebook sellers who have transformed their business with EzyMemo. Start managing your orders effortlessly today.
+            Be part of thousands of social commerce sellers who have transformed their business with EzyMemo. Start creating digital receipts and managing your orders effortlessly today.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link

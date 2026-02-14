@@ -85,9 +85,9 @@ export default function HomePage() {
     },
     {
       icon: Receipt,
-      title: "Professional Memos",
+      title: "Digital Receipts & Invoices",
       description:
-        "Generate professional cash memos and invoices in seconds with ezy memo. Send via WhatsApp or email. Build trust with clean, branded documents.",
+        "Generate professional digital receipts and invoices in seconds. Send via WhatsApp or email. Build trust with clean, branded documents.",
       color: "bg-pink-500",
     },
     {
@@ -122,38 +122,38 @@ export default function HomePage() {
     },
     {
       icon: Receipt,
-      title: "Professional Memos",
+      title: "Digital Receipts & Invoices",
       description: "Build trust with clean, branded documents",
     },
     {
       icon: HeadphonesIcon,
       title: "24/7 Support",
-      description: "Dedicated support for Bangladeshi sellers",
+      description: "Dedicated support for online sellers worldwide",
     },
   ];
 
   const testimonials = [
     {
-      name: "Fatima Rahman",
-      role: "Facebook Page Seller, Fashion House BD",
+      name: "Fatima R.",
+      role: "Social Commerce Seller, Fashion & Apparel",
       content:
-        "My public shop now gets 60% of my orders automatically. The order management system keeps everything organized. Professional memos helped build trust with wholesale clients.",
+        "My online shop now gets 60% of my orders automatically. The order management system keeps everything organized. Professional digital receipts helped build trust with wholesale clients.",
       rating: 5,
       avatar: "FR",
     },
     {
-      name: "Karim Ahmed",
-      role: "F-Commerce Electronics Seller",
+      name: "Karim A.",
+      role: "Social Commerce Electronics Seller",
       content:
-        "I was overwhelmed with orders from Facebook and Instagram. Ezymemo brought everything to one place. This ezy memo system made order management so easy. Sales increased 35%!",
+        "I was overwhelmed with orders from Facebook and Instagram. EzyMemo brought everything to one place. Digital receipts and order management made my business so much easier. Sales increased 35%!",
       rating: 5,
       avatar: "KA",
     },
     {
-      name: "Nusrat Jahan",
+      name: "Nusrat J.",
       role: "Handicrafts & Gifts Business",
       content:
-        "Managing customers and tracking repeat orders was impossible before. Now I have complete customer history. Public shop brought in new customers I never had before.",
+        "Managing customers and tracking repeat orders was impossible before. Now I have complete customer history. My online storefront brought in new customers I never had before.",
       rating: 5,
       avatar: "NJ",
     },
@@ -167,9 +167,10 @@ export default function HomePage() {
   ];
 
   const integrations = [
+    { name: "Stripe (Coming Soon)", color: "bg-indigo-100 text-indigo-700" },
+    { name: "PayPal (Coming Soon)", color: "bg-blue-100 text-blue-700" },
     { name: "bKash", color: "bg-pink-100 text-pink-700" },
     { name: "Nagad", color: "bg-orange-100 text-orange-700" },
-    { name: "Rocket", color: "bg-purple-100 text-purple-700" },
     { name: "Pathao", color: "bg-green-100 text-green-700" },
     { name: "RedX", color: "bg-red-100 text-red-700" },
     { name: "Steadfast", color: "bg-blue-100 text-blue-700" },
@@ -177,6 +178,59 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-white">
+      {/* FAQPage JSON-LD for Google Featured Snippets */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: [
+              {
+                "@type": "Question",
+                name: "What is the best free digital receipt maker for social media sellers?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "EzyMemo is a free digital receipt maker designed for social commerce sellers. Create professional invoices and receipts in seconds, manage orders from Facebook, Instagram, and WhatsApp, and track your customers — all from one dashboard. No credit card required to get started.",
+                },
+              },
+              {
+                "@type": "Question",
+                name: "Can I use EzyMemo for my business outside of Bangladesh?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Yes! EzyMemo is a global platform that works for social commerce sellers anywhere in the world. While we started in Bangladesh, our tools support multi-currency invoicing and work with international payment providers like Stripe and PayPal (coming soon), alongside local options like bKash.",
+                },
+              },
+              {
+                "@type": "Question",
+                name: "How does a digital receipt help grow my social commerce business?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Digital receipts build trust with customers by providing professional, branded documentation for every transaction. This professionalism leads to more repeat orders, positive reviews, and referrals. EzyMemo also tracks customer history so you can follow up and grow relationships over time.",
+                },
+              },
+              {
+                "@type": "Question",
+                name: "What social media platforms does EzyMemo support?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "EzyMemo helps you manage orders from Facebook, Instagram, WhatsApp, and your own online storefront. All orders from every channel flow into one unified dashboard so you never miss a sale.",
+                },
+              },
+              {
+                "@type": "Question",
+                name: "Is EzyMemo really free?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Yes! Our free plan includes all essential features — digital receipt generation, order management, customer database, and your own online storefront. Premium plans with advanced features are available for growing businesses.",
+                },
+              },
+            ],
+          }),
+        }}
+      />
+
       {/* Navigation */}
       <header className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-b z-50">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -204,6 +258,12 @@ export default function HomePage() {
                 Features
               </Link>
               <Link
+                href="/templates"
+                className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+              >
+                Templates
+              </Link>
+              <Link
                 href="/pricing"
                 className="text-gray-600 hover:text-gray-900 text-sm font-medium"
               >
@@ -220,6 +280,12 @@ export default function HomePage() {
                 className="text-gray-600 hover:text-gray-900 text-sm font-medium"
               >
                 FAQ
+              </Link>
+              <Link
+                href="/free-invoice-maker"
+                className="text-orange-600 hover:text-orange-700 text-sm font-semibold"
+              >
+                Free Invoice Maker
               </Link>
             </div>
 
@@ -270,6 +336,12 @@ export default function HomePage() {
               Features
             </Link>
             <Link
+              href="/templates"
+              className="block text-gray-600 hover:text-gray-900"
+            >
+              Templates
+            </Link>
+            <Link
               href="/pricing"
               className="block text-gray-600 hover:text-gray-900"
             >
@@ -280,6 +352,12 @@ export default function HomePage() {
               className="block text-gray-600 hover:text-gray-900"
             >
               Testimonials
+            </Link>
+            <Link
+              href="/free-invoice-maker"
+              className="block text-orange-600 hover:text-orange-700 font-semibold"
+            >
+              Free Invoice Maker
             </Link>
             <div className="pt-4 space-y-2">
               {isAuthenticated ? (
@@ -316,12 +394,12 @@ export default function HomePage() {
 
             {/* Main Heading - H1 for SEO */}
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
-              Free Online Memo Generator & Invoice Maker for Small Businesses
+              Free Digital Receipt Maker & Order Management for Social Commerce
             </h1>
 
             {/* Subheading */}
             <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              Stop wasting time on hand-written memos. Manage your Facebook shop orders and billing in seconds.
+              Create professional digital receipts and invoices in seconds. Manage orders from Facebook, Instagram, WhatsApp & your online store — all in one dashboard.
             </p>
 
             {/* CTA Buttons */}
@@ -331,18 +409,18 @@ export default function HomePage() {
                   size="lg"
                   className="text-lg px-8 py-6 bg-orange-600 hover:bg-orange-700 cursor-pointer"
                 >
-                  Create Free Memo Now
+                  Create Free Receipt Now
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
-              <Link href="#demo">
+              <Link href="/free-invoice-maker">
                 <Button
                   size="lg"
                   variant="outline"
-                  className="text-lg px-8 py-6 cursor-pointer"
+                  className="text-lg px-8 py-6 cursor-pointer border-orange-300 text-orange-700 hover:bg-orange-50"
                 >
-                  <Play className="w-5 h-5 mr-2" />
-                  Watch Demo
+                  <FileText className="w-5 h-5 mr-2" />
+                  Try Without Signing Up
                 </Button>
               </Link>
             </div>
@@ -571,13 +649,13 @@ export default function HomePage() {
               Features
             </Badge>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Easy Memo: Everything You Need to Run Your Online Business
+              Everything You Need to Run Your Social Commerce Business
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Ezymemo makes it easy to get orders from social media and your
-              live shop. Manage everything in one place. Build customer
-              relationships. Create professional order memos. Grow your sales
-              systematically with our easy memo platform.
+              EzyMemo makes it easy to manage orders from social media and your
+              online storefront. Track everything in one place. Build customer
+              relationships. Create professional digital receipts. Grow your
+              sales systematically.
             </p>
           </div>
 
@@ -615,14 +693,13 @@ export default function HomePage() {
                 Live Shop Website
               </Badge>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-                Easy Memo: Get Orders Directly from Your Live Shop
+                Get Orders Directly from Your Online Storefront
               </h2>
               <p className="text-lg text-gray-600 mb-8">
-                Create a professional e-commerce storefront with ezymemo. Share
+                Create a professional e-commerce storefront with EzyMemo. Share
                 your shop link on Facebook, Instagram, and WhatsApp. Customers
                 browse products, view details, and place orders directly on your
                 live site. All orders flow into your dashboard automatically.
-                The easy memo solution for online sellers.
               </p>
 
               <div className="space-y-4 mb-8">
@@ -911,7 +988,7 @@ export default function HomePage() {
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h3 className="text-xl font-semibold text-gray-900 mb-8">
-            Works with your favorite payment & delivery services
+            Supports global payments & delivery services
           </h3>
           <div className="flex flex-wrap items-center justify-center gap-4">
             {integrations.map((integration, index) => (
@@ -934,7 +1011,7 @@ export default function HomePage() {
               Testimonials
             </Badge>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Online Sellers Growing with Ezy Memo
+              Online Sellers Growing with EzyMemo
             </h2>
             <p className="text-lg text-gray-600">
               See how sellers manage orders, showcase products, and grow their
@@ -986,31 +1063,31 @@ export default function HomePage() {
           <div className="text-center mb-12">
             <Badge className="mb-4 bg-blue-100 text-blue-700">FAQ</Badge>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Frequently Asked Questions
+              Frequently Asked Questions About Digital Receipts & Order Management
             </h2>
           </div>
 
           <dl className="space-y-4">
             {[
               {
-                q: "What is EzyMemo?",
-                a: "EzyMemo is the easy memo platform for online sellers. Get orders from Facebook, Instagram, WhatsApp, and your live shop. Track everything in one dashboard. Manage products, customers, and professional memos. Ezymemo simplifies your entire business.",
+                q: "What is the best free digital receipt maker for social media sellers?",
+                a: "EzyMemo is a free digital receipt maker designed for social commerce sellers. Create professional invoices and receipts in seconds, manage orders from Facebook, Instagram, and WhatsApp, and track your customers — all from one dashboard. No credit card required to get started.",
               },
               {
-                q: "How does the live shop work?",
-                a: "Your live shop is a professional e-commerce storefront. Customers browse products, view details, and place orders directly. All orders automatically sync to your dashboard for easy management.",
+                q: "Can I use EzyMemo for my business outside of Bangladesh?",
+                a: "Yes! EzyMemo is a global platform that works for social commerce sellers anywhere in the world. While we started in Bangladesh, our tools support multi-currency invoicing and work with international payment providers like Stripe and PayPal (coming soon), alongside local options like bKash.",
               },
               {
-                q: "Can I track orders from Facebook and Instagram?",
-                a: "Yes! You can create orders from any source - Facebook, Instagram, WhatsApp, or your live shop. All orders are tracked in one place with status updates and payment tracking.",
+                q: "How does a digital receipt help grow my social commerce business?",
+                a: "Digital receipts build trust with customers by providing professional, branded documentation for every transaction. This professionalism leads to more repeat orders, positive reviews, and referrals. EzyMemo also tracks customer history so you can follow up and grow relationships over time.",
               },
               {
-                q: "Do I need technical skills?",
-                a: "Not at all! If you can use Facebook, you can use EzyMemo. Simple interface designed for non-technical users.",
+                q: "What social media platforms does EzyMemo support?",
+                a: "EzyMemo helps you manage orders from Facebook, Instagram, WhatsApp, and your own online storefront. All orders from every channel flow into one unified dashboard so you never miss a sale.",
               },
               {
-                q: "How does this help me get more sales?",
-                a: "Your live shop makes your products discoverable to new customers. Professional showcase builds trust. Customer database helps you get repeat orders. Track and optimize your sales. Ezymemo and easy memo help you grow.",
+                q: "Is EzyMemo really free?",
+                a: "Yes! Our free plan includes all essential features — digital receipt generation, order management, customer database, and your own online storefront. Premium plans with advanced features are available for growing businesses.",
               },
             ].map((faq, index) => (
               <Card key={index} className="p-6">
@@ -1026,12 +1103,12 @@ export default function HomePage() {
       <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            Ready to Grow Your Online Business with Ezy Memo?
+            Ready to Grow Your Social Commerce Business?
           </h2>
           <p className="text-xl text-blue-100 mb-8">
-            Get orders from social media and your live shop with ezymemo. Manage
-            everything in one place. Build customer relationships. Create easy
-            memos. Track sales. Grow systematically with the easiest order
+            Manage orders from social media and your online storefront. Build
+            customer relationships. Generate professional digital receipts.
+            Track sales and grow systematically with the easiest order
             management platform.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -1076,9 +1153,8 @@ export default function HomePage() {
                 <span className="text-xl font-bold text-white">EzyMemo</span>
               </Link>
               <p className="text-sm">
-                Bangladesh&apos;s leading easy memo and e-commerce management
-                platform for online sellers and small businesses. Ezymemo
-                simplifies your business.
+                The free digital receipt maker and order management platform for
+                social commerce sellers and small businesses worldwide.
               </p>
             </div>
             <div>
@@ -1087,6 +1163,11 @@ export default function HomePage() {
                 <li>
                   <Link href="#features" className="hover:text-white">
                     Features
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/templates" className="hover:text-white">
+                    Templates
                   </Link>
                 </li>
                 <li>
@@ -1102,6 +1183,11 @@ export default function HomePage() {
                 <li>
                   <Link href="#faq" className="hover:text-white">
                     FAQ
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/free-invoice-maker" className="hover:text-white">
+                    Free Invoice Maker
                   </Link>
                 </li>
               </ul>
@@ -1165,12 +1251,12 @@ export default function HomePage() {
               © {new Date().getFullYear()} EzyMemo. All rights reserved.
             </p>
             <div className="flex flex-col md:flex-row items-center gap-4 text-sm">
-              <span>Trusted by 100+ F-Commerce Sellers</span>
+              <span>Trusted by 5,000+ Social Commerce Sellers</span>
               <span className="hidden md:inline">•</span>
-              <span>Proudly made in Bangladesh 🇧🇩</span>
+              <span>Built in Bangladesh, Used Worldwide 🌍</span>
             </div>
             <p className="text-sm">
-              Made with ❤️ for Bangladeshi entrepreneurs
+              Made with ❤️ for entrepreneurs everywhere
             </p>
           </div>
         </div>

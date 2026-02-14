@@ -7,6 +7,7 @@ import {
   Crown,
   FileText,
   Home,
+  Layout,
   LogOut,
   Menu,
   Package,
@@ -126,6 +127,7 @@ export default function ProtectedUserDashboardlayout({
             title: "Settings",
             items: [
               { href: "/dashboard/profile", label: "Profile Settings", icon: () => <div className="w-4 h-4" /> },
+              { href: "/settings/invoice-template", label: "Invoice Template", icon: Layout },
               { href: "/subscription", label: "Subscription", icon: Crown },
               { href: "/payment-methods", label: "Payment Methods", icon: CreditCard },
             ],

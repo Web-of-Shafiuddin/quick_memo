@@ -1,4 +1,5 @@
 import { MetadataRoute } from 'next';
+import { getAllTemplateSlugs } from '@/lib/templates';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://ezymemo.com';
@@ -48,11 +49,34 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly',
       priority: 0.7,
     },
-    '/pricing',
-  ];
-
-  const dynamicRoutes: string[] = [
-    '/pricing',
+    // Templates index page
+    {
+      url: `${baseUrl}/templates`,
+      lastModified,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    // Free invoice maker page
+    {
+      url: `${baseUrl}/free-invoice-maker`,
+      lastModified,
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    // Template pages for programmatic SEO
+    ...getAllTemplateSlugs().map((slug) => ({
+      url: `${baseUrl}/templates/${slug}`,
+      lastModified,
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    })),
+    // Template creator pages
+    ...getAllTemplateSlugs().map((slug) => ({
+      url: `${baseUrl}/templates/${slug}/create`,
+      lastModified,
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    })),
   ];
 
   try {

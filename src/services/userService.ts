@@ -34,6 +34,7 @@ export const userService = {
       nid_license_url?: string | null;
       verification_images?: string[];
       social_links?: any;
+      preferred_template_id?: number | null;
     }
   ) => {
     const response = await api.put<{ success: boolean; data: User }>(

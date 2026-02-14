@@ -6,6 +6,9 @@ import { Download, Loader2 } from 'lucide-react';
 import { Order } from '@/services/orderService';
 import { useCurrency } from '@/hooks/useCurrency';
 import { downloadMemoPdf } from './order-memo-pdf';
+import TemplateMemoPreview from './template-memo-preview';
+import type { TemplateConfig } from './template-memo-preview';
+import { downloadTemplateInvoicePdf } from './template-invoice-pdf';
 
 interface OrderMemoProps {
   order: Order;
@@ -17,17 +20,49 @@ interface OrderMemoProps {
     address?: string;
   };
   formatPrice?: (amount: number) => string;
+  template?: {
+    layout_type: string;
+    config: TemplateConfig;
+  } | null;
 }
 
-const OrderMemo: React.FC<OrderMemoProps> = ({ order, shopInfo, formatPrice }) => {
+const OrderMemo: React.FC<OrderMemoProps> = ({ order, shopInfo, formatPrice, template }) => {
   const { format: currencyFormat } = useCurrency();
   const format = formatPrice || currencyFormat;
   const [downloading, setDownloading] = useState(false);
 
+  const subtotal = (order.items || []).reduce((sum, item) =>
+    sum + parseFloat(item.subtotal.toString()), 0
+  );
+
   const handleDownload = async () => {
     setDownloading(true);
     try {
-      await downloadMemoPdf(order, shopInfo, format);
+      if (template) {
+        // Use template-aware PDF renderer
+        await downloadTemplateInvoicePdf(template, {
+          shopName: shopInfo.shopName,
+          shopMobile: shopInfo.mobile,
+          shopAddress: shopInfo.address,
+          customerName: order.customer_name || 'Customer',
+          customerMobile: order.customer_mobile || undefined,
+          customerAddress: order.customer_address || undefined,
+          items: (order.items || []).map(item => ({
+            name: item.name_snapshot,
+            quantity: item.quantity,
+            price: parseFloat(item.unit_price.toString()),
+            total: parseFloat(item.subtotal.toString()),
+          })),
+          subtotal,
+          deliveryCharge: parseFloat(order.shipping_amount.toString()),
+          discount: 0,
+          totalAmount: parseFloat(order.total_amount.toString()),
+          paymentMethod: order.payment_method_name || 'cod',
+          notes: 'Thank you for your business!',
+        });
+      } else {
+        await downloadMemoPdf(order, shopInfo, format);
+      }
     } catch (error) {
       console.error('Error generating PDF:', error);
     } finally {
@@ -41,9 +76,45 @@ const OrderMemo: React.FC<OrderMemoProps> = ({ order, shopInfo, formatPrice }) =
     day: 'numeric'
   });
 
-  const subtotal = (order.items || []).reduce((sum, item) =>
-    sum + parseFloat(item.subtotal.toString()), 0
-  );
+  // If template is provided, render with TemplateMemoPreview
+  if (template) {
+    const templateData = {
+      shopName: shopInfo.shopName,
+      shopMobile: shopInfo.mobile,
+      shopAddress: shopInfo.address,
+      customerName: order.customer_name || 'Customer',
+      customerMobile: order.customer_mobile || undefined,
+      customerAddress: order.customer_address || undefined,
+      items: (order.items || []).map(item => ({
+        name: item.name_snapshot,
+        quantity: item.quantity,
+        price: parseFloat(item.unit_price.toString()),
+        total: parseFloat(item.subtotal.toString()),
+      })),
+      subtotal,
+      deliveryCharge: parseFloat(order.shipping_amount.toString()),
+      discount: 0,
+      totalAmount: parseFloat(order.total_amount.toString()),
+      paymentMethod: order.payment_method_name || 'cod',
+      notes: 'Thank you for your business!',
+    };
+
+    return (
+      <div className="space-y-4">
+        <div className="flex justify-center no-print mb-4">
+          <Button onClick={handleDownload} disabled={downloading} size="lg">
+            {downloading ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Download className="w-4 h-4 mr-2" />
+            )}
+            Download PDF
+          </Button>
+        </div>
+        <TemplateMemoPreview template={template} data={templateData} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">

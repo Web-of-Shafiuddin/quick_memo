@@ -18,29 +18,27 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://ezymemo.com"),
   title: {
-    default: "EzyMemo | Easy Memo Generator & Professional Invoice Maker for Sellers",
+    default: "EzyMemo | Free Digital Receipt Maker & Order Management App",
     template: "%s | EzyMemo",
   },
   description:
-    "EzyMemo is the #1 easy memo generator and invoice maker for Facebook sellers in Bangladesh. Generate professional cash memos, manage orders, and track customers in one click. Free to start!",
+    "EzyMemo is a free digital receipt maker and omnichannel order management app for social commerce sellers worldwide. Generate professional invoices, manage orders from Facebook, Instagram & WhatsApp, and track customers in one click.",
   keywords: [
-    "easy memo generator",
-    "invoice generator Bangladesh",
-    "cash memo maker online",
-    "generate memo for facebook shop",
+    "free digital receipt maker",
+    "invoice generator online",
+    "receipt maker app",
+    "order management for social commerce",
+    "omnichannel order management",
     "free invoice creator",
-    "online memo printing software",
-    "facebook order management",
-    "digital memo for online business",
+    "social media order management",
+    "digital memo maker",
     "billing software for small business",
-    "F-commerce tools",
-    "অর্ডার মেমো জেনারেটর",
-    "ক্যাশ মেমো তৈরির সফটওয়্যার",
-    "ইনভয়েস জেনারেটর",
-    "অনলাইন সেলস প্ল্যাটফর্ম",
-    "ফেসবুক অর্ডার ম্যানেজমেন্ট",
-    "পাবলিক শপ লিংক",
-    "কাস্টমার ডেটাবেস",
+    "social commerce tools",
+    "Facebook shop invoice",
+    "Instagram order management",
+    "e-commerce receipt generator",
+    "online seller tools",
+    "small business invoice app",
   ],
   authors: [{ name: "EzyMemo", url: "https://ezymemo.com" }],
   creator: "EzyMemo",
@@ -64,27 +62,27 @@ export const metadata: Metadata = {
   manifest: "/site.webmanifest",
   openGraph: {
     type: "website",
-    locale: "en_BD",
-    alternateLocale: "bn_BD",
+    locale: "en_US",
+    alternateLocale: ["en_GB", "en_BD"],
     url: "https://ezymemo.com",
     siteName: "EzyMemo",
-    title: "EzyMemo - Professional Memo Generator & Order Management",
+    title: "EzyMemo - Free Digital Receipt Maker & Order Management App",
     description:
-      "Instantly generate professional invoices and memos for your online customers. The easiest way to manage Facebook and Instagram orders in Bangladesh. Start for free today!",
+      "Instantly generate professional digital receipts and invoices for your online customers. The easiest way to manage social commerce orders from Facebook, Instagram & WhatsApp. Free to start!",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "EzyMemo - Memo Generator and Order Management",
+        alt: "EzyMemo - Digital Receipt Maker and Order Management",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "EzyMemo - Easy Memo Maker for Online Sellers",
+    title: "EzyMemo - Free Digital Receipt Maker & Order Management",
     description:
-      "Generate digital invoices and manage your social media orders from one dashboard. Grow your F-commerce business with EzyMemo.",
+      "Generate digital receipts and invoices. Manage your social commerce orders from one dashboard. Grow your online business with EzyMemo.",
     images: ["/logo.webp"],
     creator: "@ezymemo",
   },
@@ -107,14 +105,14 @@ export const jsonLd = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "EzyMemo",
-  alternateName: ["Easy Memo", "Ezy Memo", "Memo Generator"],
+  alternateName: ["Easy Memo", "Ezy Memo", "Digital Receipt Maker"],
   applicationCategory: "BusinessApplication",
-  operatingSystem: "Web Browser",
+  operatingSystem: "Web, Android, iOS",
   offers: {
     "@type": "Offer",
     price: "0",
-    priceCurrency: "BDT",
-    description: "Free plan available",
+    priceCurrency: "USD",
+    description: "Free plan available. Premium plans start at $4.99/month.",
   },
   aggregateRating: {
     "@type": "AggregateRating",
@@ -124,16 +122,16 @@ export const jsonLd = {
     worstRating: "1",
   },
   description:
-    "The easiest memo generator and sales management platform for online sellers in Bangladesh. Create digital invoices, track orders, and manage customers effortlessly.",
+    "Free digital receipt maker and omnichannel order management platform for social commerce sellers. Create professional invoices, track orders from Facebook, Instagram & WhatsApp, and manage customers effortlessly.",
   featureList: [
-    "Professional Memo Generation",
-    "Digital Invoice Maker",
-    "Live Shop Website",
-    "Order Management",
-    "Customer Database",
-    "Product Catalog Management",
-    "Sales Analytics",
-    "Bengali & English Support",
+    "Free Digital Receipt & Invoice Maker",
+    "Omnichannel Order Management",
+    "Live Shop & Online Storefront",
+    "Customer Relationship Management",
+    "Product Catalog & Inventory Tracking",
+    "Sales Analytics & Reports",
+    "Multi-Currency Support",
+    "Global Payment Integration (Stripe, PayPal, bKash)",
   ],
   softwareVersion: "2.0",
   author: {
@@ -151,7 +149,7 @@ export const organizationJsonLd = {
   url: "https://ezymemo.com",
   logo: "https://ezymemo.com/logo-square.png",
   description:
-    "EzyMemo provides the easiest memo maker and order management tools for F-Commerce sellers in Bangladesh. Generate professional invoices and showcase products on your live shop.",
+    "EzyMemo provides free digital receipt generation and omnichannel order management tools for social commerce sellers worldwide. Create professional invoices and grow your online business.",
   foundingDate: "2024",
   address: {
     "@type": "PostalAddress",
@@ -162,10 +160,12 @@ export const organizationJsonLd = {
     "@type": "ContactPoint",
     contactType: "customer service",
     availableLanguage: ["English", "Bengali"],
+    email: "support@ezymemo.com",
   },
   sameAs: [
     "https://facebook.com/ezymemo",
     "https://instagram.com/ezymemo",
+    "https://twitter.com/ezymemo",
   ],
 };
 
@@ -185,6 +185,8 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
         />
+        <link rel="alternate" href="https://ezymemo.com/" hrefLang="x-default" />
+        <link rel="alternate" href="https://ezymemo.com/" hrefLang="en" />
         <meta name="facebook-domain-verification" content="wqrf5prnorqdpnsx2q3vjtfhq46lu9" />
         <meta name="msvalidate.01" content="CCA7EA71B32801698A86F1B47CFAC5DC" />
       </head>

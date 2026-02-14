@@ -22,13 +22,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { orderService, Order, OrderListParams } from "@/services/orderService";
 import { userService } from "@/services/userService";
-import { Plus, Eye, Edit, Printer, ChevronLeft, ChevronRight, FileText } from "lucide-react";
+import { Plus, Eye, Edit, Printer, ChevronLeft, ChevronRight, FileText, Layout } from "lucide-react";
 import OrderMemo from "@/components/order-memo";
 import { InvoiceDialog } from "@/components/invoice-dialog";
 import useAuthStore from "@/store/authStore";
 import { useShallow } from "zustand/react/shallow";
 import { User } from "@/types/User";
 import { useCurrency } from "@/hooks/useCurrency";
+import type { TemplateConfig } from "@/components/template-memo-preview";
 import {
   Dialog,
   DialogContent,
@@ -110,10 +111,18 @@ const OrdersPage = () => {
     shipping_amount: 0,
     tax_amount: 0,
   });
+  const [availableTemplates, setAvailableTemplates] = useState<Array<{
+    template_id: number;
+    name: string;
+    layout_type: string;
+    config: TemplateConfig;
+  }>>([]);
+  const [selectedMemoTemplateId, setSelectedMemoTemplateId] = useState<number | null>(null);
 
   useEffect(() => {
     if (user?.user_id) {
       fetchUserProfile();
+      fetchTemplates();
     }
   }, [user]);
 
@@ -126,8 +135,30 @@ const OrdersPage = () => {
     try {
       const response = await userService.getById(user.user_id.toString());
       setUserProfile(response.data);
+      // Set the user's preferred template as default for memos
+      if (response.data?.preferred_template_id) {
+        setSelectedMemoTemplateId(response.data.preferred_template_id);
+      }
     } catch (error) {
       console.error('Error fetching user profile:', error);
+    }
+  };
+
+  const fetchTemplates = async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+      const res = await fetch(`${apiUrl}/invoice-templates`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data)) {
+          setAvailableTemplates(data.data.map((t: any) => ({
+            ...t,
+            config: typeof t.config === 'string' ? JSON.parse(t.config) : t.config,
+          })));
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching templates:', error);
     }
   };
 
@@ -676,17 +707,47 @@ const OrdersPage = () => {
             </DialogDescription>
           </DialogHeader>
           {selectedOrder && (
-            <OrderMemo
-              order={selectedOrder}
-              shopInfo={{
-                shopName: userProfile?.shop_name || user?.name || "Your Shop Name",
-                ownerName: userProfile?.shop_owner_name || user?.name || "Owner Name",
-                mobile: userProfile?.shop_mobile || user?.mobile || "01XXXXXXXXX",
-                email: userProfile?.shop_email || user?.email,
-                address: userProfile?.shop_address || undefined
-              }}
-              formatPrice={formatPrice}
-            />
+            <>
+              {/* Template Selector */}
+              {availableTemplates.length > 0 && (
+                <div className="flex items-center gap-3 mb-4 p-3 bg-gray-50 rounded-lg">
+                  <Layout className="w-4 h-4 text-gray-500" />
+                  <Label className="text-sm font-medium whitespace-nowrap">Template:</Label>
+                  <Select
+                    value={selectedMemoTemplateId?.toString() || "default"}
+                    onValueChange={(val) => setSelectedMemoTemplateId(val === "default" ? null : parseInt(val))}
+                  >
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder="Select template" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="default">Default Template</SelectItem>
+                      {availableTemplates.map((t) => (
+                        <SelectItem key={t.template_id} value={t.template_id.toString()}>
+                          {t.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              <OrderMemo
+                order={selectedOrder}
+                shopInfo={{
+                  shopName: userProfile?.shop_name || user?.name || "Your Shop Name",
+                  ownerName: userProfile?.shop_owner_name || user?.name || "Owner Name",
+                  mobile: userProfile?.shop_mobile || user?.mobile || "01XXXXXXXXX",
+                  email: userProfile?.shop_email || user?.email,
+                  address: userProfile?.shop_address || undefined
+                }}
+                formatPrice={formatPrice}
+                template={
+                  selectedMemoTemplateId
+                    ? availableTemplates.find(t => t.template_id === selectedMemoTemplateId) || null
+                    : null
+                }
+              />
+            </>
           )}
         </DialogContent>
       </Dialog>

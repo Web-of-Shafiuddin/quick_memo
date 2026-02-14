@@ -19,6 +19,7 @@ export interface User {
   nid_license_url?: string | null;
   verification_images?: string[];
   social_links?: any;
+  preferred_template_id?: number | null;
   is_verified: boolean;
   has_badge?: boolean;
   is_active?: boolean;

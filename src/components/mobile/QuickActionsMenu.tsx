@@ -6,6 +6,7 @@ import {
   Tag,
   CreditCard,
   Crown,
+  Layout,
   Palette,
   Save,
   Calendar,
@@ -36,6 +37,7 @@ const quickActions = [
 
 const settingsActions = [
   { href: "/dashboard/profile", label: "Profile Settings", icon: FileText },
+  { href: "/settings/invoice-template", label: "Invoice Template", icon: Layout },
   { href: "/subscription", label: "Subscription", icon: Crown },
   { href: "/payment-methods", label: "Payment Methods", icon: CreditCard },
 ] satisfies QuickActionItem[];
