@@ -316,18 +316,12 @@ export default function HomePage() {
 
             {/* Main Heading - H1 for SEO */}
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
-              Easy Memo: The Easiest Order Memo Maker for{" "}
-              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Facebook Sellers
-              </span>
+              Free Online Memo Generator & Invoice Maker for Small Businesses
             </h1>
 
             {/* Subheading */}
             <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              The easy memo platform for Facebook sellers. Get orders from
-              social media and your live public shop. Track everything in one
-              place. Manage customers, products, and memos with ezymemo. Grow
-              your online business.
+              Stop wasting time on hand-written memos. Manage your Facebook shop orders and billing in seconds.
             </p>
 
             {/* CTA Buttons */}
@@ -335,9 +329,9 @@ export default function HomePage() {
               <Link href={isAuthenticated ? "/dashboard" : "/auth/login"}>
                 <Button
                   size="lg"
-                  className="text-lg px-8 py-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  className="text-lg px-8 py-6 bg-orange-600 hover:bg-orange-700 cursor-pointer"
                 >
-                  Start Free Today
+                  Create Free Memo Now
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
@@ -345,7 +339,7 @@ export default function HomePage() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="text-lg px-8 py-6"
+                  className="text-lg px-8 py-6 cursor-pointer"
                 >
                   <Play className="w-5 h-5 mr-2" />
                   Watch Demo

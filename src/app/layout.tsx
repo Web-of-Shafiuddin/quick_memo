@@ -18,30 +18,29 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://ezymemo.com"),
   title: {
-    default: "EzyMemo - Easy Memo & Order Management for F-Commerce",
+    default: "EzyMemo | Easy Memo Generator & Professional Invoice Maker for Sellers",
     template: "%s | EzyMemo",
   },
   description:
-    "EzyMemo is the best easy memo maker for Facebook and Instagram sellers in Bangladesh. Manage orders, track customers, and grow your F-Commerce business. Free to start!",
+    "EzyMemo is the #1 easy memo generator and invoice maker for Facebook sellers in Bangladesh. Generate professional cash memos, manage orders, and track customers in one click. Free to start!",
   keywords: [
-    "online sales management platform",
-    "live shop website",
-    "Facebook order management",
-    "Instagram order tracking",
-    "customer database for online sellers",
-    "product catalog management",
-    "public shop link",
-    "e-commerce platform Bangladesh",
-    "online business growth",
+    "easy memo generator",
+    "invoice generator Bangladesh",
+    "cash memo maker online",
+    "generate memo for facebook shop",
+    "free invoice creator",
+    "online memo printing software",
+    "facebook order management",
+    "digital memo for online business",
+    "billing software for small business",
     "F-commerce tools",
-    "social media order tracking",
-    "online seller dashboard",
-    "Bangladesh e-commerce software",
+    "অর্ডার মেমো জেনারেটর",
+    "ক্যাশ মেমো তৈরির সফটওয়্যার",
+    "ইনভয়েস জেনারেটর",
     "অনলাইন সেলস প্ল্যাটফর্ম",
-    "লাইভ শপ ওয়েবসাইট",
     "ফেসবুক অর্ডার ম্যানেজমেন্ট",
-    "কাস্টমার ডেটাবেস",
     "পাবলিক শপ লিংক",
+    "কাস্টমার ডেটাবেস",
   ],
   authors: [{ name: "EzyMemo", url: "https://ezymemo.com" }],
   creator: "EzyMemo",
@@ -69,29 +68,23 @@ export const metadata: Metadata = {
     alternateLocale: "bn_BD",
     url: "https://ezymemo.com",
     siteName: "EzyMemo",
-    title: "EzyMemo - Complete Sales Management Platform for Online Sellers",
+    title: "EzyMemo - Professional Memo Generator & Order Management",
     description:
-      "Get orders from social media and your live shop. Track everything in one dashboard. Manage products, customers, and grow your sales. Perfect for online sellers in Bangladesh. Free to start!",
+      "Instantly generate professional invoices and memos for your online customers. The easiest way to manage Facebook and Instagram orders in Bangladesh. Start for free today!",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "EzyMemo - Sales Management Platform for Online Sellers",
-      },
-      {
-        url: "/logo.webp",
-        width: 512,
-        height: 512,
-        alt: "EzyMemo Logo",
+        alt: "EzyMemo - Memo Generator and Order Management",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "EzyMemo - Sales Management Platform for Online Sellers",
+    title: "EzyMemo - Easy Memo Maker for Online Sellers",
     description:
-      "Get orders from Facebook, Instagram, WhatsApp, and your live shop. Manage everything in one place. Track orders, customers, products. Grow your online business.",
+      "Generate digital invoices and manage your social media orders from one dashboard. Grow your F-commerce business with EzyMemo.",
     images: ["/logo.webp"],
     creator: "@ezymemo",
   },
@@ -110,10 +103,11 @@ export const metadata: Metadata = {
 };
 
 // JSON-LD structured data for SEO
-const jsonLd = {
+export const jsonLd = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "EzyMemo",
+  alternateName: ["Easy Memo", "Ezy Memo", "Memo Generator"],
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web Browser",
   offers: {
@@ -130,17 +124,16 @@ const jsonLd = {
     worstRating: "1",
   },
   description:
-    "Complete sales management platform for online sellers in Bangladesh. Get orders from social media and live shop. Track orders, manage customers, showcase products, and grow sales.",
+    "The easiest memo generator and sales management platform for online sellers in Bangladesh. Create digital invoices, track orders, and manage customers effortlessly.",
   featureList: [
+    "Professional Memo Generation",
+    "Digital Invoice Maker",
     "Live Shop Website",
     "Order Management",
     "Customer Database",
-    "Product Catalog",
-    "Social Media Integration",
-    "Professional Memos",
-    "Sales Tracking",
-    "Mobile Responsive",
-    "Bengali Language Support",
+    "Product Catalog Management",
+    "Sales Analytics",
+    "Bengali & English Support",
   ],
   softwareVersion: "2.0",
   author: {
@@ -150,15 +143,15 @@ const jsonLd = {
   },
 };
 
-const organizationJsonLd = {
+export const organizationJsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "EzyMemo",
-  alternateName: "Easy Memo",
+  alternateName: ["Easy Memo", "Ezy Memo"],
   url: "https://ezymemo.com",
   logo: "https://ezymemo.com/logo-square.png",
   description:
-    "Complete sales management platform for online sellers in Bangladesh. Live shop website, order management, customer database, and sales tracking to grow your online business.",
+    "EzyMemo provides the easiest memo maker and order management tools for F-Commerce sellers in Bangladesh. Generate professional invoices and showcase products on your live shop.",
   foundingDate: "2024",
   address: {
     "@type": "PostalAddress",
