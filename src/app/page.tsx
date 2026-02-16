@@ -287,6 +287,14 @@ export default function HomePage() {
               >
                 Free Invoice Maker
               </Link>
+              <a
+                href="https://img.ezymemo.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+              >
+                Image Tools
+              </a>
             </div>
 
             {/* Auth Buttons */}
@@ -359,6 +367,14 @@ export default function HomePage() {
             >
               Free Invoice Maker
             </Link>
+            <a
+              href="https://img.ezymemo.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block text-gray-600 hover:text-gray-900"
+            >
+              Image Tools
+            </a>
             <div className="pt-4 space-y-2">
               {isAuthenticated ? (
                 <Link href="/dashboard">
@@ -1003,6 +1019,103 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Image Tools Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div>
+              <Badge className="mb-4 bg-purple-100 text-purple-700">
+                Free Tool
+              </Badge>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                Image Tools by EzyMemo
+              </h2>
+              <p className="text-lg text-gray-600 mb-6">
+                Need to resize, convert, or compress images for your shop? Our free
+                browser-based image processing platform has 352+ tools — and your
+                images never leave your device.
+              </p>
+              <ul className="space-y-3 mb-8">
+                {[
+                  { icon: Layers, text: "352+ tools — convert, resize, compress, effects & more" },
+                  { icon: Globe, text: "Passport & ID photos for 190+ countries" },
+                  { icon: Shield, text: "100% private — all processing in your browser" },
+                  { icon: Zap, text: "Instant results with no uploads or sign-ups" },
+                ].map((item, index) => (
+                  <li key={index} className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center shrink-0">
+                      <item.icon className="w-4 h-4 text-purple-600" />
+                    </div>
+                    <span className="text-gray-700">{item.text}</span>
+                  </li>
+                ))}
+              </ul>
+              <a
+                href="https://img.ezymemo.com"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button
+                  size="lg"
+                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                >
+                  Try Image Tools Free
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </a>
+            </div>
+            <div className="relative">
+              <div className="bg-linear-to-br from-purple-50 to-purple-100/50 rounded-2xl p-8">
+                <div className="space-y-4">
+                  <Card className="p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <Layers className="w-5 h-5 text-purple-600" />
+                      </div>
+                      <div>
+                        <div className="font-medium text-gray-900">Popular Tools</div>
+                        <div className="text-xs text-gray-500">Most used by sellers</div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        "PNG to JPG",
+                        "Resize for Instagram",
+                        "Compress to 100KB",
+                        "Passport Photo",
+                        "Remove Background",
+                        "YouTube Thumbnail",
+                      ].map((tool) => (
+                        <div
+                          key={tool}
+                          className="text-sm bg-white border rounded-lg px-3 py-2 text-gray-700"
+                        >
+                          {tool}
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                  <div className="grid grid-cols-3 gap-4">
+                    <Card className="p-4 text-center">
+                      <div className="text-2xl font-bold text-purple-600">352+</div>
+                      <div className="text-xs text-gray-500">Tools</div>
+                    </Card>
+                    <Card className="p-4 text-center">
+                      <div className="text-2xl font-bold text-purple-600">190+</div>
+                      <div className="text-xs text-gray-500">Countries</div>
+                    </Card>
+                    <Card className="p-4 text-center">
+                      <div className="text-2xl font-bold text-purple-600">100%</div>
+                      <div className="text-xs text-gray-500">Private</div>
+                    </Card>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Testimonials Section */}
       <section id="testimonials" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1189,6 +1302,11 @@ export default function HomePage() {
                   <Link href="/free-invoice-maker" className="hover:text-white">
                     Free Invoice Maker
                   </Link>
+                </li>
+                <li>
+                  <a href="https://img.ezymemo.com" target="_blank" rel="noopener noreferrer" className="hover:text-white">
+                    Image Tools
+                  </a>
                 </li>
               </ul>
             </div>
