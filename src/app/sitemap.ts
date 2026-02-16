@@ -49,6 +49,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly',
       priority: 0.7,
     },
+    {
+      url: `${baseUrl}/marketplace`,
+      lastModified,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
     // Templates index page
     {
       url: `${baseUrl}/templates`,
@@ -114,12 +120,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             lastModified: shopLastModified,
             changeFrequency: 'weekly',
             priority: 0.7,
-          },
-          {
-            url: `${baseUrl}/shop/${shop.shop_slug}/cart`,
-            lastModified: shopLastModified,
-            changeFrequency: 'weekly',
-            priority: 0.5,
           },
         );
 
